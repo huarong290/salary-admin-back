@@ -32,7 +32,7 @@
         <mybatis.plus.version>3.5.16</mybatis.plus.version>
         <mysql-connector-j.version>9.5.0</mysql-connector-j.version>
         <freemarker.version>2.3.34</freemarker.version>
-        <commons-pool2.vrsion>2.13.1</commons-pool2.vrsion>
+        <commons-pool2.version>2.13.1</commons-pool2.version>
     </properties>
 
     <dependencies>
