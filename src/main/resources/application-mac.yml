@@ -1,0 +1,40 @@
+# ======================================================
+# Mac / Linux 专用配置（profile: mac）
+# Redis Sentinel + MySQL 33061
+# ======================================================
+spring:
+  config:
+    activate:
+      on-profile: mac
+  # ------------------------
+  # MySQL 数据库
+  # ------------------------
+  datasource:
+    url: jdbc:mysql://localhost:33061/sys_admin?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5             # 启动时预创建 5 个空闲连接
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      initialization-fail-timeout: 0  # 启动时初始化连接池，不等待第一次请求
+
+  # ------------------------
+  # Redis Sentinel 配置（Spring Boot 3.x 正确写法）
+  # ------------------------
+  data:
+    redis:
+      # Sentinel 模式
+      sentinel:
+        master: mymaster
+        nodes:
+          - 127.0.0.1:26379
+          - 127.0.0.1:26380
+          - 127.0.0.1:26381
+      # Redis Master 密码（Sentinel 会透传）
+      password: ${REDIS_PASSWORD:123456}
+      database: 0
+      # 连接超时
+      timeout: 5000ms

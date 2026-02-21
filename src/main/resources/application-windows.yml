@@ -1,0 +1,31 @@
+# ======================================================
+# Windows 专用配置（profile: windows）
+# 单机 Redis + MySQL 3306
+# ======================================================
+spring:
+  config:
+    activate:
+      on-profile: windows
+
+  # ------------------------
+  # MySQL 数据库
+  # ------------------------
+  datasource:
+    url: jdbc:mysql://localhost:3306/sys_admin?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # ------------------------
+  # Redis 单机配置（Spring Boot 3.x 推荐）
+  # ------------------------
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: ${REDIS_PASSWORD:123456}
+      database: 0
+      # Redis 超时时间
+      timeout: 2000ms
+
+

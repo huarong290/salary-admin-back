@@ -1,0 +1,117 @@
+# ======================================================
+# Spring Boot 3.5.x 全局配置文件 (JDK 21 优化版)
+# 项目说明：RBAC 后台管理系统核心配置
+# ======================================================
+
+# ------------------------------------------------------
+# 1. 基础服务配置
+# ------------------------------------------------------
+server:
+  port: 28080                    # 后台服务端口
+  shutdown: graceful             # 开启优雅停机（SpringBoot 3 推荐）
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+spring:
+  application:
+    name: salary-admin
+
+  # ------------------------------------------------------
+  # 2. 多环境激活切换
+  # 默认使用 windows (单机 Redis + 3306)
+  # Mac/Linux 环境启动参数建议: --spring.profiles.active=mac
+  # ------------------------------------------------------
+  profiles:
+    active: ${SPRING_PROFILE:windows}
+
+  # ------------------------------------------------------
+  # 3. JDK 21 核心特性：虚拟线程 (Virtual Threads)
+  # 开启后，所有 Servlet 请求将由虚拟线程处理，极大提升吞吐量
+  # ------------------------------------------------------
+  threads:
+    virtual:
+      enabled: true
+
+  # ------------------------------------------------------
+  # 4. 框架通用行为配置
+  # ------------------------------------------------------
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      indent_output: true         # 格式化 JSON 输出，方便调试
+      write-dates-as-timestamps: false # 不使用时间戳，使用格式化字符串
+
+  mvc:
+    format:
+      date-time: yyyy-MM-dd HH:mm:ss
+
+  # ------------------------------------------------------
+  # 5. Redis 连接池通用配置 (Lettuce)
+  # ------------------------------------------------------
+  data:
+    redis:
+      lettuce:
+        pool:
+          max-active: 20          # 连接池最大连接数
+          max-idle: 10            # 最大空闲连接
+          min-idle: 5             # 最小空闲连接
+          max-wait: 2000ms        # 连接耗尽时最大等待时间
+
+# ------------------------------------------------------
+# 6. MyBatis-Plus 配置
+# ------------------------------------------------------
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.salary.admin.entity
+  configuration:
+    map-underscore-to-camel-case: true # 开启下划线转驼峰
+    cache-enabled: false               # 手撸系统建议先关闭二级缓存，避免数据不一致
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 控制台打印 SQL
+  global-config:
+    db-config:
+      id-type: auto                    # 主键策略：数据库自增
+      logic-delete-field: deleted      # 逻辑删除字段（需在数据库对应字段默认值为0）
+      logic-delete-value: 1            # 已删除状态值
+      logic-not-delete-value: 0        # 未删除状态值
+
+# ------------------------------------------------------
+# 7. 安全与自定义业务配置 (JWT & Captcha)
+# ------------------------------------------------------
+jwt:
+  # 建议：生产环境使用环境变量注入，Secret 需满足 HS256 最小长度要求
+  secret: ${JWT_SECRET:mySecretKey2025mySecretKey2025mySecretKey2025}
+  access-token-expiration: 3600000        # 1小时
+  refresh-token-expiration: 604800000    # 7天
+  header: Authorization
+  token-start-with: "Bearer "
+
+captcha:
+  hmac-secret: "captcha-secure-salt-123" # 验证码防篡改盐值
+  ttl-seconds: 300                       # 有效期 5 分钟
+  image:
+    width: 130
+    height: 48
+    length: 4
+
+security:
+  whitelist:                             # 安全过滤白名单
+    - /api/auth/login
+    - /api/captcha/**
+    - /swagger-ui/**
+    - /v3/api-docs/**
+
+# ------------------------------------------------------
+# 8. 日志系统
+# ------------------------------------------------------
+logging:
+  level:
+    root: INFO
+    com.salary.admin.mapper: DEBUG       # 打印 Mapper 层 SQL 细节
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+
+
+
