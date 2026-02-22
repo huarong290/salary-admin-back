@@ -27,5 +27,6 @@ spring:
       database: 0
       # Redis 超时时间
       timeout: 2000ms
+      allow-fallback: false # 生产环境建议设为 false
 
 

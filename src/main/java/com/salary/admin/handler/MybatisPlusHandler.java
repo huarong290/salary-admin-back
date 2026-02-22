@@ -16,21 +16,26 @@ public class MybatisPlusHandler implements MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
         String username = getCurrentUsername();
+        // 自动填充创建和更新时间
         this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
         this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+        // 自动填充创建和更新人
         this.strictInsertFill(metaObject, "createBy", String.class, username);
         this.strictInsertFill(metaObject, "updateBy", String.class, username);
+        // 自动设置逻辑删除标识
         this.strictInsertFill(metaObject, "deleteFlag", Integer.class, 0);
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
+        // 更新操作时，只填充更新时间和更新人
         this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
         this.strictUpdateFill(metaObject, "updateBy", String.class, getCurrentUsername());
     }
 
     private String getCurrentUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // 如果是已认证用户，返回用户名；否则返回 system (如登录、注册、定时任务场景)
         if (authentication != null && authentication.isAuthenticated()) {
             return authentication.getName();
         }

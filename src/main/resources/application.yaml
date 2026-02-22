@@ -24,7 +24,7 @@ spring:
   # Mac/Linux 环境启动参数建议: --spring.profiles.active=mac
   # ------------------------------------------------------
   profiles:
-    active: ${SPRING_PROFILE:windows}
+    active: ${SPRING_PROFILE:mac}
 
   # ------------------------------------------------------
   # 3. JDK 21 核心特性：虚拟线程 (Virtual Threads)
