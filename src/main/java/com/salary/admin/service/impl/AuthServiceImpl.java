@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ public class AuthServiceImpl implements IAuthService {
      * @return TokenResDTO 包含 AccessToken、RefreshToken 等信息
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public TokenResDTO login(UserLoginReqDTO dto) {
         log.info("用户尝试登录: {}, 设备ID: {}, IP: {}", dto.getUsername(), dto.getClientInfo().getDeviceId(), dto.getLoginIp());
         // 1. 验证码校验
