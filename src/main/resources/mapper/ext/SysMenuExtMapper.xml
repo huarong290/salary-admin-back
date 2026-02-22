@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.salary.admin.mapper.ext.SysMenuExtMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.sys.SysMenu">
+        <id column="id" property="id" />
+        <result column="menu_name" property="menuName" />
+        <result column="menu_code" property="menuCode" />
+        <result column="menu_path" property="menuPath" />
+        <result column="menu_component" property="menuComponent" />
+        <result column="menu_icon" property="menuIcon" />
+        <result column="menu_permission" property="menuPermission" />
+        <result column="menu_type" property="menuType" />
+        <result column="menu_parent_id" property="menuParentId" />
+        <result column="menu_sort" property="menuSort" />
+        <result column="menu_visible" property="menuVisible" />
+        <result column="menu_status" property="menuStatus" />
+        <result column="delete_flag" property="deleteFlag" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, menu_name, menu_code, menu_path, menu_component, menu_icon, menu_permission, menu_type, menu_parent_id, menu_sort, menu_visible, menu_status, delete_flag, create_by, create_time, update_by, update_time
+    </sql>
+
+</mapper>
