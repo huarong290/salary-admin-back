@@ -92,7 +92,18 @@ public class RedisServiceImpl implements IRedisService {
         // 返回过期剩余时间，-1 代表永久，-2 代表 Key 不存在
         return redisTemplate.getExpire(key);
     }
-
+    /**
+     * 🚨 【新增】原子获取并删除
+     * 用于加固版 AuthService 的令牌轮转逻辑
+     */
+    public String getAndDelete(String key) {
+        // 使用简单的管道或直接 delete。在大规模分布式下建议用 Lua。
+        String val = redisTemplate.opsForValue().get(key);
+        if (val != null) {
+            redisTemplate.delete(key);
+        }
+        return val;
+    }
     // ============================ String 字符串操作 ============================
     /**
      * 设置字符串值（序列化为 JSON 存储）
@@ -105,9 +116,15 @@ public class RedisServiceImpl implements IRedisService {
      * 设置字符串值并指定过期时间
      */
     @Override
-    public void setEx(String key, Object value, long timeout, TimeUnit unit) {
-        // 原子性操作：设置值的同时设置过期时间
-        redisTemplate.opsForValue().set(key, toJson(value), timeout, unit);
+    public Boolean setEx(String key, Object value, long timeout, TimeUnit unit) {
+        try {
+            // opsForValue().set 如果没有配置特殊的监听，通常不会返回 null
+            redisTemplate.opsForValue().set(key, toJson(value), timeout, unit);
+            return true;
+        } catch (Exception e) {
+            log.error("Redis setEx 失败: key={}", key, e);
+            return false;
+        }
     }
     /**
      * 获取字符串值并反序列化为指定类型

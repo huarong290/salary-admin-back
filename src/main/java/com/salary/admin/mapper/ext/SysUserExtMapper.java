@@ -1,7 +1,9 @@
 package com.salary.admin.mapper.ext;
 
 import com.salary.admin.mapper.auto.SysUserMapper;
+import com.salary.admin.model.entity.sys.SysUser;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -13,4 +15,10 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface SysUserExtMapper extends SysUserMapper {
+    /**
+     * 根据用户名查询系统用户
+     * @param username 用户名
+     * @return 实体对象
+     */
+    SysUser selectUserByUsername(@Param("username") String username);
 }

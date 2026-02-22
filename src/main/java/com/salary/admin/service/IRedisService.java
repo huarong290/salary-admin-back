@@ -69,7 +69,11 @@ public interface IRedisService {
      * @return 剩余时间（秒），-1 表示永久有效，-2 表示不存在
      */
     Long ttl(String key);
-
+    /**
+     * 【新增】原子获取并删除
+     * 用于加固版 AuthService 的令牌轮转逻辑
+     */
+     String getAndDelete(String key);
     // ============================ String ============================
 
     /**
@@ -79,8 +83,9 @@ public interface IRedisService {
 
     /**
      * 设置字符串值并指定过期时间
+     * @return 是否设置成功
      */
-    void setEx(String key, Object value, long timeout, TimeUnit unit);
+    Boolean setEx(String key, Object value, long timeout, TimeUnit unit);
 
     /**
      * 获取字符串值并反序列化为指定类型

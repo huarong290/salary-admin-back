@@ -32,12 +32,14 @@ public final class JwtConstants {
      */
     public static final String REFRESH_TOKEN_PREFIX = "jwt:refresh:";
 
+    public static final String DEVICE_BIND_PREFIX = "jwt:device:";
     /**
      * Redis 中 jti 黑名单 key 前缀（防重放）
      */
     public static final String JTI_BLACKLIST_PREFIX = "jwt:blacklist:";
 
     // ---------------- Token 类型 ----------------
+
 
     /**
      * AccessToken 类型标识

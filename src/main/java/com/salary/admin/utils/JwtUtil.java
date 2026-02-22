@@ -77,8 +77,8 @@ public class JwtUtil {
      * @param username 用户名
      * @return RefreshToken
      */
-    public String generateRefreshToken(String username) {
-        return generateToken(username, "refresh", jwtProperties.getRefreshTokenExpiration(), null);
+    public String generateRefreshToken(String username, Map<String, Object> extraClaims) {
+        return generateToken(username, "refresh", jwtProperties.getRefreshTokenExpiration(), extraClaims);
     }
     /**
      * 通用生成 Token 方法
@@ -91,7 +91,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .id(UUID.randomUUID().toString()) // Jti 用于 Redis 黑名单校验
                 .subject(username)
-                .claim("type", type)
+                .claim("type", type) // 标明是 access 还是 refresh
                 .claims(extra != null ? extra : Map.of()) // JDK 21 Map.of 空映射
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiration))
@@ -144,5 +144,41 @@ public class JwtUtil {
         long exp = claims.getExpiration().getTime();
         long now = System.currentTimeMillis();
         return Math.max(0, (exp - now) / 1000);
+    }
+
+    /**
+     * 快捷获取 JTI
+     */
+    public String getJti(String token) {
+        return parseToken(token).getId();
+    }
+
+    /**
+     * 获取 Token 剩余有效时间 (毫秒)
+     * 用于设置 Redis 的过期时间，确保 Redis Key 与 Token 同时失效
+     */
+    public long getRemainingTime(String token) {
+        try {
+            Claims claims = parseToken(token);
+            long exp = claims.getExpiration().getTime();
+            long now = System.currentTimeMillis();
+            return Math.max(0, exp - now);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /**
+     * 获取 AccessToken 的配置有效期 (毫秒)
+     */
+    public long getAccessTokenTtl() {
+        return jwtProperties.getAccessTokenExpiration();
+    }
+
+    /**
+     * 获取 RefreshToken 的配置有效期 (毫秒)
+     */
+    public long getRefreshTokenTtl() {
+        return jwtProperties.getRefreshTokenExpiration();
     }
 }

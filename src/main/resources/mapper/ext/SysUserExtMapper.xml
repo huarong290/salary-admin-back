@@ -23,5 +23,17 @@
     <sql id="Base_Column_List">
         id, username, password, nickname, email, phone, status, last_login_time, delete_flag, create_by, create_time, update_by, update_time
     </sql>
+    <!-- 根据用户名查询系统用户
+        使用 resultMap 确保字段映射（如 last_login_time）正确
+        增加 delete_flag=0 确保逻辑删除的数据不会被查出
+    -->
+    <select id="selectUserByUsername" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM sys_user
+        WHERE username = #{username}
+        AND delete_flag = 0
+        LIMIT 1
+    </select>
 
 </mapper>
