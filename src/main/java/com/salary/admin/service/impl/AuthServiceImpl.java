@@ -7,6 +7,7 @@ import com.salary.admin.model.dto.UserLoginReqDTO;
 import com.salary.admin.model.entity.sys.SysUser;
 import com.salary.admin.service.IAuthService;
 import com.salary.admin.service.IRedisService;
+import com.salary.admin.service.ISysMenuService;
 import com.salary.admin.service.ISysUserService;
 import com.salary.admin.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -18,8 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -38,6 +38,8 @@ public class AuthServiceImpl implements IAuthService {
 
     @Autowired
     private ISysUserService iSysUserService;
+    @Autowired
+    private ISysMenuService iSysMenuService;
     @Autowired
     private IRedisService iRedisService;
     @Autowired
@@ -69,6 +71,7 @@ public class AuthServiceImpl implements IAuthService {
         // 4. 构建 JWT 自定义载荷 (Claims)
         // 将设备ID和IP存入 Token，方便后续刷新时比对环境一致性
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", sysUser.getId().toString()); // 转为 String 存入
         claims.put("deviceId", dto.getClientInfo().getDeviceId());
         claims.put("loginIp", dto.getLoginIp());
 
@@ -78,8 +81,14 @@ public class AuthServiceImpl implements IAuthService {
 
         // 6. 获取 JTI (JWT唯一标识) 用于管理 Refresh Token 生命周期
         String jti = jwtUtil.getJti(refreshToken);
-
-        // 7. 存储 Refresh Token 映射关系 (Fail-Secure 策略)
+        //7. 执行5表联查
+        Set<String> permissions = iSysMenuService.getPermissionsByUserId(sysUser.getId());
+        if (permissions != null && !permissions.isEmpty()) {
+            // 存入 Redis，Key 为 auth:permission:{userId}
+            iRedisService.setEx(RedisCacheConstants.AUTH_USER_PERMISSIONS + sysUser.getId(),
+                    permissions, 7, TimeUnit.DAYS);
+        }
+        // 8. 存储 Refresh Token 映射关系 (Fail-Secure 策略)
         // Key: auth:refresh:{jti} -> Value: {userId}:{deviceId}
         String refreshKey = RedisCacheConstants.AUTH_REFRESH_TOKEN + jti;
         String refreshValue = sysUser.getId() + ":" + dto.getClientInfo().getDeviceId();
@@ -90,7 +99,7 @@ public class AuthServiceImpl implements IAuthService {
             log.error("Redis 写入失败，阻断登录。User: {}", sysUser.getUsername());
             throw new BusinessException("系统繁忙，登录会话创建失败");
         }
-        // 8. 处理“单端登录”或“设备互踢”逻辑 (可选)
+        // 8. 处理设备会话 (全端挤兑)
         // 如果需要同一账号同一端只能一个在线，可以在这里清理旧的 deviceKey
         handleDeviceSession(sysUser.getId(), dto.getClientInfo().getDeviceId(), jti);
 
@@ -198,16 +207,33 @@ public class AuthServiceImpl implements IAuthService {
                 .ip(currentIp)
                 .build();
     }
+    @Override
+    public void clearUserPermissionsCache(Long userId) {
+        if (userId == null) return;
+        String key = RedisCacheConstants.AUTH_USER_PERMISSIONS + userId;
+        iRedisService.del(key);
+        log.info("权限变更：已清理用户 {} 的权限缓存", userId);
+    }
+
+    @Override
+    public void clearUserPermissionsCache(Collection<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) return;
+        List<String> keys = userIds.stream()
+                .map(id -> RedisCacheConstants.AUTH_USER_PERMISSIONS + id)
+                .toList();
+        iRedisService.del(keys);
+        log.info("权限变更：已批量清理 {} 个用户的权限缓存", userIds.size());
+    }
     /**
      * 维护设备会话关系
      * Key: auth:device:{userId}:{deviceId} -> Value: {jti}
      */
     private void handleDeviceSession(Long userId, String deviceId, String newJti) {
-        String deviceKey = RedisCacheConstants.AUTH_DEVICE_BIND + userId + ":" + deviceId;
+        // 1. 活跃用户全局 Key (全端互踢)
+        String userActiveKey = RedisCacheConstants.AUTH_USER_ACTIVE + userId;
 
-        // 1. 获取该用户当前已登录的所有设备 JTI
-        // 如果你只想允许单端登录，这里逻辑会更简单
-        String oldJti = iRedisService.get(deviceKey, String.class);
+        // 2. 获取该用户当前已登录的所有设备 JTI并踢出
+        String oldJti = iRedisService.get(userActiveKey, String.class);
         // 2. 如果存在旧 JTI，说明之前有人在用，执行“踢人”
         if (StringUtils.isNotBlank(oldJti)) {
             log.info("用户 {} 在设备 {} 上重新登录，正在作废旧令牌 JTI: {}", userId, deviceId, oldJti);
@@ -216,6 +242,9 @@ public class AuthServiceImpl implements IAuthService {
         }
 
         // 3. 绑定新设备与新的 JTI，有效期与 RefreshToken 一致（如 7 天）
-        iRedisService.setEx(RedisCacheConstants.AUTH_DEVICE_BIND + userId + ":" + deviceId, newJti, 7, TimeUnit.DAYS);
+        iRedisService.setEx(userActiveKey, newJti, 7, TimeUnit.DAYS);
+        // 4. 记录设备绑定 (环境校验)
+        String deviceKey = RedisCacheConstants.AUTH_DEVICE_BIND + userId + ":" + deviceId;
+        iRedisService.setEx(deviceKey, newJti, 7, TimeUnit.DAYS);
     }
 }

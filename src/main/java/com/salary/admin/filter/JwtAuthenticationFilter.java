@@ -4,6 +4,8 @@ package com.salary.admin.filter;
 import com.salary.admin.constants.redis.RedisCacheConstants;
 import com.salary.admin.constants.security.JwtConstants;
 import com.salary.admin.exception.JwtAuthenticationException;
+import com.salary.admin.service.IRedisService;
+import com.salary.admin.service.ISysMenuService;
 import com.salary.admin.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -15,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -23,6 +26,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * JWT 认证过滤器
@@ -36,6 +42,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final StringRedisTemplate redisTemplate;
 
+    private final ISysMenuService iSysMenuService;
+
+    private final IRedisService iRedisService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -48,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        try{
+        try {
             // 3.解析并初步校验签名/过期
             Claims claims = jwtUtil.parseToken(token);
             String userId = claims.get("userId", String.class);
@@ -82,17 +92,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 8. 【补全】注入 Security 上下文
 
             if (StringUtils.isNotBlank(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // 后续 RBAC 完善后，这里应传入从数据库/缓存读取的真实权限 Authorities
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        username, null, Collections.emptyList()
-                );
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                String permKey = RedisCacheConstants.AUTH_USER_PERMISSIONS + userId;
+                Set<String> permissions = iRedisService.get(permKey, Set.class);
+                if(permissions == null){
+                    log.info("用户 {} 权限缓存失效，正在重新加载...", username);
+                    permissions = iSysMenuService.getPermissionsByUserId(Long.valueOf(userId));
+                    if (permissions != null) {
+                        iRedisService.setEx(permKey, permissions, 7, TimeUnit.DAYS);
+                    }
+                }
+                List<SimpleGrantedAuthority> authorities = permissions.stream() .map(SimpleGrantedAuthority::new) .toList();
 
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 // 关键点：这一步决定了后面的接口能不能拿到用户信息
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.debug("用户 {} 认证成功", username);
+                log.debug("用户 {} 认证成功，权限：{}", username, authorities);
             }
-        }catch (JwtAuthenticationException e) {
+        } catch (JwtAuthenticationException e) {
             log.warn("JWT 认证拦截: {} -> URL: {}", e.getMessage(), request.getRequestURI());
             SecurityContextHolder.clearContext();
             //  关键：将消息存入 request,供 EntryPoint 读取

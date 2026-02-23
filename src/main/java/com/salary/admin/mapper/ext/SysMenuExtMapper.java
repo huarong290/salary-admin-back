@@ -2,6 +2,9 @@ package com.salary.admin.mapper.ext;
 
 import com.salary.admin.mapper.auto.SysMenuMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Set;
 
 /**
  * <p>
@@ -13,4 +16,9 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface SysMenuExtMapper extends SysMenuMapper {
+
+    /**
+     * 根据用户ID查询所有去重后的权限标识码
+     */
+    Set<String> selectPermissionsByUserId(@Param("userId") Long userId);
 }

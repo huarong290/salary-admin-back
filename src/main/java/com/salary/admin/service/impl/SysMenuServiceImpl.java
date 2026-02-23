@@ -5,7 +5,11 @@ import com.salary.admin.model.entity.sys.SysMenu;
 import com.salary.admin.mapper.auto.SysMenuMapper;
 import com.salary.admin.service.ISysMenuService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 /**
  * <p>
@@ -16,6 +20,13 @@ import org.springframework.stereotype.Service;
  * @since 2026-02-22
  */
 @Service
+@Slf4j
 public class SysMenuServiceImpl extends ServiceImpl<SysMenuExtMapper, SysMenu> implements ISysMenuService {
 
+    @Autowired
+    private  SysMenuExtMapper sysMenuExtMapper;
+    @Override
+    public Set<String> getPermissionsByUserId(Long userId) {
+        return sysMenuExtMapper.selectPermissionsByUserId(userId);
+    }
 }

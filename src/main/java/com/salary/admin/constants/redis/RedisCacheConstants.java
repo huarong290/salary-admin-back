@@ -54,4 +54,10 @@ public final class RedisCacheConstants {
      * 用户信息缓存
      */
     public static final String BIZ_USER_INFO = "biz:user:info:";
+
+    /**
+     * 用户权限列表缓存
+     * auth:permission:{userId} -> Set<String>
+     */
+    public static final String AUTH_USER_PERMISSIONS = AUTH_ROOT + "permission:";
 }

@@ -3,6 +3,8 @@ package com.salary.admin.service;
 import com.salary.admin.model.dto.TokenResDTO;
 import com.salary.admin.model.dto.UserLoginReqDTO;
 
+import java.util.Collection;
+
 /**
  * 认证服务接口
  * <p>
@@ -25,4 +27,16 @@ public interface IAuthService {
      * @param currentIp 当前ip
      */
      TokenResDTO refreshToken(String oldRefreshToken, String deviceId, String currentIp);
+
+    /**
+     * 清除指定用户的权限缓存
+     * @param userId 用户ID
+     */
+    void clearUserPermissionsCache(Long userId);
+
+    /**
+     * 批量清除多个用户的权限缓存
+     * @param userIds 用户ID集合
+     */
+    void clearUserPermissionsCache(Collection<Long> userIds);
 }
