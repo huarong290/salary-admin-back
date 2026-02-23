@@ -2,7 +2,6 @@ package com.salary.admin.service;
 
 import com.salary.admin.model.dto.TokenResDTO;
 import com.salary.admin.model.dto.UserLoginReqDTO;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 认证服务接口

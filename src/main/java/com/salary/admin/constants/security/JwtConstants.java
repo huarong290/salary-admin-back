@@ -25,20 +25,9 @@ public final class JwtConstants {
      */
     public static final String JWT_BEARER_PREFIX = "Bearer ";
 
-    // ---------------- Redis ----------------
 
-    /**
-     * Redis 中 refreshToken 的 key 前缀
-     */
-    public static final String REFRESH_TOKEN_PREFIX = "jwt:refresh:";
 
-    public static final String DEVICE_BIND_PREFIX = "jwt:device:";
-    /**
-     * Redis 中 jti 黑名单 key 前缀（防重放）
-     */
-    public static final String JTI_BLACKLIST_PREFIX = "jwt:blacklist:";
-
-    // ---------------- Token 类型 ----------------
+    // ---------------- Token 类型 (用于 Claim 区分)----------------
 
 
     /**
@@ -52,7 +41,7 @@ public final class JwtConstants {
      */
     public static final String TOKEN_TYPE_REFRESH = "refresh";
 
-    // ---------------- Claims Key ----------------
+    // ---------------- Claims Key(用于 Payload 读写) ----------------
 
     /**
      * JWT ID (jti)

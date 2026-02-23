@@ -23,8 +23,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
-    private final JwtAccessDeniedHandler accessDeniedHandler;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final SecurityWhiteListProperties securityWhiteListProperties; // 注入 YAML 配置类
 
     @Bean
@@ -49,8 +49,8 @@ public class SecurityConfig {
 
                 // 4. 异常处理
                 .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(authenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler)
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)// 挂载 401
+                        .accessDeniedHandler(jwtAccessDeniedHandler)// 挂载 403
                 )
 
                 // 5. 过滤器顺序：在 UsernamePasswordAuthenticationFilter 之前执行 JWT 校验

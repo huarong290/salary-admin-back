@@ -1,6 +1,7 @@
 package com.salary.admin.filter;
 
 
+import com.salary.admin.constants.redis.RedisCacheConstants;
 import com.salary.admin.constants.security.JwtConstants;
 import com.salary.admin.exception.JwtAuthenticationException;
 import com.salary.admin.utils.JwtUtil;
@@ -50,8 +51,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try{
             // 3.解析并初步校验签名/过期
             Claims claims = jwtUtil.parseToken(token);
+            String userId = claims.get("userId", String.class);
+            String jti = claims.get("jti", String.class);
+            String username = claims.getSubject();
             // 4.校验 token 类型(确保不能用 refresh_token 来访问接口)
-            if (!JwtConstants.TOKEN_TYPE_ACCESS.equals(claims.get(JwtConstants.CLAIM_TOKEN_TYPE, String.class))) {
+            String type = claims.get(JwtConstants.CLAIM_TOKEN_TYPE, String.class);
+            if (!JwtConstants.TOKEN_TYPE_ACCESS.equals(type)) {
                 throw new JwtAuthenticationException("非法 Token 类型");
             }
 
@@ -59,15 +64,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (claims.getExpiration().before(new Date())) {
                 throw new JwtAuthenticationException("Token 已过期");
             }
-            // 6 校验 jti 是否拉黑
-            String jti = claims.get("jti", String.class);
-            Boolean isBlacklisted = redisTemplate.hasKey(JwtConstants.JTI_BLACKLIST_PREFIX + jti);
+            //6.校验活跃状态 (实现全端挤兑)
+
+            if (StringUtils.isNotBlank(userId)) {
+                String activeJti = redisTemplate.opsForValue().get(RedisCacheConstants.AUTH_USER_ACTIVE + userId);
+                // 如果活跃 JTI 存在且不等于当前 JTI，说明该账号在别处登录了
+                if (activeJti != null && !activeJti.equals(jti)) {
+                    throw new JwtAuthenticationException("账号已在其他设备登录");
+                }
+            }
+            //7.校验黑名单 (手动注销场景)
+            Boolean isBlacklisted = redisTemplate.hasKey(RedisCacheConstants.AUTH_TOKEN_BLACKLIST + jti);
             if (Boolean.TRUE.equals(isBlacklisted)) {
                 throw new JwtAuthenticationException("Token 已失效，请重新登录");
             }
 
-            // 7. 【补全】注入 Security 上下文
-            String username = claims.getSubject();
+            // 8. 【补全】注入 Security 上下文
+
             if (StringUtils.isNotBlank(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // 后续 RBAC 完善后，这里应传入从数据库/缓存读取的真实权限 Authorities
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -80,13 +93,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.debug("用户 {} 认证成功", username);
             }
         }catch (JwtAuthenticationException e) {
-            log.warn("JWT 校验失败: {}", e.getMessage());
+            log.warn("JWT 认证拦截: {} -> URL: {}", e.getMessage(), request.getRequestURI());
             SecurityContextHolder.clearContext();
-            // 注意：这里不要 throw，也不要直接 doFilter
-            // 如果你希望由 EntryPoint 返回标准 JSON，直接继续 filterChain 即可
+            //  关键：将消息存入 request,供 EntryPoint 读取
+            request.setAttribute("jwt_exception_msg", e.getMessage());
         } catch (Exception e) {
             log.error("安全过滤器未知异常", e);
             SecurityContextHolder.clearContext();
+            //  关键：将消息存入 request
+            request.setAttribute("jwt_exception_msg", "系统安全校验异常");
         }
         filterChain.doFilter(request, response);
     }

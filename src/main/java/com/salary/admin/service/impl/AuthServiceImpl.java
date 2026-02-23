@@ -1,5 +1,6 @@
 package com.salary.admin.service.impl;
 
+import com.salary.admin.constants.redis.RedisCacheConstants;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.model.dto.TokenResDTO;
 import com.salary.admin.model.dto.UserLoginReqDTO;
@@ -20,9 +21,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static com.salary.admin.constants.security.JwtConstants.DEVICE_BIND_PREFIX;
-import static com.salary.admin.constants.security.JwtConstants.REFRESH_TOKEN_PREFIX;
 
 /**
  * 认证服务核心实现类 (安全增强版)
@@ -83,7 +81,7 @@ public class AuthServiceImpl implements IAuthService {
 
         // 7. 存储 Refresh Token 映射关系 (Fail-Secure 策略)
         // Key: auth:refresh:{jti} -> Value: {userId}:{deviceId}
-        String refreshKey = REFRESH_TOKEN_PREFIX + jti;
+        String refreshKey = RedisCacheConstants.AUTH_REFRESH_TOKEN + jti;
         String refreshValue = sysUser.getId() + ":" + dto.getClientInfo().getDeviceId();
 
         // 保存至 Redis，时间与 RefreshToken 有效期一致（如 7 天）
@@ -132,7 +130,7 @@ public class AuthServiceImpl implements IAuthService {
 
         String username = claims.getSubject();
         String jti = claims.getId();
-        String refreshKey = REFRESH_TOKEN_PREFIX + jti;
+        String refreshKey = RedisCacheConstants.AUTH_REFRESH_TOKEN + jti;
 
         // 2. 🚨 核心安全：原子获取并删除 (单次使用原则)
         // 利用接口中新增的 getAndDelete 方法
@@ -147,7 +145,7 @@ public class AuthServiceImpl implements IAuthService {
             // 惩罚机制：强制该设备下线（可选：强制该用户全端下线）
             SysUser user = iSysUserService.selectUserByUsername(username);
             if (user != null) {
-                iRedisService.del(DEVICE_BIND_PREFIX + user.getId() + ":" + deviceId);
+                iRedisService.del(RedisCacheConstants.AUTH_DEVICE_BIND + user.getId() + ":" + deviceId);
             }
             throw new BusinessException("安全检查未通过，请重新登录");
         }
@@ -179,7 +177,7 @@ public class AuthServiceImpl implements IAuthService {
 
         // 7. 写入新会话到 Redis (Fail-Secure)
         String newJti = jwtUtil.getJti(newRefresh);
-        Boolean stored = iRedisService.setEx(REFRESH_TOKEN_PREFIX + newJti,
+        Boolean stored = iRedisService.setEx(RedisCacheConstants.AUTH_REFRESH_TOKEN + newJti,
                 user.getId() + ":" + deviceId,
                 jwtUtil.getRefreshTokenTtl(),
                 TimeUnit.MILLISECONDS);
@@ -205,7 +203,7 @@ public class AuthServiceImpl implements IAuthService {
      * Key: auth:device:{userId}:{deviceId} -> Value: {jti}
      */
     private void handleDeviceSession(Long userId, String deviceId, String newJti) {
-        String deviceKey = DEVICE_BIND_PREFIX + userId + ":" + deviceId;
+        String deviceKey = RedisCacheConstants.AUTH_DEVICE_BIND + userId + ":" + deviceId;
 
         // 1. 获取该用户当前已登录的所有设备 JTI
         // 如果你只想允许单端登录，这里逻辑会更简单
@@ -214,10 +212,10 @@ public class AuthServiceImpl implements IAuthService {
         if (StringUtils.isNotBlank(oldJti)) {
             log.info("用户 {} 在设备 {} 上重新登录，正在作废旧令牌 JTI: {}", userId, deviceId, oldJti);
             // 清除旧的刷新令牌，让旧设备“掉线”
-            iRedisService.del(REFRESH_TOKEN_PREFIX + oldJti);
+            iRedisService.del(RedisCacheConstants.AUTH_REFRESH_TOKEN + oldJti);
         }
 
         // 3. 绑定新设备与新的 JTI，有效期与 RefreshToken 一致（如 7 天）
-        iRedisService.setEx(DEVICE_BIND_PREFIX + userId + ":" + deviceId, newJti, 7, TimeUnit.DAYS);
+        iRedisService.setEx(RedisCacheConstants.AUTH_DEVICE_BIND + userId + ":" + deviceId, newJti, 7, TimeUnit.DAYS);
     }
 }

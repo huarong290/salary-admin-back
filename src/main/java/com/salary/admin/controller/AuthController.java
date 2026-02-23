@@ -3,6 +3,7 @@ package com.salary.admin.controller;
 
 import cn.hutool.extra.servlet.ServletUtil;
 import com.salary.admin.common.ApiResult;
+import com.salary.admin.model.dto.TokenRefreshReqDTO;
 import com.salary.admin.model.dto.TokenResDTO;
 import com.salary.admin.model.dto.UserLoginReqDTO;
 import com.salary.admin.service.IAuthService;
@@ -31,5 +32,17 @@ public class AuthController {
 
         // 2. 调用自定义 AuthService
         return ApiResult.successResult(iAuthService.login(loginDto));
+    }
+
+    @PostMapping("/refresh")
+    public ApiResult<TokenResDTO> refresh(@Validated @RequestBody TokenRefreshReqDTO refreshDto, HttpServletRequest request) {
+        // currentIp 必须由后端提取，不能信任前端传参
+        String currentIp = IpUtils.getClientIp(request);
+
+        return ApiResult.successResult(iAuthService.refreshToken(
+                refreshDto.getRefreshToken(),
+                refreshDto.getDeviceId(),
+                currentIp
+        ));
     }
 }
