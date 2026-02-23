@@ -8,7 +8,9 @@ import com.salary.admin.service.IAuthService;
 import com.salary.admin.service.IRedisService;
 import com.salary.admin.service.ISysUserService;
 import com.salary.admin.utils.JwtUtil;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -109,14 +111,113 @@ public class AuthServiceImpl implements IAuthService {
                 .ip(dto.getLoginIp())
                 .build();
     }
+    /**
+     * 刷新访问令牌 (实现令牌轮转与复用检测)
+     */
+    /**
+     * 刷新 Token (安全增强版)
+     * 逻辑：令牌轮转 + 复用检测 + 设备绑定校验
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TokenResDTO refreshToken(String oldRefreshToken, String deviceId, String currentIp) {
+        // 1. 解析并校验旧 Token
+        Claims claims;
+        try {
+            claims = jwtUtil.parseToken(oldRefreshToken);
+        } catch (Exception e) {
+            log.warn("无效的刷新令牌尝试: {}", oldRefreshToken);
+            throw new BusinessException("认证已过期，请重新登录");
+        }
 
+        String username = claims.getSubject();
+        String jti = claims.getId();
+        String refreshKey = REFRESH_TOKEN_PREFIX + jti;
+
+        // 2. 🚨 核心安全：原子获取并删除 (单次使用原则)
+        // 利用接口中新增的 getAndDelete 方法
+        String storedValue = iRedisService.getAndDelete(refreshKey);
+
+        // 3. 🚨 令牌复用检测 (Reuse Detection)
+        if (storedValue == null) {
+            // 如果 Token 还在有效期内但在 Redis 找不到，说明该 JTI 之前已被消耗过
+            // 极大概率是旧令牌被黑客截获并尝试二次使用
+            log.error("🚨 安全警报：检测到令牌复用攻击！用户: {}, JTI: {}", username, jti);
+
+            // 惩罚机制：强制该设备下线（可选：强制该用户全端下线）
+            SysUser user = iSysUserService.selectUserByUsername(username);
+            if (user != null) {
+                iRedisService.del(DEVICE_BIND_PREFIX + user.getId() + ":" + deviceId);
+            }
+            throw new BusinessException("安全检查未通过，请重新登录");
+        }
+
+        // 4. 设备 ID 与 IP 比对
+        // storedValue 格式：userId:deviceId
+        String[] parts = storedValue.split(":");
+        String storedUserId = parts[0];
+        String storedDeviceId = parts[1];
+
+        if (!storedDeviceId.equals(deviceId)) {
+            log.warn("🚨 设备指纹不匹配！用户: {}, 预期设备: {}, 实际设备: {}", username, storedDeviceId, deviceId);
+            throw new BusinessException("环境异常，请重新登录");
+        }
+
+        // 5. 获取最新用户信息并检查状态
+        SysUser user = iSysUserService.selectUserByUsername(username);
+        if (user == null || user.getStatus() != 1) {
+            throw new BusinessException("账号状态异常，请联系管理员");
+        }
+
+        // 6. 🟢 执行轮转：生成全新的双 Token
+        Map<String, Object> newClaims = new HashMap<>();
+        newClaims.put("deviceId", deviceId);
+        newClaims.put("loginIp", currentIp);
+
+        String newAccess = jwtUtil.generateAccessToken(username, newClaims);
+        String newRefresh = jwtUtil.generateRefreshToken(username, newClaims);
+
+        // 7. 写入新会话到 Redis (Fail-Secure)
+        String newJti = jwtUtil.getJti(newRefresh);
+        Boolean stored = iRedisService.setEx(REFRESH_TOKEN_PREFIX + newJti,
+                user.getId() + ":" + deviceId,
+                jwtUtil.getRefreshTokenTtl(),
+                TimeUnit.MILLISECONDS);
+
+        if (Boolean.FALSE.equals(stored)) {
+            throw new BusinessException("系统繁忙，令牌续期失败");
+        }
+
+        // 8. 更新设备最新绑定的 JTI (实现设备互踢逻辑)
+        handleDeviceSession(user.getId(), deviceId, newJti);
+
+        return TokenResDTO.builder()
+                .accessToken(newAccess)
+                .refreshToken(newRefresh)
+                .expiresIn(jwtUtil.getAccessTokenTtl())
+                .refreshExpiresIn(jwtUtil.getRefreshTokenTtl())
+                .deviceId(deviceId)
+                .ip(currentIp)
+                .build();
+    }
     /**
      * 维护设备会话关系
      * Key: auth:device:{userId}:{deviceId} -> Value: {jti}
      */
-    private void handleDeviceSession(Long userId, String deviceId, String jti) {
+    private void handleDeviceSession(Long userId, String deviceId, String newJti) {
         String deviceKey = DEVICE_BIND_PREFIX + userId + ":" + deviceId;
-        // 覆盖写入，确保该设备下最新的 JTI 有效
-        iRedisService.setEx(deviceKey, jti, 7, TimeUnit.DAYS);
+
+        // 1. 获取该用户当前已登录的所有设备 JTI
+        // 如果你只想允许单端登录，这里逻辑会更简单
+        String oldJti = iRedisService.get(deviceKey, String.class);
+        // 2. 如果存在旧 JTI，说明之前有人在用，执行“踢人”
+        if (StringUtils.isNotBlank(oldJti)) {
+            log.info("用户 {} 在设备 {} 上重新登录，正在作废旧令牌 JTI: {}", userId, deviceId, oldJti);
+            // 清除旧的刷新令牌，让旧设备“掉线”
+            iRedisService.del(REFRESH_TOKEN_PREFIX + oldJti);
+        }
+
+        // 3. 绑定新设备与新的 JTI，有效期与 RefreshToken 一致（如 7 天）
+        iRedisService.setEx(DEVICE_BIND_PREFIX + userId + ":" + deviceId, newJti, 7, TimeUnit.DAYS);
     }
 }

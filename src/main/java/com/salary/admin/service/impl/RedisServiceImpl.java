@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.salary.admin.service.IRedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.ReturnType;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -93,17 +95,31 @@ public class RedisServiceImpl implements IRedisService {
         return redisTemplate.getExpire(key);
     }
     /**
-     * 🚨 【新增】原子获取并删除
-     * 用于加固版 AuthService 的令牌轮转逻辑
+     * 原子获取并删除 (Lua 脚本版)
+     * 保证在高并发场景下不会出现竞态条件
      */
+    @Override
     public String getAndDelete(String key) {
-        // 使用简单的管道或直接 delete。在大规模分布式下建议用 Lua。
-        String val = redisTemplate.opsForValue().get(key);
-        if (val != null) {
-            redisTemplate.delete(key);
-        }
-        return val;
+        String luaScript =
+                "local val = redis.call('GET', KEYS[1]); " +
+                        "if val then " +
+                        "   redis.call('DEL', KEYS[1]); " +
+                        "end; " +
+                        "return val;";
+
+        // 使用 RedisCallback 执行 Lua 脚本
+        return redisTemplate.execute((RedisCallback<String>) connection -> {
+            byte[] result = connection.scriptingCommands().eval(
+                    luaScript.getBytes(),
+                    ReturnType.VALUE,
+                    1,
+                    key.getBytes()
+            );
+            return result == null ? null : new String(result);
+        });
     }
+
+
     // ============================ String 字符串操作 ============================
     /**
      * 设置字符串值（序列化为 JSON 存储）
