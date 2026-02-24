@@ -95,10 +95,9 @@ public class AuthServiceImpl implements IAuthService {
 
         // 修改存储到 Redis 的 Value 格式：userId:deviceId:clientType
         String refreshValue = sysUser.getId() + ":" + dto.getClientInfo().getDeviceId() + ":" + dto.getClientInfo().getClientType();
-        iRedisService.setEx(refreshKey, refreshValue, 7, TimeUnit.DAYS);
 
         // 保存至 Redis，时间与 RefreshToken 有效期一致（如 7 天）
-        boolean stored = iRedisService.setEx(refreshKey, refreshValue, 7, TimeUnit.DAYS);
+        boolean stored = iRedisService.setEx(refreshKey, refreshValue, jwtUtil.getRefreshTokenTtl(), TimeUnit.SECONDS);
         if (!stored) {
             log.error("Redis 写入失败，阻断登录。User: {}", sysUser.getUsername());
             throw new BusinessException("系统繁忙，登录会话创建失败");
@@ -191,6 +190,7 @@ public class AuthServiceImpl implements IAuthService {
 
         // 6. 🟢 执行轮转：生成全新的双 Token
         Map<String, Object> newClaims = new HashMap<>();
+        newClaims.put("userId", user.getId().toString());
         newClaims.put("deviceId", deviceId);
         newClaims.put("loginIp", currentIp);
 
@@ -199,14 +199,11 @@ public class AuthServiceImpl implements IAuthService {
 
         // 7. 写入新会话到 Redis (Fail-Secure)
         String newJti = jwtUtil.getJti(newRefresh);
-        Boolean stored = iRedisService.setEx(RedisCacheConstants.AUTH_REFRESH_TOKEN + newJti,
-                user.getId() + ":" + deviceId,
+        String nextValue = user.getId() + ":" + deviceId + ":" + storedClientType;
+        iRedisService.setEx(RedisCacheConstants.AUTH_REFRESH_TOKEN + newJti,
+                nextValue,
                 jwtUtil.getRefreshTokenTtl(),
-                TimeUnit.MILLISECONDS);
-
-        if (Boolean.FALSE.equals(stored)) {
-            throw new BusinessException("系统繁忙，令牌续期失败");
-        }
+                TimeUnit.SECONDS);
 
         // 8. 更新设备最新绑定的 JTI (实现设备互踢逻辑)
         handleDeviceSession(user.getId(), deviceId, newJti);
