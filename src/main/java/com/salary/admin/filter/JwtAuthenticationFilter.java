@@ -4,10 +4,12 @@ package com.salary.admin.filter;
 import com.salary.admin.constants.redis.RedisCacheConstants;
 import com.salary.admin.constants.security.JwtConstants;
 import com.salary.admin.exception.JwtAuthenticationException;
+import com.salary.admin.model.dto.LoginUserDTO;
 import com.salary.admin.property.SecurityWhiteListProperties;
 import com.salary.admin.service.IRedisService;
 import com.salary.admin.service.ISysMenuService;
 import com.salary.admin.utils.JwtUtil;
+import com.salary.admin.utils.UserContextUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -52,6 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final SecurityWhiteListProperties whiteListProperties;
     //  用于路径匹配
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
     /**
      * 方案一的核心：框架级跳过逻辑
      */
@@ -73,6 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return whitelist.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
     }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -121,21 +125,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.isNotBlank(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 String permKey = RedisCacheConstants.AUTH_USER_PERMISSIONS + userId;
                 Set<String> permissions = iRedisService.get(permKey, Set.class);
-                if(permissions == null){
+                if (permissions == null) {
                     log.info("用户 {} 权限缓存失效，正在重新加载...", username);
                     permissions = iSysMenuService.getPermissionsByUserId(Long.valueOf(userId));
                     if (permissions != null) {
                         iRedisService.setEx(permKey, permissions, 7, TimeUnit.DAYS);
                     }
                 }
-                List<SimpleGrantedAuthority> authorities = permissions.stream() .map(SimpleGrantedAuthority::new) .toList();
-
+                List<SimpleGrantedAuthority> authorities = permissions.stream().map(SimpleGrantedAuthority::new).toList();
+                //  关键：填充 UserContext
+                UserContextUtil.setUser(LoginUserDTO.builder()
+                        .userId(Long.valueOf(userId))
+                        .username(username)
+                        .deviceId(claims.get("deviceId", String.class))
+                        .build());
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 // 关键点：这一步决定了后面的接口能不能拿到用户信息
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.debug("用户 {} 认证成功，权限：{}", username, authorities);
             }
+            //  核心改动点：在这里执行 filterChain
+            filterChain.doFilter(request, response);
         } catch (JwtAuthenticationException e) {
             log.warn("JWT 认证拦截: {} -> URL: {}", e.getMessage(), request.getRequestURI());
             SecurityContextHolder.clearContext();
@@ -146,7 +157,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
             //  关键：将消息存入 request
             request.setAttribute("jwt_exception_msg", "系统安全校验异常");
+        } finally {
+            //  这一步是灵魂：无论成功还是失败，请求结束必须清理 ThreadLocal
+            UserContextUtil.clear();
         }
-        filterChain.doFilter(request, response);
     }
 }
