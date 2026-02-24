@@ -2,6 +2,7 @@ package com.salary.admin.controller;
 
 
 import cn.hutool.extra.servlet.ServletUtil;
+import com.salary.admin.annotation.Logable;
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.model.dto.TokenRefreshReqDTO;
 import com.salary.admin.model.dto.TokenResDTO;
@@ -26,6 +27,7 @@ public class AuthController {
     private IAuthService iAuthService;
 
     @PostMapping("/login")
+    @Logable(title = "用户登录")
     public ApiResult<TokenResDTO> login(@Validated @RequestBody UserLoginReqDTO loginDto, HttpServletRequest request) {
         // 1. 手动注入由后端控制的属性
         loginDto.setLoginIp(IpUtils.getClientIp(request));
@@ -35,6 +37,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Logable(title = "令牌续期", logResponse = false)
     public ApiResult<TokenResDTO> refresh(@Validated @RequestBody TokenRefreshReqDTO refreshDto, HttpServletRequest request) {
         // currentIp 必须由后端提取，不能信任前端传参
         String currentIp = IpUtils.getClientIp(request);

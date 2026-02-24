@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- ================== 基础属性 ================== -->
+
+    <!-- 项目名称 -->
+    <property name="APP_NAME" value="salary-admin"/>
+
+    <!-- 日志目录 -->
+    <property name="LOG_PATH" value="logs"/>
+
+    <!-- 日志格式（包含 trace_id） -->
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} [trace_id=%X{trace_id}] - %msg%n"/>
+
+    <!-- ================== 控制台日志 ================== -->
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ================== INFO 日志 ================== -->
+
+    <appender name="FILE_INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 当前日志 -->
+        <file>${LOG_PATH}/${APP_NAME}.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 按天滚动 -->
+            <fileNamePattern>
+                ${LOG_PATH}/archive/${APP_NAME}.%d{yyyy-MM-dd}.log
+            </fileNamePattern>
+
+            <!-- 保留 30 天 -->
+            <maxHistory>30</maxHistory>
+
+            <!-- 单个日志最大 1GB -->
+            <totalSizeCap>30GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+
+        <!-- 只记录 INFO 及以上，不包含 ERROR -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- ================== ERROR 日志 ================== -->
+
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-error.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>
+                ${LOG_PATH}/archive/${APP_NAME}-error.%d{yyyy-MM-dd}.log
+            </fileNamePattern>
+
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>50GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+
+        <!-- 只记录 ERROR -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+    </appender>
+
+    <!-- ================== 日志级别控制 ================== -->
+
+    <!-- Spring 框架日志 -->
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.springframework.web" level="INFO"/>
+
+    <!-- MyBatis SQL -->
+    <logger name="com.baomidou.mybatisplus" level="DEBUG"/>
+    <logger name="org.mybatis" level="DEBUG"/>
+
+    <!-- 你自己的代码 -->
+    <logger name="com.salary.admin" level="INFO"/>
+
+    <!-- ================== 根日志 ================== -->
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE_INFO"/>
+        <appender-ref ref="FILE_ERROR"/>
+    </root>
+
+</configuration>
