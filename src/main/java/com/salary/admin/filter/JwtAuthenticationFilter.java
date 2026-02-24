@@ -4,6 +4,7 @@ package com.salary.admin.filter;
 import com.salary.admin.constants.redis.RedisCacheConstants;
 import com.salary.admin.constants.security.JwtConstants;
 import com.salary.admin.exception.JwtAuthenticationException;
+import com.salary.admin.property.SecurityWhiteListProperties;
 import com.salary.admin.service.IRedisService;
 import com.salary.admin.service.ISysMenuService;
 import com.salary.admin.utils.JwtUtil;
@@ -21,6 +22,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -46,6 +48,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final IRedisService iRedisService;
 
+    //  注入白名单配置
+    private final SecurityWhiteListProperties whiteListProperties;
+    //  用于路径匹配
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+    /**
+     * 方案一的核心：框架级跳过逻辑
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String uri = request.getRequestURI();
+
+        // 1. 显式排除刷新接口（确保它能带着 RefreshToken 到达 Controller）
+        // 即使白名单没配这个，我们也建议硬编码或确保它在白名单内
+        if (uri.contains("/api/auth/refresh")) {
+            return true;
+        }
+
+        // 2. 动态匹配 YAML 中的白名单
+        List<String> whitelist = whiteListProperties.getWhitelist();
+        if (whitelist == null || whitelist.isEmpty()) {
+            return false;
+        }
+
+        return whitelist.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
+    }
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,

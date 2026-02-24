@@ -83,10 +83,10 @@ public class JwtUtil {
     /**
      * 通用生成 Token 方法
      */
-    private String generateToken(String username, String type, long expMillis, Map<String, Object> extra) {
+    private String generateToken(String username, String type, long expSeconds, Map<String, Object> extra) {
         // 使用 JDK 21 Instant 处理时间，更精准且线程安全
         Instant now = Instant.now();
-        Instant expiration = now.plusMillis(expMillis);
+        Instant expiration = now.plusSeconds(expSeconds);
 
         return Jwts.builder()
                 .id(UUID.randomUUID().toString()) // Jti 用于 Redis 黑名单校验
@@ -141,8 +141,10 @@ public class JwtUtil {
      * 获取 Token 剩余寿命 (秒)，用于存入 Redis 黑名单时设置 TTL
      */
     public long getRemainingSeconds(Claims claims) {
+        // claims.getExpiration() 返回的是 Date (毫秒级)
         long exp = claims.getExpiration().getTime();
         long now = System.currentTimeMillis();
+        // 毫秒转秒
         return Math.max(0, (exp - now) / 1000);
     }
 
@@ -169,14 +171,14 @@ public class JwtUtil {
     }
 
     /**
-     * 获取 AccessToken 的配置有效期 (毫秒)
+     * 获取 AccessToken 的配置有效期 (秒)
      */
     public long getAccessTokenTtl() {
         return jwtProperties.getAccessTokenExpiration();
     }
 
     /**
-     * 获取 RefreshToken 的配置有效期 (毫秒)
+     * 获取 RefreshToken 的配置有效期 (秒)
      */
     public long getRefreshTokenTtl() {
         return jwtProperties.getRefreshTokenExpiration();

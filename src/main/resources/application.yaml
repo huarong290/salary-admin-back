@@ -83,8 +83,8 @@ mybatis-plus:
 jwt:
   # 建议：生产环境使用环境变量注入，Secret 需满足 HS256 最小长度要求
   secret: ${JWT_SECRET:mySecretKey2025mySecretKey2025mySecretKey2025}
-  access-token-expiration: 3600000        # 1小时
-  refresh-token-expiration: 604800000    # 7天
+  access-token-expiration: 3600       # 1小时
+  refresh-token-expiration: 604800   # 7天
   header: Authorization
   token-start-with: "Bearer "
 
@@ -99,6 +99,7 @@ captcha:
 security:
   whitelist:                             # 安全过滤白名单
     - /api/auth/login
+    - /api/auth/refresh
     - /api/captcha/**
     - /swagger-ui/**
     - /v3/api-docs/**

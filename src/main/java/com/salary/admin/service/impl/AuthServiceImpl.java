@@ -1,6 +1,7 @@
 package com.salary.admin.service.impl;
 
 import com.salary.admin.constants.redis.RedisCacheConstants;
+import com.salary.admin.constants.security.JwtConstants;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.model.dto.TokenResDTO;
 import com.salary.admin.model.dto.UserLoginReqDTO;
@@ -91,7 +92,10 @@ public class AuthServiceImpl implements IAuthService {
         // 8. 存储 Refresh Token 映射关系 (Fail-Secure 策略)
         // Key: auth:refresh:{jti} -> Value: {userId}:{deviceId}
         String refreshKey = RedisCacheConstants.AUTH_REFRESH_TOKEN + jti;
-        String refreshValue = sysUser.getId() + ":" + dto.getClientInfo().getDeviceId();
+
+        // 修改存储到 Redis 的 Value 格式：userId:deviceId:clientType
+        String refreshValue = sysUser.getId() + ":" + dto.getClientInfo().getDeviceId() + ":" + dto.getClientInfo().getClientType();
+        iRedisService.setEx(refreshKey, refreshValue, 7, TimeUnit.DAYS);
 
         // 保存至 Redis，时间与 RefreshToken 有效期一致（如 7 天）
         boolean stored = iRedisService.setEx(refreshKey, refreshValue, 7, TimeUnit.DAYS);
@@ -107,10 +111,14 @@ public class AuthServiceImpl implements IAuthService {
         iSysUserService.updateById(new SysUser()
                 .setId(sysUser.getId())
                 .setLastLoginTime(LocalDateTime.now()));
-        // 10. 组装返回
+
+        // 10. 组装返回 (符合 OAuth 2.0 规范版)
         return TokenResDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                // 显式设置 tokenType，方便前端拦截器直接拼接 header
+                .tokenType(JwtConstants.JWT_BEARER_PREFIX.trim())
+                // 🚨 如果你和前端约定使用秒，记得 / 1000；如果约定毫秒则保持原样
                 .expiresIn(jwtUtil.getAccessTokenTtl())
                 .refreshExpiresIn(jwtUtil.getRefreshTokenTtl())
                 .deviceId(dto.getClientInfo().getDeviceId())
@@ -118,9 +126,7 @@ public class AuthServiceImpl implements IAuthService {
                 .ip(dto.getLoginIp())
                 .build();
     }
-    /**
-     * 刷新访问令牌 (实现令牌轮转与复用检测)
-     */
+
     /**
      * 刷新 Token (安全增强版)
      * 逻辑：令牌轮转 + 复用检测 + 设备绑定校验
@@ -160,11 +166,18 @@ public class AuthServiceImpl implements IAuthService {
         }
 
         // 4. 设备 ID 与 IP 比对
-        // storedValue 格式：userId:deviceId
+        // storedValue 格式：userId:deviceId:clientType
         String[] parts = storedValue.split(":");
         String storedUserId = parts[0];
         String storedDeviceId = parts[1];
-
+        String storedClientType = parts.length > 2 ? parts[2] : "UNKNOWN"; // 兼容旧数据
+        String tokenUserId = claims.get("userId", String.class);
+        // 🚨 增加逻辑：确保 Token 里的 userId (如果有) 与 Redis 存的一致
+        // 如果你在 generateToken 时把 userId 塞进了 Claims，这里可以双重校验
+        if (tokenUserId != null && !tokenUserId.equals(storedUserId)) {
+            log.error("🚨 账号安全风险：Token 用户ID与缓存不符！User: {}", username);
+            throw new BusinessException("认证状态异常，请重新登录");
+        }
         if (!storedDeviceId.equals(deviceId)) {
             log.warn("🚨 设备指纹不匹配！用户: {}, 预期设备: {}, 实际设备: {}", username, storedDeviceId, deviceId);
             throw new BusinessException("环境异常，请重新登录");
@@ -201,9 +214,13 @@ public class AuthServiceImpl implements IAuthService {
         return TokenResDTO.builder()
                 .accessToken(newAccess)
                 .refreshToken(newRefresh)
+                // 显式设置 tokenType，方便前端拦截器直接拼接 header
+                .tokenType(JwtConstants.JWT_BEARER_PREFIX.trim())
+                // 🚨 如果你和前端约定使用秒，记得 / 1000；如果约定毫秒则保持原样
                 .expiresIn(jwtUtil.getAccessTokenTtl())
                 .refreshExpiresIn(jwtUtil.getRefreshTokenTtl())
                 .deviceId(deviceId)
+                .clientType(storedClientType)                   // 修复瑕疵 2：从会话记录中找回
                 .ip(currentIp)
                 .build();
     }

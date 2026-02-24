@@ -20,17 +20,17 @@ public class JwtProperties {
     private String secret;
 
     /**
-     * Access Token 有效期（毫秒）
-     * 默认 3600000 (1小时)，最小 60000 (1分钟)
+     * Access Token 有效期（秒）
+     * 默认 3600 (1小时)，最小 60000 (1分钟)
      */
-    @Min(value = 60000, message = "AccessToken 有效期不能低于 1 分钟")
+    @Min(value = 60, message = "AccessToken 有效期不能低于 1 分钟")
     private long accessTokenExpiration;
 
     /**
-     * Refresh Token 有效期（毫秒）
-     * 默认 604800000 (7天)
+     * Refresh Token 有效期（秒）
+     * 默认 604800 (7天)
      */
-    @Min(value = 86400000, message = "RefreshToken 有效期不能低于 1 天")
+    @Min(value = 86400, message = "RefreshToken 有效期不能低于 1 天")
     private long refreshTokenExpiration;
 
     /**
