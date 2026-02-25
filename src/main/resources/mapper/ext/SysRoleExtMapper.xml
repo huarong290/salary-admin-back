@@ -21,5 +21,24 @@
     <sql id="Base_Column_List">
         id, role_name, role_code, role_sort, role_status, role_desc, delete_flag, create_by, create_time, update_by, update_time
     </sql>
-
+    <!-- 根据用户ID查询角色标识集合 返回值类型为 String（即角色编码 role_code）
+    使用场景： 1. 登录鉴权：根据用户 ID 获取其角色标识，用于构建权限信息。
+             2. 菜单/资源控制：判断用户是否有访问某些资源的权限。
+             3. 审计/日志：记录用户角色信息，便于后续分析。
+     注意事项：
+     - 使用 DISTINCT 去重，避免重复角色编码
+     - 过滤掉逻辑删除的角色（delete_flag = 0）
+     - 过滤掉禁用状态的角色（role_status = 1 表示启用）。 -->
+    <select id="selectRoleCodesByUserId" resultType="java.lang.String">
+        SELECT DISTINCT
+            r.role_code
+        FROM sys_role r
+                 INNER JOIN sys_user_role ur ON r.id = ur.role_id
+        WHERE ur.user_id = #{userId}
+          -- 角色表状态过滤
+          AND r.role_status = 1
+          AND r.delete_flag = 0
+          -- 关联表逻辑删除过滤
+          AND ur.delete_flag = 0
+    </select>
 </mapper>

@@ -62,6 +62,13 @@ public class SysMenu extends Model<SysMenu> {
     @TableField("menu_component")
     private String menuComponent;
     /**
+     * 重定向地址
+     *
+     */
+    @Schema(description = "重定向地址")
+    @TableField("menu_redirect")
+    private String menuRedirect;
+    /**
      * 菜单图标，用于前端显示
      */
     @Schema(description = "菜单图标，用于前端显示")

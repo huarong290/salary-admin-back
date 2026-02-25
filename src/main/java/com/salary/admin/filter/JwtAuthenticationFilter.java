@@ -6,6 +6,7 @@ import com.salary.admin.constants.security.JwtConstants;
 import com.salary.admin.exception.JwtAuthenticationException;
 import com.salary.admin.model.dto.LoginUserDTO;
 import com.salary.admin.property.SecurityWhiteListProperties;
+import com.salary.admin.security.JwtAuthenticationEntryPoint;
 import com.salary.admin.service.IRedisService;
 import com.salary.admin.service.ISysMenuService;
 import com.salary.admin.utils.JwtUtil;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -55,6 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     //  用于路径匹配
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     /**
      * 方案一的核心：框架级跳过逻辑
      */
@@ -109,9 +112,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (StringUtils.isNotBlank(userId)) {
                 String activeJti = redisTemplate.opsForValue().get(RedisCacheConstants.AUTH_USER_ACTIVE + userId);
-                // 如果活跃 JTI 存在且不等于当前 JTI，说明该账号在别处登录了
+                // 如果活跃 JTI 存在且不等于当前 JTI，说明该账号在别处登录了或者是同设备重新登录了
                 if (activeJti != null && !activeJti.equals(jti)) {
-                    throw new JwtAuthenticationException("账号已在其他设备登录");
+                    throw new JwtAuthenticationException("登录状态已失效，请重新登录");
                 }
             }
             //7.校验黑名单 (手动注销场景)
@@ -127,7 +130,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Set<String> permissions = iRedisService.get(permKey, Set.class);
                 if (permissions == null) {
                     log.info("用户 {} 权限缓存失效，正在重新加载...", username);
-                    permissions = iSysMenuService.getPermissionsByUserId(Long.valueOf(userId));
+                    permissions = iSysMenuService.selectPermissionsByUserId(Long.valueOf(userId));
                     if (permissions != null) {
                         iRedisService.setEx(permKey, permissions, 7, TimeUnit.DAYS);
                     }
@@ -152,11 +155,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
             //  关键：将消息存入 request,供 EntryPoint 读取
             request.setAttribute("jwt_exception_msg", e.getMessage());
+            // 💡手动调用 EntryPoint，利用它将 ApiResult 写回前端
+            jwtAuthenticationEntryPoint.commence(request, response, new AuthenticationServiceException(e.getMessage()));
         } catch (Exception e) {
             log.error("安全过滤器未知异常", e);
             SecurityContextHolder.clearContext();
             //  关键：将消息存入 request
             request.setAttribute("jwt_exception_msg", "系统安全校验异常");
+            // 💡 手动调用 EntryPoint，利用它将 ApiResult 写回前端处理未知异常的响应
+            jwtAuthenticationEntryPoint.commence(request, response, new AuthenticationServiceException("系统安全校验异常"));
         } finally {
             //  这一步是灵魂：无论成功还是失败，请求结束必须清理 ThreadLocal
             UserContextUtil.clear();

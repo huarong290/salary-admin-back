@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.salary.admin.mapper.auto.SysMenuMapper">
-
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.sys.SysMenu">
         <id column="id" property="id" />
@@ -9,6 +8,7 @@
         <result column="menu_code" property="menuCode" />
         <result column="menu_path" property="menuPath" />
         <result column="menu_component" property="menuComponent" />
+        <result column="menu_redirect" property="menuRedirect" />
         <result column="menu_icon" property="menuIcon" />
         <result column="menu_permission" property="menuPermission" />
         <result column="menu_type" property="menuType" />
@@ -25,7 +25,8 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, menu_name, menu_code, menu_path, menu_component, menu_icon, menu_permission, menu_type, menu_parent_id, menu_sort, menu_visible, menu_status, delete_flag, create_by, create_time, update_by, update_time
+        id, menu_name, menu_code, menu_path, menu_component,menu_redirect, menu_icon, menu_permission, menu_type, menu_parent_id, menu_sort, menu_visible, menu_status, delete_flag, create_by, create_time, update_by, update_time
     </sql>
+
 
 </mapper>

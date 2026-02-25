@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,8 +26,14 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuExtMapper, SysMenu> i
 
     @Autowired
     private  SysMenuExtMapper sysMenuExtMapper;
+
     @Override
-    public Set<String> getPermissionsByUserId(Long userId) {
+    public Set<String> selectPermissionsByUserId(Long userId) {
         return sysMenuExtMapper.selectPermissionsByUserId(userId);
+    }
+
+    @Override
+    public List<SysMenu> selectMenuByUserId(Long userId) {
+        return sysMenuExtMapper.selectMenuByUserId(userId);
     }
 }

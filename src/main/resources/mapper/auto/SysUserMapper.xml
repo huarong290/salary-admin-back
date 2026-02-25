@@ -10,6 +10,8 @@
         <result column="nickname" property="nickname" />
         <result column="email" property="email" />
         <result column="phone" property="phone" />
+        <result column="sex" property="sex" />
+        <result column="avatar" property="avatar" />
         <result column="status" property="status" />
         <result column="last_login_time" property="lastLoginTime" />
         <result column="delete_flag" property="deleteFlag" />

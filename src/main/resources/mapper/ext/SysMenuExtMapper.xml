@@ -9,6 +9,7 @@
         <result column="menu_code" property="menuCode" />
         <result column="menu_path" property="menuPath" />
         <result column="menu_component" property="menuComponent" />
+        <result column="menu_redirect" property="menuRedirect" />
         <result column="menu_icon" property="menuIcon" />
         <result column="menu_permission" property="menuPermission" />
         <result column="menu_type" property="menuType" />
@@ -25,10 +26,24 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, menu_name, menu_code, menu_path, menu_component, menu_icon, menu_permission, menu_type, menu_parent_id, menu_sort, menu_visible, menu_status, delete_flag, create_by, create_time, update_by, update_time
+        id, menu_name, menu_code, menu_path, menu_component,menu_redirect, menu_icon, menu_permission, menu_type, menu_parent_id, menu_sort, menu_visible, menu_status, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 
+    <!--
+        根据用户ID查询其拥有的权限字符串集合：
+        逻辑说明：
+        1. 从 sys_menu 表中取出权限字段 menu_permission。
+        2. 通过 sys_role_menu 关联角色与菜单，过滤掉已删除的关系。
+        3. 通过 sys_role 过滤掉已禁用或删除的角色。
+        4. 通过 sys_user_role 关联用户与角色，过滤掉已删除的关系。
+        5. 最终得到该用户所有有效角色下的菜单权限。
+        6. 过滤条件：
+           - 菜单状态必须启用 (m.menu_status = 1)
+           - 菜单未被删除 (m.delete_flag = 0)
+           - 权限字符串非空 (m.menu_permission != '')
+        DISTINCT 去重，避免重复权限。
+    -->
     <select id="selectPermissionsByUserId" resultType="java.lang.String">
         SELECT DISTINCT m.menu_permission
         FROM sys_menu m
@@ -40,4 +55,35 @@
           AND m.delete_flag = 0
           AND m.menu_permission != ''
     </select>
+
+    <!--
+        根据用户ID查询其可见菜单（目录和菜单，不包含按钮）：
+        逻辑说明：
+        1. 与上一个查询类似，先通过角色-菜单-用户的关联链路过滤出用户可访问的菜单。
+        2. 过滤条件：
+           - 菜单状态启用 (m.menu_status = 1)
+           - 菜单未删除 (m.delete_flag = 0)
+           - 菜单类型只取目录(1)和菜单(2)，排除按钮(3)，因为按钮不需要在侧边栏显示。
+        3. 使用 DISTINCT 去重，避免重复菜单。
+        4. ORDER BY 按父菜单ID和排序字段排列，保证菜单层级和顺序正确。
+        5. 返回结果映射到 BaseResultMap，得到完整的 SysMenu 对象。
+    -->
+    <select id="selectMenuByUserId" resultMap="BaseResultMap">
+        SELECT DISTINCT
+            m.id, m.menu_name, m.menu_code, m.menu_path, m.menu_component,
+            m.menu_redirect, m.menu_icon, m.menu_permission, m.menu_type,
+            m.menu_parent_id, m.menu_sort, m.menu_visible, m.menu_status,
+            m.create_time, m.update_time
+        FROM sys_menu m
+                 INNER JOIN sys_role_menu rm ON m.id = rm.menu_id AND rm.delete_flag = 0
+                 INNER JOIN sys_role r ON rm.role_id = r.id AND r.role_status = 1 AND r.delete_flag = 0
+                 INNER JOIN sys_user_role ur ON r.id = ur.role_id AND ur.delete_flag = 0
+        WHERE ur.user_id = #{userId}
+          AND m.menu_status = 1
+          AND m.delete_flag = 0
+          AND m.menu_type IN (1, 2)  -- 侧边栏只查询目录(1)和菜单(2)，过滤掉按钮(3)
+        ORDER BY m.menu_parent_id, m.menu_sort
+    </select>
 </mapper>
+
+

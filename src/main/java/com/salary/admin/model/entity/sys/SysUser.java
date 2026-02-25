@@ -74,6 +74,18 @@ public class SysUser extends Model<SysUser> {
     @TableField("status")
     private Integer status;
     /**
+     * 用户性别 (0:未知, 1:男, 2:女)
+     */
+    @Schema(description = "用户性别 (0:未知, 1:男,2:女)")
+    @TableField("sex")
+    private Integer sex;
+    /**
+     * 头像地址URL
+     */
+    @Schema(description = "头像地址URL")
+    @TableField("avatar")
+    private String avatar;
+    /**
      * 最后登录时间
      */
     @Schema(description = "最后登录时间")

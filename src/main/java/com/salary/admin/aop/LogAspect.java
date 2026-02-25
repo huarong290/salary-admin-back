@@ -1,7 +1,7 @@
 package com.salary.admin.aop;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.salary.admin.annotation.Logable;
+import com.salary.admin.annotation.Loggable;
 import com.salary.admin.utils.UserContextUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -51,8 +51,8 @@ public class LogAspect {
                 + Long.toHexString(ThreadLocalRandom.current().nextInt());
     }
 
-    @Around("@annotation(logable)")
-    public Object logAround(ProceedingJoinPoint joinPoint, Logable logable) throws Throwable {
+    @Around("@annotation(loggable)")
+    public Object logAround(ProceedingJoinPoint joinPoint, Loggable loggable) throws Throwable {
         // 1. 链路追踪：在日志中埋入 TraceId，方便 grep 整个请求链路
         String traceId = generateTraceId();
         MDC.put("trace_id", traceId);
@@ -106,7 +106,7 @@ public class LogAspect {
                 try {
 
                     // 将捕获到的 username 显式传入处理方法，或者在这里临时设置异步线程的上下文
-                    handleLog(joinPoint, logable, finalResult, finalException, costTime, finalUsername);
+                    handleLog(joinPoint, loggable, finalResult, finalException, costTime, finalUsername);
                 } finally {
                     // 必须清理，防止线程池污染
                     MDC.remove("trace_id");
@@ -117,28 +117,28 @@ public class LogAspect {
         }
     }
 
-    private void handleLog(ProceedingJoinPoint joinPoint, Logable logable, Object result, Throwable ex, long costTime, String username) {
+    private void handleLog(ProceedingJoinPoint joinPoint, Loggable loggable, Object result, Throwable ex, long costTime, String username) {
         try {
             String className = joinPoint.getTarget().getClass().getSimpleName();
             String methodName = joinPoint.getSignature().getName();
 
             // 1. 构建结构化的 Log 对象，而非字符串拼接
             Map<String, Object> logMap = new LinkedHashMap<>();
-            logMap.put("title", logable.title());
+            logMap.put("title", loggable.title());
             logMap.put("class", className);
             logMap.put("method", methodName);
             logMap.put("costTime", costTime + "ms");
             logMap.put("username", username != null ? username : "anonymous");
             logMap.put("traceId", MDC.get("trace_id"));
             // 3. 入参处理 (针对文件上传进行特殊过滤)先过滤，再脱敏，最后以对象形式放入 Map
-            if (logable.logRequest()) {
+            if (loggable.logRequest()) {
                 Object[] args = filterArgs(joinPoint.getArgs());
                 // 这里我们不再先转一次 JSON，而是直接处理对象
                 logMap.put("params", maskSensitiveData(args));
             }
 
             // 4. 出参处理
-            if (ex == null && logable.logResponse() && result != null) {
+            if (ex == null && loggable.logResponse() && result != null) {
                 // 建议：对于 login 接口，返回的 Token 太长，可以只记录关键信息或截断
                 logMap.put("response", result);
             }
