@@ -6,16 +6,16 @@ import com.salary.admin.common.ApiResult;
 import com.salary.admin.model.dto.TokenRefreshReqDTO;
 import com.salary.admin.model.dto.TokenResDTO;
 import com.salary.admin.model.dto.UserLoginReqDTO;
+import com.salary.admin.model.dto.captcha.CaptchaResDTO;
 import com.salary.admin.service.IAuthService;
+import com.salary.admin.service.ICaptchaService;
 import com.salary.admin.utils.IpUtils;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -24,7 +24,14 @@ public class AuthController {
 
     @Autowired
     private IAuthService iAuthService;
+    @Autowired
+    private ICaptchaService iCaptchaService;
 
+    @GetMapping("/captcha")
+    @Operation(summary = "获取图形验证码")
+    public ApiResult<CaptchaResDTO> getCaptcha() {
+        return ApiResult.successResult(iCaptchaService.generateCaptcha());
+    }
     @PostMapping("/login")
     @Loggable(title = "用户登录")
     public ApiResult<TokenResDTO> login(@Validated @RequestBody UserLoginReqDTO loginDto, HttpServletRequest request) {

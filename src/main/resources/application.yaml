@@ -100,7 +100,7 @@ security:
   whitelist:                             # 安全过滤白名单
     - /api/auth/login
     - /api/auth/refresh
-    - /api/captcha/**
+    - /api/auth/captcha
     - /swagger-ui/**
     - /v3/api-docs/**
 
