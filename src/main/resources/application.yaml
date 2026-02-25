@@ -114,5 +114,17 @@ logging:
     org.springframework.web: INFO
     org.springframework.security: INFO
 
+# ------------------------------------------------------
+# 8. 验证码配置属性
+# ------------------------------------------------------
+salary:
+  security:
+    captcha:
+      enabled: true          # 是否开启验证码
+      width: 111             # 图片宽度
+      height: 36             # 图片高度
+      length: 4              # 验证码字符长度
+      expire-seconds: 120    # 过期时间（秒）
+
 
 

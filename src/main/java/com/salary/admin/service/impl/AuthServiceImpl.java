@@ -6,10 +6,7 @@ import com.salary.admin.exception.BusinessException;
 import com.salary.admin.model.dto.TokenResDTO;
 import com.salary.admin.model.dto.UserLoginReqDTO;
 import com.salary.admin.model.entity.sys.SysUser;
-import com.salary.admin.service.IAuthService;
-import com.salary.admin.service.IRedisService;
-import com.salary.admin.service.ISysMenuService;
-import com.salary.admin.service.ISysUserService;
+import com.salary.admin.service.*;
 import com.salary.admin.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +41,8 @@ public class AuthServiceImpl implements IAuthService {
     @Autowired
     private IRedisService iRedisService;
     @Autowired
+    private ICaptchaService iCaptchaService;
+    @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtUtil jwtUtil;
@@ -58,7 +57,8 @@ public class AuthServiceImpl implements IAuthService {
     public TokenResDTO login(UserLoginReqDTO dto) {
         log.info("用户尝试登录: {}, 设备ID: {}, IP: {}", dto.getUsername(), dto.getClientInfo().getDeviceId(), dto.getLoginIp());
         // 1. 验证码校验
-
+        // 一行代码搞定验证码校验！报错会自动抛出，无需额外 if 判断
+        iCaptchaService.validateCaptcha(dto.getCaptchaId(), dto.getCaptchaCode());
         //2. 获取用户信息并校验
         SysUser sysUser = iSysUserService.selectUserByUsername(dto.getUsername());
         if (sysUser == null || !passwordEncoder.matches(dto.getPassword(), sysUser.getPassword())) {
