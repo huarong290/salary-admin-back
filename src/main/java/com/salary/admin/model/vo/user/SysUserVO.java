@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
  * 用于接口返回时裁剪敏感字段
  */
 @Data
+@Schema(description = "用户信息视图对象")
 public class SysUserVO {
     /**
      * 用户ID
@@ -22,9 +23,9 @@ public class SysUserVO {
     @Schema(description = "用户名")
     private String username;
     /**
-     * 昵称
+     * 用户昵称
      */
-    @Schema(description = "昵称")
+    @Schema(description = "用户昵称")
     private String nickname;
     /**
      * 邮箱

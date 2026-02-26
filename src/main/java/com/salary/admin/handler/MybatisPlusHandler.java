@@ -1,6 +1,8 @@
 package com.salary.admin.handler;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import com.salary.admin.utils.UserContextUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,12 +34,16 @@ public class MybatisPlusHandler implements MetaObjectHandler {
         this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
         this.strictUpdateFill(metaObject, "updateBy", String.class, getCurrentUsername());
     }
-
+    /**
+     * 获取当前操作人
+     */
     private String getCurrentUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // 如果是已认证用户，返回用户名；否则返回 system (如登录、注册、定时任务场景)
-        if (authentication != null && authentication.isAuthenticated()) {
-            return authentication.getName();
+        // 直接复用咱们写好的 ThreadLocal 基建！
+        String username = UserContextUtil.getUsername();
+
+        // 如果能拿到上下文里的用户名，直接返回
+        if (StringUtils.isNotBlank(username)) {
+            return username;
         }
         return "system"; // 如果是登录接口等未认证场景，默认 system
     }

@@ -29,10 +29,13 @@ public class AuthController {
 
     @GetMapping("/captcha")
     @Operation(summary = "获取图形验证码")
+    @Loggable(title = "获取图形验证码", logResponse = false)
     public ApiResult<CaptchaResDTO> getCaptcha() {
+
         return ApiResult.successResult(iCaptchaService.generateCaptcha());
     }
     @PostMapping("/login")
+    @Operation(summary = "用户登录")
     @Loggable(title = "用户登录")
     public ApiResult<TokenResDTO> login(@Validated @RequestBody UserLoginReqDTO loginDto, HttpServletRequest request) {
         // 1. 手动注入由后端控制的属性
@@ -43,6 +46,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "令牌续期")
     @Loggable(title = "令牌续期", logResponse = false)
     public ApiResult<TokenResDTO> refresh(@Validated @RequestBody TokenRefreshReqDTO refreshDto, HttpServletRequest request) {
         // currentIp 必须由后端提取，不能信任前端传参

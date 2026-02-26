@@ -1,6 +1,8 @@
 package com.salary.admin.convert.user;
 
 import com.salary.admin.model.dto.user.SysUserDTO;
+import com.salary.admin.model.dto.user.UserAddReqDTO;
+import com.salary.admin.model.dto.user.UserEditReqDTO;
 import com.salary.admin.model.entity.sys.SysUser;
 import com.salary.admin.model.vo.user.SysUserVO;
 import org.mapstruct.Mapper;
@@ -73,4 +75,25 @@ public interface SysUserConvert {
      * @return 转换后的表单对象集合
      */
     List<SysUserDTO> toDTOList(List<SysUser> entities);
+
+    /**
+     * 6. 新增用户请求对象转为数据库实体 (UserAddReqDTO -> Entity)
+     * 用途：处理新增用户接口的入参转换
+     * 注意：敏感字段如密码仍需谨慎处理，避免在转换中泄露
+     *
+     * @param reqDTO 新增用户请求对象
+     * @return 转换后的数据库实体对象
+     */
+    SysUser toDO(UserAddReqDTO reqDTO);
+
+    /**
+     * 7. 编辑用户请求对象转为数据库实体 (UserEditReqDTO -> Entity)
+     * 用途：处理编辑用户接口的入参转换
+     * 注意：同样需要忽略或特殊处理敏感字段，保证安全性
+     *
+     * @param reqDTO 编辑用户请求对象
+     * @return 转换后的数据库实体对象
+     */
+    SysUser toDO(UserEditReqDTO reqDTO);
+
 }

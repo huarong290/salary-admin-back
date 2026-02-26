@@ -50,7 +50,8 @@ public class CaptchaServiceImpl implements ICaptchaService {
 
         // 4. 获取验证码文本和图片 Base64
         String captchaCode = lineCaptcha.getCode();
-
+        // 💡 增加醒目的控制台打印，方便开发阶段使用 Postman 调试
+        log.info("【开发调试】生成的验证码为: [ {} ], captchaId: [ {} ]", captchaCode, captchaId);
         // 5. 存入 Redis，从配置类读取过期时间
         iRedisService.setEx(verifyKey, captchaCode, captchaProperties.getExpireSeconds(), TimeUnit.SECONDS);
 
@@ -77,7 +78,8 @@ public class CaptchaServiceImpl implements ICaptchaService {
 
         String verifyKey = RedisCacheConstants.AUTH_CAPTCHA + captchaId;
         String redisCode = iRedisService.get(verifyKey, String.class);
-
+        //  加一行调试日志
+        log.info("【校验调试】验证码ID: [{}], 从Redis取出的值: [{}], 用户输入的值: [{}]", captchaId, redisCode, code);
         // 3. 核心安全策略：阅后即焚，防止重复提交和暴力破解
         iRedisService.del(verifyKey);
 
