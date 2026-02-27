@@ -101,8 +101,14 @@ security:
     - /api/auth/login
     - /api/auth/refresh
     - /api/auth/captcha
-    - /swagger-ui/**
-    - /v3/api-docs/**
+    # --- 下面是完整的 Swagger/Knife4j 放行清单 ---
+    - /swagger-ui.html                   # 必须放行这个入口文件！
+    - /swagger-ui/** # 放行 UI 静态资源
+    - /v3/api-docs/** # 放行 OpenAPI 的 JSON 数据接口
+    - /v3/api-docs                       # 放行默认的 JSON 根接口
+    - /swagger-resources/** # 资源文件
+    - /webjars/** # 必要的 Web 静态依赖
+    - /doc.html                          # 预留给 Knife4j 的增强皮肤入口
 
 # ------------------------------------------------------
 # 8. 日志系统

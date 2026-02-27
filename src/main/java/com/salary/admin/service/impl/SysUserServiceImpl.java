@@ -252,7 +252,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
         // 2. 实体转 VO (利用刚刚写的 MapStruct 接口，自动忽略密码等敏感字段)
         SysUserVO userVO = sysUserConvert.toVO(sysUser);
         // 3. 调用 RoleService 获取角色集合
-        Set<String> roles = iSysRoleService.getRoleCodesByUserId(userId);
+        Set<String> roles = iSysRoleService.selectRoleCodesByUserId(userId);
         // 4. 调用 MenuService 获取权限和菜单
         Set<String> permissions = iSysMenuService.selectPermissionsByUserId(userId);
         List<SysMenu> rawMenuList = iSysMenuService.selectMenuByUserId(userId);

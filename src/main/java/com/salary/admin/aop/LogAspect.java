@@ -106,7 +106,7 @@ public class LogAspect {
                 try {
 
                     // 将捕获到的 username 显式传入处理方法，或者在这里临时设置异步线程的上下文
-                    handleLog(joinPoint, loggable, finalResult, finalException, costTime, finalUsername);
+                    handleLog(joinPoint, loggable, finalResult, finalException, costTime, finalUsername,traceId);
                 } finally {
                     // 必须清理，防止线程池污染
                     MDC.remove("trace_id");
@@ -117,7 +117,7 @@ public class LogAspect {
         }
     }
 
-    private void handleLog(ProceedingJoinPoint joinPoint, Loggable loggable, Object result, Throwable ex, long costTime, String username) {
+    private void handleLog(ProceedingJoinPoint joinPoint, Loggable loggable, Object result, Throwable ex, long costTime, String username,String traceId) {
         try {
             String className = joinPoint.getTarget().getClass().getSimpleName();
             String methodName = joinPoint.getSignature().getName();
@@ -129,7 +129,7 @@ public class LogAspect {
             logMap.put("method", methodName);
             logMap.put("costTime", costTime + "ms");
             logMap.put("username", username != null ? username : "anonymous");
-            logMap.put("traceId", MDC.get("trace_id"));
+            logMap.put("traceId", traceId);
             // 3. 入参处理 (针对文件上传进行特殊过滤)先过滤，再脱敏，最后以对象形式放入 Map
             if (loggable.logRequest()) {
                 Object[] args = filterArgs(joinPoint.getArgs());

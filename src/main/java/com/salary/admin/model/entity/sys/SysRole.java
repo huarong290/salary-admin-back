@@ -70,6 +70,12 @@ public class SysRole extends BaseEntity<SysRole> {
     private String roleDesc;
 
     /**
+     * 备注
+     */
+    @Schema(description = "备注")
+    @TableField("remark")
+    private String remark;
+    /**
      * 必须重写 pkVal，告诉 Model 你的主键是哪个字段
      */
     @Override

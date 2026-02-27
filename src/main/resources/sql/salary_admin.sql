@@ -33,6 +33,7 @@ CREATE TABLE `sys_role`
     `role_sort`   int         NOT NULL DEFAULT '0' COMMENT '显示顺序',
     `role_status` TINYINT UNSIGNED   NOT NULL DEFAULT '1' COMMENT '状态',
     `role_desc`   varchar(50) NOT NULL DEFAULT '' COMMENT '角色描述',
+    `remark` varchar(500) NOT NULL DEFAULT '' COMMENT '备注',
     `delete_flag` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT '删除标识 (0:未删, 1:已删)',
     `create_by`   varchar(64) NOT NULL DEFAULT 'system' COMMENT '创建者',
     `create_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
