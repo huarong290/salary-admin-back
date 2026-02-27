@@ -38,4 +38,39 @@
         LIMIT 1
     </select>
 
+    <!-- 物理删除：直接删除记录 -->
+    <delete id="physicalDeleteUserById">
+        DELETE FROM sys_user WHERE id = #{id}
+
+    </delete>
+
+    <!-- 批量物理删除 -->
+    <delete id="batchPhysicalDeleteUserByIds">
+        DELETE FROM sys_user
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <!-- 分页查询用户列表 -->
+    <select id="selectUserListByPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM sys_user
+        <where>
+            delete_flag = 0
+            <if test="reqDTO.username != null and reqDTO.username != ''">
+                AND username LIKE CONCAT('%', #{reqDTO.username}, '%')
+            </if>
+            <if test="reqDTO.phone != null and reqDTO.phone != ''">
+                AND phone = #{reqDTO.phone}
+            </if>
+            <if test="reqDTO.status != null">
+                AND status = #{reqDTO.status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
 </mapper>
