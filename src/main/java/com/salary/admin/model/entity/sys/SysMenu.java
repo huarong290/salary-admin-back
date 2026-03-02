@@ -39,7 +39,7 @@ public class SysMenu extends BaseEntity<SysMenu> {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
-     * 菜单名称
+     * 菜单名称 (如：系统管理、用户新增)
      */
     @Schema(description = "菜单名称")
     @TableField("menu_name")
@@ -57,9 +57,9 @@ public class SysMenu extends BaseEntity<SysMenu> {
     @TableField("menu_path")
     private String menuPath;
     /**
-     * 组件路径
+     * 前端组件路径
      */
-    @Schema(description = "组件路径")
+    @Schema(description = "前端组件路径")
     @TableField("menu_component")
     private String menuComponent;
     /**

@@ -3,6 +3,7 @@ package com.salary.admin.model.vo.menu;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -12,7 +13,8 @@ import java.time.LocalDateTime;
  * 与 DTO 区分开，避免返回敏感信息。
  */
 @Data
-public class SysMenuVO {
+@Schema(description = "菜单信息展示对象")
+public class SysMenuVO implements Serializable {
 
     /**
      * 菜单ID

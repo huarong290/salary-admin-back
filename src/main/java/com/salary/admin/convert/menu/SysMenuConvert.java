@@ -1,5 +1,7 @@
 package com.salary.admin.convert.menu;
 
+import com.salary.admin.model.dto.menu.MenuAddReqDTO;
+import com.salary.admin.model.dto.menu.MenuEditReqDTO;
 import com.salary.admin.model.dto.menu.SysMenuDTO;
 import com.salary.admin.model.entity.sys.SysMenu;
 import com.salary.admin.model.vo.menu.MenuTreeVO;
@@ -25,7 +27,7 @@ import java.util.stream.Collectors;
  * - 保持分层清晰：DTO 用于接收前端数据，Entity 对应数据库表，VO 用于返回前端展示。
  * - 避免手写重复的转换代码，提高开发效率。
  * - 保证对象之间字段映射的一致性，减少人为错误。
- *
+ * <p>
  * 使用场景：
  * - Controller 层接收前端传入的 DTO，调用 Service 层时转换为 Entity。
  * - Service 层查询数据库得到 Entity，返回给 Controller 时转换为 VO。
@@ -34,79 +36,60 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface SysMenuConvert {
 
-    /**
-     * 1. DTO -> Entity (新增/修改场景)
-     */
-    SysMenu toEntity(SysMenuDTO dto);
+    // ======================== 1. 入参转换 (DTO -> DO) ========================
 
     /**
-     * 2. Entity -> SysMenuVO (菜单管理列表展示)
+     * 新增参数转实体
+     */
+    SysMenu toEntity(MenuAddReqDTO reqDTO);
+
+    /**
+     * 修改参数转实体
+     * (MapStruct 会自动识别 MenuEditReqDTO 继承自 MenuAddReqDTO 的所有父类属性并进行映射)
+     */
+    SysMenu toEntity(MenuEditReqDTO reqDTO);
+    // ======================== 2. 出参转换 (DO -> VO) ========================
+
+    /**
+     * 实体转普通视图对象 (用于后台菜单管理界面的表格/列表展示)
      */
     SysMenuVO toVO(SysMenu entity);
 
     /**
-     * 3.  集合对象映射：List<Entity> -> List<VO>
-     * 对应场景：菜单管理页面的扁平化列表查询
+     * 实体列表转普通视图对象列表
+     *
      */
     List<SysMenuVO> toVOList(List<SysMenu> entities);
 
+    // ======================== 3. 动态路由树转换核心 ========================
+
     /**
-     * 4. Entity -> MenuTreeVO (登录后构建动态路由)
-     * 排除 children 字段，并指定自定义转换方法生成 meta
+     * 实体转树形节点对象 (专供前端 Vue Router 动态渲染使用)
+     * 忽略 children 字段 (交由 Service 层的递归算法填充)
+     * 动态生成 meta 字段
      */
     @Mapping(target = "children", ignore = true)
     @Mapping(target = "meta", source = ".", qualifiedByName = "toMetaVO")
     MenuTreeVO toTreeVO(SysMenu menu);
 
     /**
-     * 5. 路由元信息映射：根据实体属性动态生成 MetaVO
+     * 自定义映射逻辑：将扁平的菜单属性组装成前端路由标准的 MetaVO 对象
      */
     @Named("toMetaVO")
     default MetaVO toMetaVO(SysMenu menu) {
-        if (menu == null) return null;
+        if (menu == null) {
+            return null;
+        }
         return MetaVO.builder()
                 .title(menu.getMenuName())
                 .icon(menu.getMenuIcon())
-                // 数据库 1:正常显示, 0:隐藏 -> MetaVO hidden: true(隐藏)
+                // 数据库显隐状态 (1:可见 0:隐藏) 映射为前端的 hidden (true:隐藏 false:可见)
                 .hidden(Objects.equals(menu.getMenuVisible(), 0))
                 .keepAlive(true) // 默认开启页面缓存
+                // 如果路径是 http 开头，则作为外链处理
                 .link(menu.getMenuPath() != null && menu.getMenuPath().startsWith("http")
                         ? menu.getMenuPath() : null)
                 .affix(false)
                 .build();
-    }
-
-    /**
-     * 6. 树形结构组装核心逻辑
-     * @param menuList 数据库查出的扁平 List (通常只含 M/C 类型)
-     * @return 递归构建好的 TreeVO 列表
-     */
-    default List<MenuTreeVO> buildMenuTree(List<SysMenu> menuList) {
-        if (CollectionUtils.isEmpty(menuList)) {
-            return new ArrayList<>();
-        }
-
-        // 步骤1：Entity 批量转为 TreeVO（此时 meta 自动填充）
-        List<MenuTreeVO> allNodes = menuList.stream()
-                .map(this::toTreeVO)
-                .collect(Collectors.toList());
-
-        // 步骤2：流式递归找爸爸，构建层级结构
-        return allNodes.stream()
-                .filter(node -> Objects.equals(node.getMenuParentId(), 0L)) // 找顶级
-                .peek(node -> node.setChildren(findChildren(node, allNodes)))
-                .sorted((m1, m2) -> m1.getMenuSort().compareTo(m2.getMenuSort())) // 顶级排序
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 私有方法：递归寻找子节点并排序
-     */
-    private List<MenuTreeVO> findChildren(MenuTreeVO parent, List<MenuTreeVO> allNodes) {
-        return allNodes.stream()
-                .filter(node -> Objects.equals(node.getMenuParentId(), parent.getId()))
-                .peek(node -> node.setChildren(findChildren(node, allNodes)))
-                .sorted((m1, m2) -> m1.getMenuSort().compareTo(m2.getMenuSort()))
-                .collect(Collectors.toList());
     }
 }

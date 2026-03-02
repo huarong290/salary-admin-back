@@ -257,7 +257,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
         Set<String> permissions = iSysMenuService.selectPermissionsByUserId(userId);
         List<SysMenu> rawMenuList = iSysMenuService.selectMenuByUserId(userId);
         // 5. 构建树形结构
-        List<MenuTreeVO> menuTree = sysMenuConvert.buildMenuTree(rawMenuList);
+        List<MenuTreeVO> menuTree = iSysMenuService.buildMenuTree(rawMenuList);
         // 6. 组装返回
         UserInfoDTO userInfoDTO = UserInfoDTO.builder()
                 .user(userVO)
