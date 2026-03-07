@@ -58,4 +58,16 @@ public class AuthController {
                 currentIp
         ));
     }
+
+    @PostMapping("/logout")
+    @Operation(summary = "用户登出")
+    @Loggable(title = "用户登出")
+    public ApiResult<Void> logout() {
+        // 1. 从请求头获取当前 Token (或通过 SecurityContext 获取)
+        // 2. 调用 AuthService 执行逻辑：
+        //    - 使当前的 AccessToken 失效
+        //    - 删除 Redis/DB 中的 RefreshToken
+        iAuthService.logout();
+        return ApiResult.successResult(null);
+    }
 }

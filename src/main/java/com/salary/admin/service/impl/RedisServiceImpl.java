@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -19,9 +20,9 @@ import java.util.stream.Collectors;
  * Redis 通用业务实现类
  * <p>
  * 特点：
- *     1. 使用统一的 ObjectMapper 做 JSON 序列化/反序列化，保证跨服务兼容性。
- *     2. 所有非 String 类型的值都会序列化为 JSON 存储。
- *     3. 提供了 Key、String、Hash、List、Set、ZSet 的常用操作。
+ * 1. 使用统一的 ObjectMapper 做 JSON 序列化/反序列化，保证跨服务兼容性。
+ * 2. 所有非 String 类型的值都会序列化为 JSON 存储。
+ * 3. 提供了 Key、String、Hash、List、Set、ZSet 的常用操作。
  * 设计思路：
  * 1. 序列化方案：统一使用 StringRedisTemplate，Key/Value 均为明文展示，方便运维排查。
  * 2. 对象处理：复杂 POJO 采用 Jackson 进行 JSON 序列化存储。
@@ -41,6 +42,7 @@ public class RedisServiceImpl implements IRedisService {
     private final ObjectMapper objectMapper;
 
     // ============================ Key 通用操作 ============================
+
     /**
      * 判断单个 key 是否存在
      */
@@ -48,6 +50,7 @@ public class RedisServiceImpl implements IRedisService {
     public Long exists(String key) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key)) ? 1L : 0L;
     }
+
     /**
      * 判断多个 key 是否存在，返回存在的数量
      */
@@ -56,6 +59,7 @@ public class RedisServiceImpl implements IRedisService {
         // 批量探测 Key 存在的数量，常用于大数据量预热检查
         return redisTemplate.countExistingKeys(keys);
     }
+
     /**
      * 删除单个 key
      */
@@ -63,6 +67,7 @@ public class RedisServiceImpl implements IRedisService {
     public Long del(String key) {
         return Boolean.TRUE.equals(redisTemplate.delete(key)) ? 1L : 0L;
     }
+
     /**
      * 批量删除多个 key
      */
@@ -71,6 +76,7 @@ public class RedisServiceImpl implements IRedisService {
         // 批量删除，建议 keys 数量控制在 1000 以内，防止阻塞 Redis 线程
         return redisTemplate.delete(keys);
     }
+
     /**
      * 设置 key 的过期时间
      */
@@ -78,6 +84,7 @@ public class RedisServiceImpl implements IRedisService {
     public Boolean expire(String key, long timeout, TimeUnit unit) {
         return redisTemplate.expire(key, timeout, unit);
     }
+
     /**
      * 移除 key 的过期时间，使其永久有效
      */
@@ -86,6 +93,7 @@ public class RedisServiceImpl implements IRedisService {
         // 移除过期时间，将 Key 转为永久有效
         return redisTemplate.persist(key);
     }
+
     /**
      * 获取 key 的剩余过期时间
      */
@@ -94,33 +102,42 @@ public class RedisServiceImpl implements IRedisService {
         // 返回过期剩余时间，-1 代表永久，-2 代表 Key 不存在
         return redisTemplate.getExpire(key);
     }
+
+//    @Override
+//    public String getAndDelete(String key) {
+//        String luaScript =
+//                "local val = redis.call('GET', KEYS[1]); " +
+//                        "if val then " +
+//                        "   redis.call('DEL', KEYS[1]); " +
+//                        "end; " +
+//                        "return val;";
+//
+//        // 使用 RedisCallback 执行 Lua 脚本
+//        return redisTemplate.execute((RedisCallback<String>) connection -> {
+//            byte[] result = connection.scriptingCommands().eval(
+//                    luaScript.getBytes(),
+//                    ReturnType.VALUE,
+//                    1,
+//                    key.getBytes()
+//            );
+//            return result == null ? null : new String(result);
+//        });
+//    }
+
     /**
      * 原子获取并删除 (Lua 脚本版)
      * 保证在高并发场景下不会出现竞态条件
      */
     @Override
     public String getAndDelete(String key) {
-        String luaScript =
-                "local val = redis.call('GET', KEYS[1]); " +
-                        "if val then " +
-                        "   redis.call('DEL', KEYS[1]); " +
-                        "end; " +
-                        "return val;";
-
-        // 使用 RedisCallback 执行 Lua 脚本
-        return redisTemplate.execute((RedisCallback<String>) connection -> {
-            byte[] result = connection.scriptingCommands().eval(
-                    luaScript.getBytes(),
-                    ReturnType.VALUE,
-                    1,
-                    key.getBytes()
-            );
-            return result == null ? null : new String(result);
-        });
+        String luaScript = "local val = redis.call('GET', KEYS[1]); " +
+                "if val then redis.call('DEL', KEYS[1]) end; " +
+                "return val;";
+        return redisTemplate.execute(new DefaultRedisScript<>(luaScript, String.class),
+                Collections.singletonList(key));
     }
-
-
     // ============================ String 字符串操作 ============================
+
     /**
      * 设置字符串值（序列化为 JSON 存储）
      */
@@ -128,6 +145,7 @@ public class RedisServiceImpl implements IRedisService {
     public void set(String key, Object value) {
         redisTemplate.opsForValue().set(key, toJson(value));
     }
+
     /**
      * 设置字符串值并指定过期时间
      */
@@ -142,6 +160,7 @@ public class RedisServiceImpl implements IRedisService {
             return false;
         }
     }
+
     /**
      * 获取字符串值并反序列化为指定类型
      */
@@ -149,6 +168,7 @@ public class RedisServiceImpl implements IRedisService {
     public <T> T get(String key, Class<T> clazz) {
         return fromJson(redisTemplate.opsForValue().get(key), clazz);
     }
+
     /**
      * 批量设置多个 key-value
      */
@@ -159,6 +179,7 @@ public class RedisServiceImpl implements IRedisService {
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> toJson(e.getValue())));
         redisTemplate.opsForValue().multiSet(jsonMap);
     }
+
     /**
      * 批量获取多个 key 的值
      */
@@ -168,6 +189,7 @@ public class RedisServiceImpl implements IRedisService {
         return raw == null ? Collections.emptyList() :
                 raw.stream().map(s -> fromJson(s, clazz)).collect(Collectors.toList());
     }
+
     /**
      * 自增操作（默认 +1）
      */
@@ -176,6 +198,7 @@ public class RedisServiceImpl implements IRedisService {
         // 原子自增 1，常用于限流或分布式序列号生成
         return redisTemplate.opsForValue().increment(key);
     }
+
     /**
      * 按指定步长自增
      */
@@ -183,6 +206,7 @@ public class RedisServiceImpl implements IRedisService {
     public Long incrBy(String key, long delta) {
         return redisTemplate.opsForValue().increment(key, delta);
     }
+
     /**
      * 自减操作（默认 -1）
      */
@@ -192,6 +216,7 @@ public class RedisServiceImpl implements IRedisService {
     }
 
     // ============================ Hash 哈希操作 ============================
+
     /**
      * 设置哈希表字段值
      */
@@ -199,6 +224,7 @@ public class RedisServiceImpl implements IRedisService {
     public void hSet(String key, String hashKey, Object value) {
         redisTemplate.opsForHash().put(key, hashKey, toJson(value));
     }
+
     /**
      * 获取哈希表字段值
      */
@@ -206,6 +232,7 @@ public class RedisServiceImpl implements IRedisService {
     public <T> T hGet(String key, String hashKey, Class<T> clazz) {
         return fromJson((String) redisTemplate.opsForHash().get(key, hashKey), clazz);
     }
+
     /**
      * 判断哈希表字段是否存在
      */
@@ -213,6 +240,7 @@ public class RedisServiceImpl implements IRedisService {
     public Boolean hExists(String key, String hashKey) {
         return redisTemplate.opsForHash().hasKey(key, hashKey);
     }
+
     /**
      * 批量设置哈希表字段
      */
@@ -222,6 +250,7 @@ public class RedisServiceImpl implements IRedisService {
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> toJson(e.getValue())));
         redisTemplate.opsForHash().putAll(key, jsonMap);
     }
+
     /**
      * 批量获取哈希表字段值
      */
@@ -231,6 +260,7 @@ public class RedisServiceImpl implements IRedisService {
         List<Object> raw = redisTemplate.opsForHash().multiGet(key, new ArrayList<>(hashKeys));
         return raw.stream().map(o -> fromJson((String) o, clazz)).collect(Collectors.toList());
     }
+
     /**
      * 获取哈希表所有字段和值
      */
@@ -242,6 +272,7 @@ public class RedisServiceImpl implements IRedisService {
         raw.forEach((k, v) -> result.put(fromJson((String) k, keyClazz), fromJson((String) v, valueClazz)));
         return result;
     }
+
     /**
      * 删除哈希表字段
      */
@@ -251,6 +282,7 @@ public class RedisServiceImpl implements IRedisService {
     }
 
     // ============================ List 列表操作 ============================
+
     /**
      * 从左侧插入元素
      */
@@ -258,6 +290,7 @@ public class RedisServiceImpl implements IRedisService {
     public Long lPush(String key, Object value) {
         return redisTemplate.opsForList().leftPush(key, toJson(value));
     }
+
     /**
      * 从右侧插入元素
      */
@@ -265,6 +298,7 @@ public class RedisServiceImpl implements IRedisService {
     public Long rPush(String key, Object value) {
         return redisTemplate.opsForList().rightPush(key, toJson(value));
     }
+
     /**
      * 从右侧弹出元素
      */
@@ -273,6 +307,7 @@ public class RedisServiceImpl implements IRedisService {
         // 常用作任务队列：右侧弹出，左侧压入 (FIFO)
         return fromJson(redisTemplate.opsForList().rightPop(key), clazz);
     }
+
     /**
      * 按索引获取元素
      */
@@ -280,6 +315,7 @@ public class RedisServiceImpl implements IRedisService {
     public <T> T lIndex(String key, long index, Class<T> clazz) {
         return fromJson(redisTemplate.opsForList().index(key, index), clazz);
     }
+
     /**
      * 获取指定区间的元素
      */
@@ -290,6 +326,7 @@ public class RedisServiceImpl implements IRedisService {
         return raw == null ? Collections.emptyList() :
                 raw.stream().map(s -> fromJson(s, clazz)).collect(Collectors.toList());
     }
+
     /**
      * 裁剪列表，只保留指定区间的元素
      */
@@ -298,6 +335,7 @@ public class RedisServiceImpl implements IRedisService {
         // 强制裁剪列表，仅保留指定区间。在大数据清洗或固定长度日志场景常用
         redisTemplate.opsForList().trim(key, start, end);
     }
+
     /**
      * 获取列表长度
      */
@@ -307,6 +345,7 @@ public class RedisServiceImpl implements IRedisService {
     }
 
     // ============================ Set 无序集合 ============================
+
     /**
      * 添加元素到集合
      */
@@ -315,6 +354,7 @@ public class RedisServiceImpl implements IRedisService {
         String[] jsonValues = Arrays.stream(values).map(this::toJson).toArray(String[]::new);
         return redisTemplate.opsForSet().add(key, jsonValues);
     }
+
     /**
      * 获取集合所有成员
      */
@@ -324,6 +364,7 @@ public class RedisServiceImpl implements IRedisService {
         return raw == null ? Collections.emptySet() :
                 raw.stream().map(s -> fromJson(s, clazz)).collect(Collectors.toSet());
     }
+
     /**
      * 判断元素是否在集合中
      */
@@ -332,6 +373,7 @@ public class RedisServiceImpl implements IRedisService {
         // $O(1)$ 时间复杂度判断是否存在，常用于去重过滤
         return redisTemplate.opsForSet().isMember(key, toJson(value));
     }
+
     /**
      * 删除集合中的元素
      */
@@ -340,6 +382,7 @@ public class RedisServiceImpl implements IRedisService {
         Object[] jsonValues = Arrays.stream(values).map(this::toJson).toArray();
         return redisTemplate.opsForSet().remove(key, jsonValues);
     }
+
     /**
      * 获取集合大小
      */
@@ -352,7 +395,8 @@ public class RedisServiceImpl implements IRedisService {
 
     /**
      * 添加元素到有序集合
-     * @param key Redis key
+     *
+     * @param key   Redis key
      * @param value 元素值（会序列化为 JSON）
      * @param score 分数（排序依据）
      * @return 是否添加成功
@@ -364,9 +408,10 @@ public class RedisServiceImpl implements IRedisService {
 
     /**
      * 获取指定区间的成员（升序）
-     * @param key Redis key
+     *
+     * @param key   Redis key
      * @param start 起始下标
-     * @param end 结束下标
+     * @param end   结束下标
      * @param clazz 反序列化类型
      * @return 成员集合（按 score 从小到大排序）
      */
@@ -379,9 +424,10 @@ public class RedisServiceImpl implements IRedisService {
 
     /**
      * 获取指定区间的成员（降序）
-     * @param key Redis key
+     *
+     * @param key   Redis key
      * @param start 起始下标
-     * @param end 结束下标
+     * @param end   结束下标
      * @param clazz 反序列化类型
      * @return 成员集合（按 score 从大到小排序）
      */
@@ -394,7 +440,8 @@ public class RedisServiceImpl implements IRedisService {
 
     /**
      * 获取指定元素的分数
-     * @param key Redis key
+     *
+     * @param key   Redis key
      * @param value 元素值
      * @return 分数（Double），不存在返回 null
      */
@@ -405,7 +452,8 @@ public class RedisServiceImpl implements IRedisService {
 
     /**
      * 删除有序集合中的元素
-     * @param key Redis key
+     *
+     * @param key    Redis key
      * @param values 要删除的元素
      * @return 删除的数量
      */
@@ -417,6 +465,7 @@ public class RedisServiceImpl implements IRedisService {
 
     /**
      * 获取有序集合的大小
+     *
      * @param key Redis key
      * @return 集合元素数量
      */

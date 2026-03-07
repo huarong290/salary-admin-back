@@ -27,7 +27,11 @@ public interface IAuthService {
      * @param currentIp 当前ip
      */
      TokenResDTO refreshToken(String oldRefreshToken, String deviceId, String currentIp);
-
+    /**
+     * 用户登出
+     * 逻辑：销毁当前 AccessToken (加入黑名单) 并删除关联的 RefreshToken
+     */
+    void logout();
     /**
      * 清除指定用户的权限缓存
      * @param userId 用户ID

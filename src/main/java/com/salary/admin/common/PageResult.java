@@ -28,7 +28,7 @@ public class PageResult<T> implements Serializable {
     private Long total;
 
     @Schema(description = "列表数据")
-    private List<T> list;
+    private List<T> records;
 
     @Schema(description = "当前页码")
     private Long pageNum;
@@ -52,7 +52,7 @@ public class PageResult<T> implements Serializable {
         }
         return PageResult.<T>builder()
                 .total(page.getTotal())
-                .list(page.getRecords())
+                .records(page.getRecords())
                 .pageNum(page.getCurrent())
                 .pageSize(page.getSize())
                 .totalPage(page.getPages())
@@ -74,7 +74,7 @@ public class PageResult<T> implements Serializable {
         }
         return PageResult.<R>builder()
                 .total(page.getTotal())
-                .list(list) // 使用转换后的列表替换原始 records
+                .records(list) // 使用转换后的列表替换原始 records
                 .pageNum(page.getCurrent())
                 .pageSize(page.getSize())
                 .totalPage(page.getPages())

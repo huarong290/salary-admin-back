@@ -8,6 +8,7 @@ import com.salary.admin.model.dto.UserLoginReqDTO;
 import com.salary.admin.model.entity.sys.SysUser;
 import com.salary.admin.service.*;
 import com.salary.admin.utils.JwtUtil;
+import com.salary.admin.utils.UserContextUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -199,15 +200,15 @@ public class AuthServiceImpl implements IAuthService {
         String newRefresh = jwtUtil.generateRefreshToken(username, newClaims);
 
         // 7. 写入新会话到 Redis (Fail-Secure)
-        String newAccessJti = jwtUtil.getJti(newAccess);
         String newRefreshJti = jwtUtil.getJti(newRefresh);
         String nextValue = user.getId() + ":" + deviceId + ":" + storedClientType;
-        iRedisService.setEx(RedisCacheConstants.AUTH_REFRESH_TOKEN + newAccessJti,
+        iRedisService.setEx(RedisCacheConstants.AUTH_REFRESH_TOKEN + newRefreshJti,
                 nextValue,
                 jwtUtil.getRefreshTokenTtl(),
                 TimeUnit.SECONDS);
 
         // 8. 更新设备最新绑定的 JTI (实现设备互踢逻辑)
+        String newAccessJti = jwtUtil.getJti(newAccess);
         handleDeviceSession(user.getId(), deviceId, newAccessJti,newRefreshJti);
 
         return TokenResDTO.builder()
@@ -223,6 +224,55 @@ public class AuthServiceImpl implements IAuthService {
                 .ip(currentIp)
                 .build();
     }
+
+    /**
+     * 用户登出实现
+     * 核心逻辑：
+     * 1. 从安全上下文中获取当前用户标识 (userId & deviceId)
+     * 2. 精准删除 Redis 中维护的 Refresh Token (使其无法续期)
+     * 3. 清理设备绑定关系和活跃会话状态
+     * 4. (可选) 将当前的 Access Token 加入黑名单直到过期
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void logout() {
+        // 1. 获取当前登录用户的 ID (从 JwtAuthenticationFilter 存入上下文的认证对象中提取)
+        Long userId = UserContextUtil.getUserId();
+        String username = UserContextUtil.getUsername();
+        // 2. 从 SecurityContext 或当前 Request 中获取 deviceId
+        // 注意：如果是通过 JwtUtil 解析 Token 拿到的 Claims，通常我们会把它存入上下文
+        String deviceId = UserContextUtil.getDeviceId();
+        // 💡 增加防御性编程：如果上下文丢失，尝试抛出明确异常或静默处理
+        if (userId == null || deviceId == null) {
+            log.warn("登出失败：无法从上下文中获取用户信息或设备标识");
+            return;
+        }
+        log.info("用户主动退出登录: {}, 用户ID: {}, 设备ID: {}", username, userId, deviceId);
+
+        // 3. 核心：销毁 Refresh Token
+        // 先找到该设备关联的 Refresh JTI
+        String deviceKey = RedisCacheConstants.AUTH_DEVICE_BIND + userId + ":" + deviceId;
+        String refreshJti = iRedisService.get(deviceKey, String.class);
+
+        if (StringUtils.isNotBlank(refreshJti)) {
+            // 删除 Redis 中的刷新令牌记录，使其无法再调用 /refresh 接口
+            iRedisService.del(RedisCacheConstants.AUTH_REFRESH_TOKEN + refreshJti);
+        }
+
+        // 4. 清理设备会话和活跃状态记录
+        iRedisService.del(deviceKey);
+        iRedisService.del(RedisCacheConstants.AUTH_USER_ACTIVE + userId);
+        iRedisService.del(RedisCacheConstants.AUTH_USER_ACTIVE + ":refresh:" + userId);
+
+        // 5. 清理权限缓存 (确保下次登录权限实时同步)
+        this.clearUserPermissionsCache(userId);
+
+        // 💡 进阶：如果你需要极致安全（防止 AccessToken 在有效期内仍可访问）
+        // 获取当前的 AccessToken 并将其 JTI 加入 Redis 黑名单，过期时间为该 Token 的剩余 TTL
+        // String currentJti = SecurityUtils.getJti();
+        // iRedisService.setEx(RedisCacheConstants.AUTH_BLACKLIST + currentJti, "1", remainingTtl, TimeUnit.SECONDS);
+    }
+
     @Override
     public void clearUserPermissionsCache(Long userId) {
         if (userId == null) return;
