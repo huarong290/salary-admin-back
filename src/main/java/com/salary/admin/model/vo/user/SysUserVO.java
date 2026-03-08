@@ -42,6 +42,10 @@ public class SysUserVO {
      */
     @Schema(description = "头像")
     private String avatar;
+
+    @Schema(description = "性别 (0:未知, 1:男, 2:女)")
+    private Integer sex;
+
     /**
      * 是否启用
      */

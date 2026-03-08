@@ -70,7 +70,7 @@ public class MenuTreeVO {
      * 菜单类型
      * 0 = 目录，1 = 菜单，2 = 按钮
      */
-    @Schema(description = "菜单类型 (M目录 C菜单 F按钮)")
+    @Schema(description = "菜单类型 (0目录 1菜单 2按钮)")
     private Integer menuType;
     /**
      * 是否显示

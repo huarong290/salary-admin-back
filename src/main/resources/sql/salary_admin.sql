@@ -58,7 +58,7 @@ CREATE TABLE `sys_menu`
     `menu_type`       TINYINT UNSIGNED    NOT NULL DEFAULT '1' COMMENT '菜单类型 (1:目录, 2:菜单, 3:按钮)',
     `menu_parent_id`  BIGINT UNSIGNED       NOT NULL DEFAULT '0' COMMENT '父级ID',
     `menu_sort`       int          NOT NULL DEFAULT '0' COMMENT '排序',
-    `menu_visible`    TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '菜单是否可见：1可见 0隐藏，前端渲染控制',
+    `menu_visible`    TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '菜单是否可见：0可见 1隐藏，前端渲染控制',
     `menu_status`     TINYINT UNSIGNED    NOT NULL DEFAULT '1' COMMENT '菜单业务状态 (1:正常 0:停用)',
     `delete_flag`     TINYINT(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT '删除标识 (0:未删, 1:已删)',
     `create_by`       varchar(64)  NOT NULL DEFAULT 'system' COMMENT '创建者',
