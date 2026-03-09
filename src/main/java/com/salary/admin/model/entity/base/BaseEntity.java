@@ -46,7 +46,8 @@ public class BaseEntity<T extends Model<T>> extends Model<T> {
      * 删除标识 (0:未删, 1:已删)
      */
     @Schema(description = "删除标识 (0:未删, 1:已删)")
-    @TableLogic
+    // 新的写法 (删除时更新为它自己的主键 ID)：
+    @TableLogic(value = "0", delval = "id")
     @TableField("delete_flag")
     private Integer deleteFlag;
 }

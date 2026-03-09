@@ -10,6 +10,7 @@
         <result column="role_sort" property="roleSort" />
         <result column="role_status" property="roleStatus" />
         <result column="role_desc" property="roleDesc" />
+        <result column="remark" property="remark" />
         <result column="delete_flag" property="deleteFlag" />
         <result column="create_by" property="createBy" />
         <result column="create_time" property="createTime" />
@@ -19,7 +20,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, role_name, role_code, role_sort, role_status, role_desc, delete_flag, create_by, create_time, update_by, update_time
+        id, role_name, role_code, role_sort, role_status, role_desc, remark,delete_flag, create_by, create_time, update_by, update_time
     </sql>
     <!-- 物理删除：直接删除记录 -->
     <delete id="physicalDeleteRoleById">

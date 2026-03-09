@@ -66,4 +66,13 @@ public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleExtMapper, Sy
     }
 
 
+    @Override
+    public List<Long> getRoleIdsByUserId(Long userId) {
+        return this.listObjs(
+                new LambdaQueryWrapper<SysUserRole>()
+                        .select(SysUserRole::getRoleId)
+                        .eq(SysUserRole::getUserId, userId),
+                obj -> Long.valueOf(obj.toString())
+        );
+    }
 }

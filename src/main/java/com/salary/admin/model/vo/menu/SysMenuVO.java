@@ -60,9 +60,9 @@ public class SysMenuVO implements Serializable {
 
     /**
      * 菜单类型
-     * 0 = 目录，1 = 菜单，2 = 按钮
+     * 1 = 目录，2 = 菜单，3 = 按钮
      */
-    @Schema(description = "菜单类型:0-目录 1-菜单 2-按钮")
+    @Schema(description = "菜单类型:1-目录 2-菜单 3-按钮")
     private Integer menuType;
 
     /**

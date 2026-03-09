@@ -72,11 +72,11 @@ public class SysMenuDTO {
 
     /**
      * 菜单类型
-     * 0 = 目录，1 = 菜单，2 = 按钮
+     * 1 = 目录，2 = 菜单，3 = 按钮
      */
     @NotNull(message = "菜单类型不能为空")
-    @Range(min = 0, max = 2, message = "菜单类型非法")
-    @Schema(description = "菜单类型:0-目录 1-菜单 2-按钮")
+    @Range(min = 1, max = 3, message = "菜单类型非法")
+    @Schema(description = "菜单类型:1:目录, 2:菜单, 3:按钮")
     private Integer menuType;
 
     /**

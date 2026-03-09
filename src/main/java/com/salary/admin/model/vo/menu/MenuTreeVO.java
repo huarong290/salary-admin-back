@@ -1,5 +1,6 @@
 package com.salary.admin.model.vo.menu;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -37,6 +38,11 @@ public class MenuTreeVO {
     @Schema(description = "菜单名称")
     private String menuName;
     /**
+     * 菜单编码 (唯一标识)
+     */
+    @Schema(description = "菜单编码 (唯一标识)")
+    private String menuCode;
+    /**
      * 路由路径
      * 示例："/system/user"
      */
@@ -68,14 +74,14 @@ public class MenuTreeVO {
     private String menuIcon;
     /**
      * 菜单类型
-     * 0 = 目录，1 = 菜单，2 = 按钮
+     * 1 = 目录，2 = 菜单，3 = 按钮
      */
-    @Schema(description = "菜单类型 (0目录 1菜单 2按钮)")
+    @Schema(description = "菜单类型 (1目录 2菜单 3按钮)")
     private Integer menuType;
     /**
      * 是否显示
      */
-    @Schema(description = "显示状态 (0显示 1隐藏)")
+    @Schema(description = "显示状态 (1显示 0隐藏)")
     private Integer menuVisible;
     /**
      * 排序值

@@ -4,6 +4,8 @@ import com.salary.admin.model.dto.userrole.UserRoleAssignReqDTO;
 import com.salary.admin.model.entity.sys.SysUserRole;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  * 用户与角色关联表 服务类
@@ -25,4 +27,12 @@ public interface ISysUserRoleService extends IService<SysUserRole> {
      * @param reqDTO 分配角色请求参数 (包含用户ID和角色ID列表)
      */
     void assignRolesToUser(UserRoleAssignReqDTO reqDTO);
+
+
+    /**
+     * 根据用户ID获取角色ID列表
+     * @param userId 用户ID
+     * @return 角色ID集合
+     */
+    List<Long> getRoleIdsByUserId(Long userId);
 }
