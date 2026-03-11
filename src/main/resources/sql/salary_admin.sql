@@ -32,7 +32,7 @@ CREATE TABLE `sys_role`
 (
     `id`          BIGINT UNSIGNED      NOT NULL AUTO_INCREMENT COMMENT '角色ID',
     `role_name`   VARCHAR(50)  NOT NULL COMMENT '角色名称',
-    `role_code`   VARCHAR(50)  NOT NULL COMMENT '角色编码 (如: ADMIN, HR_MGR)',
+    `role_code`   VARCHAR(50)  NOT NULL COMMENT '角色编码 (如: ADMIN, MGR)',
     `role_sort`   int          NOT NULL DEFAULT '0' COMMENT '显示顺序',
     `role_status` TINYINT UNSIGNED   NOT NULL DEFAULT '1' COMMENT '状态',
     `role_desc`   VARCHAR(50)  NOT NULL DEFAULT '' COMMENT '角色描述',
@@ -125,13 +125,13 @@ CREATE TABLE `sys_role_menu`
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4  COMMENT='角色与菜单关联表';
 
 -- ==========================================================
--- 6. 员工基本信息表 hr_employee
+-- 6. 员工基本信息表 salary_employee
 -- ==========================================================
-CREATE TABLE `hr_employee`
+CREATE TABLE `salary_employee`
 (
     `id`                   BIGINT      NOT NULL AUTO_INCREMENT COMMENT '员工ID',
     `employee_code`        VARCHAR(32) NOT NULL DEFAULT '' COMMENT '员工编号',
-    `name`                 VARCHAR(64) NOT NULL DEFAULT '' COMMENT '姓名',
+    `employee_name`        VARCHAR(64) NOT NULL DEFAULT '' COMMENT '姓名',
     `company_name`         VARCHAR(128)         DEFAULT NULL COMMENT '所属公司',
     `department`           VARCHAR(128)         DEFAULT NULL COMMENT '部门',
     `employment_status`    VARCHAR(32)          DEFAULT NULL COMMENT '在职状态',
@@ -146,9 +146,9 @@ CREATE TABLE `hr_employee`
     UNIQUE KEY `uk_employee_code` (`employee_code`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工基本信息表';
 -- ==========================================================
--- 7. 薪资周期信息表 hr_salary_period
+-- 7. 薪资周期信息表 salary_period
 -- ==========================================================
-CREATE TABLE `hr_salary_period`
+CREATE TABLE `salary_period`
 (
     `id`               BIGINT       NOT NULL AUTO_INCREMENT COMMENT '周期ID',
     `employee_id`      BIGINT       NOT NULL DEFAULT '0' COMMENT '员工ID',
@@ -164,39 +164,45 @@ CREATE TABLE `hr_salary_period`
     `update_by`        VARCHAR(64)  NOT NULL DEFAULT 'admin' COMMENT '修改者',
     `update_time`      datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE,
-    KEY                `employee_id` (`employee_id`) USING BTREE
+    KEY                `employee_id` (`employee_id`) USING BTREE,
+    UNIQUE KEY uk_emp_month (employee_id, settlement_month)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资周期信息表';
 -- ==========================================================
--- 8. 薪资汇总与结算表 hr_salary_summary
+-- 8. 薪资汇总与结算表 salary_summary
 -- ==========================================================
-CREATE TABLE `hr_salary_summary`
+
+CREATE TABLE `salary_summary`
 (
-    `id`               BIGINT      NOT NULL AUTO_INCREMENT COMMENT '汇总ID',
-    `hr_period_id`        BIGINT      NOT NULL DEFAULT '0' COMMENT '薪资周期ID',
-    `currency`         VARCHAR(16)          DEFAULT 'CNY' COMMENT '结算币种',
-    `exchange_rate`    DECIMAL(18, 8)       DEFAULT '1.00000000' COMMENT '汇率',
-    `salary_subtotal`  DECIMAL(18, 8)       DEFAULT '0.00000000' COMMENT '应发小计（本币）',
-    `salary_total`     DECIMAL(18, 8)       DEFAULT '0.00000000' COMMENT '结算薪资（本币）',
-    `salary_converted` DECIMAL(18, 8)       DEFAULT '0.00000000' COMMENT '结算薪资（目标币）',
-    `salary_rmb`       DECIMAL(18, 8)       DEFAULT '0.00000000' COMMENT '人民币金额',
-    `salary_usdt`      DECIMAL(18, 8)       DEFAULT '0.00000000' COMMENT 'USDT金额',
-    `payment_status`   TINYINT(1) DEFAULT '0' COMMENT '支付状态(0未支付 1已支付 2失败)',
-    `remark`           text COMMENT '备注',
-    `delete_flag`      TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
-    `create_by`        VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '创建者',
-    `create_time`      DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_by`        VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '修改者',
-    `update_time`      DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    `id`                   BIGINT         NOT NULL AUTO_INCREMENT COMMENT '汇总ID',
+    `period_id`            BIGINT         NOT NULL DEFAULT 0 COMMENT '薪资周期ID',
+    `currency`             VARCHAR(16)    NOT NULL DEFAULT 'CNY' COMMENT '结算币种(CNY/PHP/USDT)',
+    `exchange_rate`        DECIMAL(18, 8)          DEFAULT '1.00000000' COMMENT '汇率(1本币兑X目标币快照)',
+    `salary_subtotal`      DECIMAL(18, 8)          DEFAULT '0.00000000' COMMENT '应发小计(本币)',
+    `salary_deduction_total` DECIMAL(18, 8)        DEFAULT '0.00000000' COMMENT '扣款小计(本币)',
+    `salary_total`         DECIMAL(18, 8)          DEFAULT '0.00000000' COMMENT '最终结算薪资(本币)',
+    `salary_converted`     DECIMAL(18, 8)          DEFAULT '0.00000000' COMMENT '实发金额(目标币)',
+    `salary_rmb`           DECIMAL(18, 8)          DEFAULT '0.00000000' COMMENT '折合人民币(存档)',
+    `salary_usdt`          DECIMAL(18, 8)          DEFAULT '0.00000000' COMMENT '折合USDT(存档)',
+    `target_account`       VARCHAR(255)            DEFAULT NULL COMMENT '发放账号/钱包地址(快照)',
+    `payment_status`       TINYINT(1)              DEFAULT '0' COMMENT '支付状态(0未支付 1已支付 2失败 3锁定)',
+    `pay_time`             DATETIME                DEFAULT NULL COMMENT '实际发放/确认时间',
+    `remark`               TEXT                    DEFAULT NULL COMMENT '备注',
+    `delete_flag`          TINYINT(1)     NOT NULL DEFAULT '0' COMMENT '是否删除',
+    `create_by`            VARCHAR(64)    NOT NULL DEFAULT 'admin' COMMENT '创建者',
+    `create_time`          DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`            VARCHAR(64)    NOT NULL DEFAULT 'admin' COMMENT '修改者',
+    `update_time`          DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE,
-    KEY                `idx_hr_period_id` (`hr_period_id`) USING BTREE
+    UNIQUE KEY `uk_period_id` (`period_id`) USING BTREE, -- 一个周期只能有一份汇总记录
+    KEY `idx_currency` (`currency`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资汇总与结算表';
 -- ==========================================================
--- 9. 员工收入主表 hr_salary_income
+-- 9. 员工收入主表 salary_income
 -- ==========================================================
-CREATE TABLE `hr_salary_income`
+CREATE TABLE `salary_income`
 (
     `id`           BIGINT      NOT NULL AUTO_INCREMENT COMMENT '收入记录ID',
-    `hr_period_id`    BIGINT      NOT NULL DEFAULT '0' COMMENT '薪资周期ID',
+    `period_id`    BIGINT      NOT NULL DEFAULT '0' COMMENT '薪资周期ID',
     `employee_id`  BIGINT      NOT NULL DEFAULT '0' COMMENT '员工ID',
     `total_amount` DECIMAL(18, 8)       DEFAULT '0.00000000' COMMENT '总收入金额',
     `delete_flag`  TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
@@ -205,18 +211,18 @@ CREATE TABLE `hr_salary_income`
     `update_by`    VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '修改者',
     `update_time`  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    KEY            `idx_period_id` (`hr_period_id`),
+    KEY            `idx_period_id` (`period_id`),
     KEY            `idx_employee_id` (`employee_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工收入主表';
 -- ==========================================================
--- 10. 员工收入明细表 hr_salary_income_detail
+-- 10. 员工收入明细表 salary_income_detail
 -- ==========================================================
-CREATE TABLE `hr_salary_income_detail`
+CREATE TABLE `salary_income_detail`
 (
     `id`             BIGINT         NOT NULL AUTO_INCREMENT COMMENT '明细ID',
-    `hr_income_id`      BIGINT         NOT NULL DEFAULT '0' COMMENT '主表ID',
-    `hr_period_id`      BIGINT         NOT NULL DEFAULT '0' COMMENT '薪资周期ID',
-    `income_type_id` BIGINT            NOT NULL DEFAULT '0' COMMENT '收入类型ID',
+    `income_id`      BIGINT         NOT NULL DEFAULT '0' COMMENT '主表ID',
+    `period_id`      BIGINT         NOT NULL DEFAULT '0' COMMENT '薪资周期ID',
+    `income_type_id` BIGINT         NOT NULL DEFAULT '0' COMMENT '收入类型ID',
     `amount`         DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '收入金额',
     `remark`         VARCHAR(255)            DEFAULT NULL COMMENT '备注说明',
     `delete_flag`    TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
@@ -225,35 +231,38 @@ CREATE TABLE `hr_salary_income_detail`
     `update_by`      VARCHAR(64)    NOT NULL DEFAULT 'admin' COMMENT '修改者',
     `update_time`    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    KEY              `idx_income_id` (`hr_income_id`),
+    KEY              `idx_income_id` (`income_id`),
+    KEY              `idx_period_income` (`period_id`, `income_id`),
     KEY              `idx_income_type_id` (`income_type_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工收入明细表';
 -- ==========================================================
--- 11. 收入类型字典表 hr_salary_income_type
+-- 11. 收入类型字典表 salary_income_type
 -- ==========================================================
-CREATE TABLE `hr_salary_income_type`
+CREATE TABLE `salary_income_type`
 (
-    `id`          BIGINT         NOT NULL AUTO_INCREMENT COMMENT '收入类型ID',
+    `id`          BIGINT      NOT NULL AUTO_INCREMENT COMMENT '收入类型ID',
+    `type_code`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '收入类型缩写简称',
     `type_name`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '收入类型名称',
     `category`    VARCHAR(64)          DEFAULT NULL COMMENT '收入分类',
     `description` VARCHAR(255)         DEFAULT NULL COMMENT '收入项说明',
+    `sort_value`  INT         NOT NULL DEFAULT '0' COMMENT '排序值 (数值越小越靠前)',
     `delete_flag` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
     `create_by`   VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '创建者',
     `create_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by`   VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '修改者',
     `update_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_type_name` (`type_name`)
+    UNIQUE KEY `uk_type_code` (`type_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收入类型字典表';
 
 -- ==========================================================
--- 12. 员工扣款明细表 hr_salary_deduction_detail
+-- 12. 员工扣款明细表 salary_deduction_detail
 -- ==========================================================
-CREATE TABLE `hr_salary_deduction_detail`
+CREATE TABLE `salary_deduction_detail`
 (
     `id`                BIGINT         NOT NULL AUTO_INCREMENT COMMENT '明细ID',
-    `hr_period_id`         BIGINT         NOT NULL DEFAULT '0' COMMENT '周期ID',
-    `deduction_type_id` BIGINT            NOT NULL DEFAULT '0' COMMENT '扣款类型ID',
+    `period_id`         BIGINT         NOT NULL DEFAULT '0' COMMENT '周期ID',
+    `deduction_type_id` BIGINT         NOT NULL DEFAULT '0' COMMENT '扣款类型ID',
     `amount`            DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '扣款金额',
     `remark`            VARCHAR(255)            DEFAULT NULL,
     `delete_flag`       TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
@@ -262,18 +271,21 @@ CREATE TABLE `hr_salary_deduction_detail`
     `update_by`         VARCHAR(64)    NOT NULL DEFAULT 'admin' COMMENT '修改者',
     `update_time`       DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    KEY                 `idx_period_id` (`hr_period_id`),
+    KEY                 `idx_period_id` (`period_id`),
     KEY                 `idx_deduction_type_id` (`deduction_type_id`)
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工扣款明细表';
 -- ==========================================================
--- 13. 扣款类型字典表 hr_salary_deduction_type
+-- 13. 扣款类型字典表 salary_deduction_type
 -- ==========================================================
-CREATE TABLE `hr_salary_deduction_type`
+CREATE TABLE `salary_deduction_type`
 (
-    `id`          BIGINT         NOT NULL AUTO_INCREMENT COMMENT '扣款类型ID',
+    `id`          BIGINT      NOT NULL AUTO_INCREMENT COMMENT '扣款类型ID',
+    `type_code`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '扣款类型缩写简称',
     `type_name`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '扣款类型名称',
     `category`    VARCHAR(64)          DEFAULT NULL COMMENT '扣款分类',
     `description` VARCHAR(255)         DEFAULT NULL COMMENT '扣款项说明',
+    `sort_value`  INT         NOT NULL DEFAULT '0' COMMENT '排序值 (数值越小越靠前)',
     `is_fixed`    TINYINT(1) DEFAULT '0' COMMENT '是否固定扣款',
     `delete_flag` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
     `create_by`   VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '创建者',
@@ -281,5 +293,5 @@ CREATE TABLE `hr_salary_deduction_type`
     `update_by`   VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '修改者',
     `update_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_type_name` (`type_name`)
+    UNIQUE KEY `uk_type_code` (`type_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='扣款类型字典表';

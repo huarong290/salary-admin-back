@@ -14,7 +14,9 @@ public class MybatisPlusCodeGenerator {
 
     public static void main(String[] args) {
         List<String> tableList = List.of(
-                "sys_user"
+
+                "salary_summary"
+
         );
 
         FastAutoGenerator.create(
@@ -33,17 +35,17 @@ public class MybatisPlusCodeGenerator {
                 .packageConfig(builder -> builder
                         .parent("com.salary.admin")
                         .entity("model.entity.sys")
-                        .mapper("mapper.auto")
-                        .service("service")
-                        .serviceImpl("service.impl")
-                        .controller("controller")
+                        .mapper("mapper.auto.salary")
+                        .service("service.salary")
+                        .serviceImpl("service.impl.salary")
+                        .controller("controller.salary")
                         .xml("mapper.xml")
                         .pathInfo(Collections.singletonMap(OutputFile.xml,
                                 Paths.get(System.getProperty("user.dir"), "src/main/resources/mapper/auto").toString()))
                 )
                 // 策略配置
                 .strategyConfig(builder -> builder
-                        .addInclude(".*")
+                        .addInclude(tableList)
                         // 这里用 * 表示所有表
                         .entityBuilder()
                         .enableLombok()

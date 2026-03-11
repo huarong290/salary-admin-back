@@ -25,4 +25,10 @@ public class LoginUserDTO {
      * 当前设备ID
      */
     private String deviceId;
+
+    /**
+     * 🌟 新增：是否为管理员标识
+     * 登录时根据角色表判断并注入
+     */
+    private Boolean adminFlag;
 }

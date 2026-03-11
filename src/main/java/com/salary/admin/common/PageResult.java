@@ -80,4 +80,21 @@ public class PageResult<T> implements Serializable {
                 .totalPage(page.getPages())
                 .build();
     }
+
+    /**
+     * 场景 3：返回一个空的分页对象
+     * (常用于前置条件校验失败，或IN查询条件为空时，直接短路返回，避免执行无效 SQL)
+     *
+     * @param <T> 数据类型
+     * @return 空的分页结果
+     */
+    public static <T> PageResult<T> empty() {
+        return PageResult.<T>builder()
+                .total(0L)
+                .records(new java.util.ArrayList<>())
+                .pageNum(1L)
+                .pageSize(10L)
+                .totalPage(0L)
+                .build();
+    }
 }

@@ -131,6 +131,5 @@ salary:
       height: 36             # 图片高度
       length: 4              # 验证码字符长度
       expire-seconds: 120    # 过期时间（秒）
-
-
-
+  delete:
+    allow-physical: false # 生产环境禁止物理删除

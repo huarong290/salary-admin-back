@@ -1,0 +1,62 @@
+package com.salary.admin.model.entity.salary;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.salary.admin.model.entity.base.BaseEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+/**
+ * 员工扣款明细表
+ *
+ * @author system
+ * @since 2026-03-11
+ */
+@Schema(name = "SalaryDeductionDetail", description = "员工扣款明细表")
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Accessors(chain = true)
+@TableName("salary_deduction_detail")
+public class SalaryDeductionDetail extends BaseEntity<SalaryDeductionDetail> {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 明细ID
+     */
+    @Schema(description = "明细ID")
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
+    /**
+     * 周期ID
+     */
+    @Schema(description = "周期ID")
+    @TableField("period_id")
+    private Long periodId;
+    /**
+     * 扣款类型ID
+     */
+    @Schema(description = "扣款类型ID")
+    @TableField("deduction_type_id")
+    private Long deductionTypeId;
+    /**
+     * 扣款金额
+     */
+    @Schema(description = "扣款金额")
+    @TableField("amount")
+    private BigDecimal amount;
+    @TableField("remark")
+    private String remark;
+
+    @Override
+    public Serializable pkVal() {
+        return this.id;
+    }
+}
