@@ -40,6 +40,8 @@ public class AuthServiceImpl implements IAuthService {
     @Autowired
     private ISysMenuService iSysMenuService;
     @Autowired
+    private ISysRoleService iSysRoleService;
+    @Autowired
     private IRedisService iRedisService;
     @Autowired
     private ICaptchaService iCaptchaService;
@@ -73,7 +75,7 @@ public class AuthServiceImpl implements IAuthService {
         // 4. 构建 JWT 自定义载荷 (Claims)
         // 将设备ID和IP存入 Token，方便后续刷新时比对环境一致性
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", sysUser.getId().toString()); // 转为 String 存入
+        claims.put("userId", sysUser.getId());
         claims.put("deviceId", dto.getClientInfo().getDeviceId());
         claims.put("loginIp", dto.getLoginIp());
 
@@ -91,7 +93,17 @@ public class AuthServiceImpl implements IAuthService {
             iRedisService.setEx(RedisCacheConstants.AUTH_USER_PERMISSIONS + sysUser.getId(),
                     permissions, 7, TimeUnit.DAYS);
         }
-        // 8. 存储 Refresh Token 映射关系 (Fail-Secure 策略)
+        //8.角色缓存 ======
+        Set<String> roles = iSysRoleService.selectRoleCodesByUserId(sysUser.getId());
+        if (roles != null) {
+            iRedisService.setEx(
+                    RedisCacheConstants.AUTH_USER_ROLES + sysUser.getId(),
+                    roles,
+                    7,
+                    TimeUnit.DAYS
+            );
+        }
+        // 9. 存储 Refresh Token 映射关系 (Fail-Secure 策略)
         // Key: auth:refresh:{jti} -> Value: {userId}:{deviceId}
         String refreshKey = RedisCacheConstants.AUTH_REFRESH_TOKEN + refreshJti;
 
@@ -104,16 +116,16 @@ public class AuthServiceImpl implements IAuthService {
             log.error("Redis 写入失败，阻断登录。User: {}", sysUser.getUsername());
             throw new BusinessException("系统繁忙，登录会话创建失败");
         }
-        // 8. 处理设备会话 (全端挤兑)
+        // 10. 处理设备会话 (全端挤兑)
         // 如果需要同一账号同一端只能一个在线，可以在这里清理旧的 deviceKey
         handleDeviceSession(sysUser.getId(), dto.getClientInfo().getDeviceId(), accessJti, refreshJti);
 
-        // 9. 更新数据库最后登录信息 (虚拟线程会处理好阻塞)
+        // 11. 更新数据库最后登录信息 (虚拟线程会处理好阻塞)
         iSysUserService.updateById(new SysUser()
                 .setId(sysUser.getId())
                 .setLastLoginTime(LocalDateTime.now()));
 
-        // 10. 组装返回 (符合 OAuth 2.0 规范版)
+        // 12. 组装返回 (符合 OAuth 2.0 规范版)
         return TokenResDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -261,8 +273,8 @@ public class AuthServiceImpl implements IAuthService {
 
         // 4. 清理设备会话和活跃状态记录
         iRedisService.del(deviceKey);
-        iRedisService.del(RedisCacheConstants.AUTH_USER_ACTIVE + userId);
-        iRedisService.del(RedisCacheConstants.AUTH_USER_ACTIVE + ":refresh:" + userId);
+        iRedisService.del(RedisCacheConstants.AUTH_USER_SESSION + userId);
+        iRedisService.del(RedisCacheConstants.AUTH_USER_REFRESH_SESSION + userId);
 
         // 5. 清理权限缓存 (确保下次登录权限实时同步)
         this.clearUserPermissionsCache(userId);
@@ -275,10 +287,16 @@ public class AuthServiceImpl implements IAuthService {
 
     @Override
     public void clearUserPermissionsCache(Long userId) {
-        if (userId == null) return;
+        if (userId == null) {
+            return;
+        }
+        // ===== 权限缓存 =====
         String key = RedisCacheConstants.AUTH_USER_PERMISSIONS + userId;
+        // ===== 角色缓存 =====
+        String roleKey = RedisCacheConstants.AUTH_USER_ROLES + userId;
         iRedisService.del(key);
-        log.info("权限变更：已清理用户 {} 的权限缓存", userId);
+        iRedisService.del(roleKey);
+        log.info("权限变更：已清理用户 {} 的权限与角色缓存", userId);
     }
 
     @Override
@@ -295,22 +313,22 @@ public class AuthServiceImpl implements IAuthService {
      * Key: auth:device:{userId}:{deviceId} -> Value: {jti}
      */
     private void handleDeviceSession(Long userId, String deviceId, String accessJti, String refreshJti) {
-        // 1. 活跃用户全局 Key (全端互踢)
-        String userActiveKey = RedisCacheConstants.AUTH_USER_ACTIVE + userId;
-        // 💡 增加一个 Key 用于追踪全局活跃的 RefreshToken JTI
-        String userActiveRefreshKey = RedisCacheConstants.AUTH_USER_ACTIVE + ":refresh:" + userId;
-        // 2. 获取该用户当前已登录的所有设备 JTI并踢出
+        // 1. 活跃用户全局 Key (全端互踢) 用户 AccessToken 会话
+        String userActiveKey = RedisCacheConstants.AUTH_USER_SESSION  + userId;
+        // 💡 增加一个 Key 用于追踪全局活跃的 RefreshToken JTI 用户 RefreshToken 会话
+        String userActiveRefreshKey = RedisCacheConstants.AUTH_USER_REFRESH_SESSION  + userId;
+        // 2. 获取该用户当前已登录的所有设备 JTI并踢出  获取当前 Refresh 会话
         String oldRefreshJti = iRedisService.get(userActiveRefreshKey, String.class);
-        // 2. 如果存在旧 JTI，说明之前有人在用，执行“踢人”
+        // 2. 如果存在旧 JTI，说明之前有人在用，执行“踢人” 如果存在旧 JTI，则踢掉旧设备
         if (StringUtils.isNotBlank(oldRefreshJti)) {
             log.info("用户 {} 在设备 {} 上重新登录，正在作废旧令牌 JTI: {}", userId, deviceId, oldRefreshJti);
             // 清除旧的刷新令牌，让旧设备“掉线”
             iRedisService.del(RedisCacheConstants.AUTH_REFRESH_TOKEN + oldRefreshJti);
         }
 
-        // 3. 绑定新设备与新的 JTI，有效期与 RefreshToken 一致（如 7 天）
+        // 3. 绑定新设备与新的 JTI，有效期与 RefreshToken 一致（如 7 天） 写入新的 AccessToken 会话
         iRedisService.setEx(userActiveKey, accessJti, 7, TimeUnit.DAYS);
-        // 4. 把 Refresh JTI 存起来，供下次踢人时读取并清理
+        // 4. 把 Refresh JTI 存起来，供下次踢人时读取并清理  写入新的 RefreshToken 会话
         iRedisService.setEx(userActiveRefreshKey, refreshJti, 7, TimeUnit.DAYS);
         // 5. 记录设备绑定 (环境校验)
         String deviceKey = RedisCacheConstants.AUTH_DEVICE_BIND + userId + ":" + deviceId;

@@ -48,6 +48,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuExtMapper, SysMenu> i
 
     @Override
     public List<SysMenu> selectMenuByUserId(Long userId) {
+
         return sysMenuExtMapper.selectMenuByUserId(userId);
     }
 

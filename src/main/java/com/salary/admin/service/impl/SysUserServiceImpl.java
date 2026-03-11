@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.salary.admin.common.PageResult;
+import com.salary.admin.constants.role.RoleConstants;
 import com.salary.admin.convert.menu.SysMenuConvert;
 import com.salary.admin.convert.user.SysUserConvert;
 import com.salary.admin.exception.BusinessException;
@@ -27,8 +28,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -130,7 +134,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
             throw new BusinessException("请选择要删除的用户");
         }
         // 🛡️ 防御性编程 1：绝对不允许删除超级管理员 (假设 ID 为 1)
-        if (ids.contains(1L)) {
+        List<SysUser> users = this.listByIds(ids);
+        boolean hasSuperAdmin = users.stream()
+                .map(SysUser::getId)
+                .anyMatch(userId -> iSysRoleService
+                        .selectRoleCodesByUserId(userId)
+                        .contains(RoleConstants.SUPER_ADMIN));
+        if (hasSuperAdmin) {
             throw new BusinessException("超级管理员账号不允许删除！");
         }
         //🛡️ 防御性编程 2：如果你想做得更严谨，可以从 UserContextUtil 获取当前登录人 ID，防止他把自己删了
@@ -254,8 +264,22 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
         // 3. 调用 RoleService 获取角色集合
         Set<String> roles = iSysRoleService.selectRoleCodesByUserId(userId);
         // 4. 调用 MenuService 获取权限和菜单
-        Set<String> permissions = iSysMenuService.selectPermissionsByUserId(userId);
-        List<SysMenu> rawMenuList = iSysMenuService.selectMenuByUserId(userId);
+        Set<String> permissions = new HashSet<>();
+        if (roles.contains(RoleConstants.SUPER_ADMIN)) {
+            permissions = iSysMenuService.list().stream()
+                    .map(SysMenu::getMenuPermission)
+                    .filter(StringUtils::isNotBlank)
+                    .collect(Collectors.toSet());
+        } else {
+            permissions = iSysMenuService.selectPermissionsByUserId(userId);
+        }
+        List<SysMenu> rawMenuList = new ArrayList<>();
+        if (roles.contains(RoleConstants.SUPER_ADMIN)) {
+            // 超级管理员直接获取全部菜单
+            rawMenuList = iSysMenuService.list();
+        } else {
+            rawMenuList = iSysMenuService.selectMenuByUserId(userId);
+        }
         // 5. 构建树形结构
         List<MenuTreeVO> menuTree = iSysMenuService.buildMenuTree(rawMenuList);
         // 6. 组装返回

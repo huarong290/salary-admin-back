@@ -1,6 +1,5 @@
 package com.salary.admin.filter;
 
-
 import com.salary.admin.constants.redis.RedisCacheConstants;
 import com.salary.admin.constants.security.JwtConstants;
 import com.salary.admin.exception.JwtAuthenticationException;
@@ -9,6 +8,7 @@ import com.salary.admin.property.SecurityWhiteListProperties;
 import com.salary.admin.security.JwtAuthenticationEntryPoint;
 import com.salary.admin.service.IRedisService;
 import com.salary.admin.service.ISysMenuService;
+import com.salary.admin.service.ISysRoleService;
 import com.salary.admin.utils.JwtUtil;
 import com.salary.admin.utils.UserContextUtil;
 import io.jsonwebtoken.Claims;
@@ -19,7 +19,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,16 +29,27 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
  * JWT 认证过滤器
- * 继承 OncePerRequestFilter 确保每个请求只走一次过滤逻辑
- * 核心职责：Token 校验、多端挤兑检查、黑名单拦截、用户上下文注入。
+ *
+ * <p>
+ * 核心职责：
+ * </p>
+ *
+ * 1 解析 AccessToken
+ * 2 校验 Token 合法性
+ * 3 Redis 会话校验（防止账号被挤下线）
+ * 4 黑名单 Token 校验
+ * 5 加载用户角色与权限
+ * 6 注入 Spring Security 认证信息
+ * 7 注入 ThreadLocal 用户上下文
+ *
+ * <p>
+ * 继承 OncePerRequestFilter 保证每个请求只执行一次
+ * </p>
  */
 @Slf4j
 @Component
@@ -47,146 +57,259 @@ import java.util.concurrent.TimeUnit;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final StringRedisTemplate redisTemplate;
-
     private final ISysMenuService iSysMenuService;
-
+    private final ISysRoleService iSysRoleService;
     private final IRedisService iRedisService;
-
-    //  注入白名单配置
     private final SecurityWhiteListProperties whiteListProperties;
-    // 使用 Spring 官方推荐的路径匹配器
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    /**
+     * Spring 推荐的路径匹配器
+     */
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
     /**
-     * 框架级跳过逻辑：白名单请求不走此过滤器
+     * Step 0：白名单判断
+     *
+     * 如果请求属于白名单接口，则跳过 JWT 认证过滤器
      */
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+
         String uri = request.getRequestURI();
 
-        // 1. 显式排除刷新接口（确保它能带着 RefreshToken 到达 Controller）
-        // 即使白名单没配这个，我们也建议硬编码或确保它在白名单内
-        // 建议：使用 equals 或精准的 match，防止 URI 伪造绕过
+        // RefreshToken 接口必须允许直接访问
         if ("/api/auth/refresh".equals(uri)) {
             return true;
         }
 
-        // 2. 动态匹配 YAML 中的白名单
         List<String> whitelist = whiteListProperties.getWhitelist();
-        if (whitelist == null || whitelist.isEmpty()) {
-            return false;
-        }
 
-        return whitelist.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
+        return whitelist != null
+                && whitelist.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
     }
 
+
+    /**
+     * Step 1 ~ Step 10：JWT 认证核心流程
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-        // 1.提取 Token (直接使用 static 方法，减少实例依赖)
-        String token = JwtUtil.extractBearerToken(request.getHeader(JwtConstants.JWT_HEADER));
-        // 2. 无 Token直接放行 交由 Security后续拦截器处理（如果是受保护接口，SecurityConfig中的EntryPoint 会拦截）
+        // =========================
+        // Step 1：从请求头提取 Token
+        // =========================
+        String token = JwtUtil.extractBearerToken(
+                request.getHeader(JwtConstants.JWT_HEADER)
+        );
+
+        // 如果请求没有 Token，则直接放行
         if (StringUtils.isBlank(token)) {
             filterChain.doFilter(request, response);
             return;
         }
+
         try {
-            // 3.解析并初步校验签名/过期
+
+            // =========================
+            // Step 2：解析 JWT Token
+            // =========================
             Claims claims = jwtUtil.parseToken(token);
-            String userId = claims.get("userId", String.class);
-            String jti = claims.getId(); // 建议直接用 getId()
-            String deviceId = claims.get("deviceId", String.class);
-            String username = claims.getSubject();
-            // 4. 【安全加固】设备指纹强校验：防止 Token 被脱离设备环境使用
-            if (StringUtils.isBlank(deviceId)) {
-                throw new JwtAuthenticationException("非法凭证：设备指纹缺失");
-            }
-            // 5. 【token类型校验】确保不能用 RefreshToken 当 AccessToken 使用
-            String type = claims.get(JwtConstants.CLAIM_TOKEN_TYPE, String.class);
-            if (!JwtConstants.TOKEN_TYPE_ACCESS.equals(type)) {
+
+            // =========================
+            // Step 3：Token 类型校验 (Fail-Fast)
+            // 防止 RefreshToken 被当作 AccessToken 使用
+            // =========================
+            String tokenType = claims.get(JwtConstants.CLAIM_TOKEN_TYPE, String.class);
+
+            if (!JwtConstants.TOKEN_TYPE_ACCESS.equals(tokenType)) {
                 throw new JwtAuthenticationException("非法 Token 类型");
             }
-            // 5.【时效校验】校验是否过期
-            if (claims.getExpiration().before(new Date())) {
-                throw new JwtAuthenticationException("Token 已过期");
-            }
-            // 7. 【挤兑校验】全端/同端唯一性检查
-            // 如果 Redis 中的最新 JTI 与当前 Token 的 JTI 不符，说明该账号已在别处重新登录或已刷新 Token
-            if (StringUtils.isNotBlank(userId)) {
-                String activeJti = iRedisService.get(RedisCacheConstants.AUTH_USER_ACTIVE + userId, String.class);
-                // 如果活跃 JTI 存在且不等于当前 JTI，说明该账号在别处登录了或者是同设备重新登录了
-                if (activeJti != null && !activeJti.equals(jti)) {
-                    throw new JwtAuthenticationException("您的账号已在其他设备登录或已失效");
-                }
-            }
-            // 8. 【黑名单校验】拦截主动注销的 Token
-            if (iRedisService.exists(RedisCacheConstants.AUTH_TOKEN_BLACKLIST + jti) > 0) {
-                throw new JwtAuthenticationException("会话已安全退出，请重新登录");
+
+            // =========================
+            // Step 4：解析 Token 关键信息
+            // =========================
+            Long userId = claims.get("userId", Long.class);
+            String username = claims.getSubject();
+            String deviceId = claims.get("deviceId", String.class);
+            String jti = claims.getId();
+
+            // 基础信息完整性校验
+            if (userId == null || StringUtils.isBlank(deviceId)) {
+                throw new JwtAuthenticationException("Token 信息不完整");
             }
 
-            // 9. 【补全】注入 Security 上下文
-            if (StringUtils.isNotBlank(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // 加载权限（含缓存击穿保护逻辑）
-                Set<String> permissions = getAndCachePermissions(userId, username);
-                List<SimpleGrantedAuthority> authorities = permissions.stream().map(SimpleGrantedAuthority::new).toList();
-                // A. 注入业务上下文 (供 Service 层使用，如 logout 方法)
-                UserContextUtil.setUser(LoginUserDTO.builder()
-                        .userId(Long.valueOf(userId))
-                        .username(username)
-                        .deviceId(deviceId)
-                        .build());
-                // B. 注入 Security 上下文 (供权限注解 @PreAuthorize 使用)
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // 关键点：这一步决定了后面的接口能不能拿到用户信息
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.debug("用户 {} 认证成功，权限：{}", username, authorities);
+            // =========================
+            // Step 5：Redis Session 校验
+            // 用于检测账号是否被其他设备挤下线
+            // =========================
+            String activeJti = iRedisService.get(
+                    RedisCacheConstants.AUTH_USER_SESSION + userId,
+                    String.class
+            );
+
+            if (activeJti != null && !activeJti.equals(jti)) {
+                throw new JwtAuthenticationException("您的账号已在其他设备登录");
             }
-            //  核心改动点：在这里执行 filterChain
+
+            // =========================
+            // Step 6：Token 黑名单校验
+            // 用于 logout 或安全强制下线
+            // =========================
+            if (iRedisService.exists(
+                    RedisCacheConstants.AUTH_TOKEN_BLACKLIST + jti
+            ) > 0) {
+                throw new JwtAuthenticationException("状态已失效");
+            }
+
+            // =========================
+            // Step 7：如果 SecurityContext 尚未认证
+            // 则进行用户权限加载
+            // =========================
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                // Step 7.1：从 Redis 或数据库加载用户角色与权限
+                LoginUserDTO userAuth = getAndCacheFullAuth(userId, username, deviceId);
+
+                // Step 7.2：构建 Spring Security Authority
+                List<SimpleGrantedAuthority> authorities =
+                        new ArrayList<>(userAuth.getRoles().size()
+                                + userAuth.getPermissions().size());
+
+                userAuth.getRoles()
+                        .forEach(role ->
+                                authorities.add(new SimpleGrantedAuthority("ROLE_" + role)));
+
+                userAuth.getPermissions()
+                        .forEach(perm ->
+                                authorities.add(new SimpleGrantedAuthority(perm)));
+
+                // Step 7.3：注入 ThreadLocal 用户上下文
+                UserContextUtil.setUser(userAuth);
+
+                // Step 7.4：构建 Spring Security Authentication 对象
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                username,
+                                null,
+                                authorities
+                        );
+
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
+
+                // Step 7.5：注入 SecurityContext
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+
+            // =========================
+            // Step 8：继续执行后续过滤器链
+            // =========================
             filterChain.doFilter(request, response);
+
         } catch (JwtAuthenticationException e) {
-            log.warn("JWT 认证拦截: {} -> URL: {}", e.getMessage(), request.getRequestURI());
+
+            // Step 9：JWT 认证异常处理
             handleException(request, response, e.getMessage());
+
         } catch (Exception e) {
-            log.error("安全过滤器未知异常", e);
+
+            log.error("JWT 认证未知异常", e);
+
             handleException(request, response, "系统安全校验异常");
+
         } finally {
-            // 10. 【灵魂清理】严防 ThreadLocal 内存泄漏，无论请求成功还是异常，必须清理
+
+            // =========================
+            // Step 10：清理 ThreadLocal
+            // 防止线程复用导致用户信息串号
+            // =========================
             UserContextUtil.clear();
         }
     }
 
+
     /**
-     * 加载并缓存用户权限 (带缓存击穿防护)
+     * 加载用户角色与权限（带缓存 + 防击穿）
+     *
+     * Redis Key：
+     * auth:user:auth:{userId}
      */
-    private Set<String> getAndCachePermissions(String userId, String username) {
-        String permKey = RedisCacheConstants.AUTH_USER_PERMISSIONS + userId;
-        Set<String> permissions = iRedisService.get(permKey, Set.class);
+    private LoginUserDTO getAndCacheFullAuth(Long userId,
+                                             String username,
+                                             String deviceId) {
 
-        if (permissions == null) {
-            log.info("用户 {} 权限缓存失效，正在重新加载...", username);
-            permissions = iSysMenuService.selectPermissionsByUserId(Long.valueOf(userId));
+        String key = RedisCacheConstants.AUTH_USER_AUTH + userId;
 
-            // 💡 即使权限为空，也缓存一个空集合（或者设置较短过期时间），防止频繁查询数据库
-            Set<String> cacheValue = (permissions == null) ? Collections.emptySet() : permissions;
-            iRedisService.setEx(permKey, cacheValue, 7, TimeUnit.DAYS);
-            return cacheValue;
+        // Step 1：先查 Redis
+        LoginUserDTO cached = iRedisService.get(key, LoginUserDTO.class);
+
+        if (cached != null) {
+            return cached;
         }
-        return permissions;
+
+        // Step 2：本地锁防止缓存击穿
+        synchronized (String.valueOf(userId).intern()) {
+
+            cached = iRedisService.get(key, LoginUserDTO.class);
+
+            if (cached != null) {
+                return cached;
+            }
+
+            // Step 3：查询数据库
+            log.info("用户 {} 权限缓存失效，查库加载", username);
+
+            Set<String> roles =
+                    iSysRoleService.selectRoleCodesByUserId(userId);
+
+            Set<String> perms =
+                    iSysMenuService.selectPermissionsByUserId(userId);
+
+            // Step 4：构建缓存对象
+            LoginUserDTO dto = LoginUserDTO.builder()
+                    .userId(userId)
+                    .username(username)
+                    .deviceId(deviceId)
+                    .roles(roles == null ? Collections.emptySet() : roles)
+                    .permissions(perms == null ? Collections.emptySet() : perms)
+                    .build();
+
+            // Step 5：写入 Redis
+            iRedisService.setEx(
+                    key,
+                    dto,
+                    RedisCacheConstants.AUTH_PERMISSION_CACHE_TTL_DAYS,
+                    TimeUnit.DAYS
+            );
+
+            return dto;
+        }
     }
 
+
     /**
-     * 统一异常出口处理
+     * 统一异常处理入口
      */
-    private void handleException(HttpServletRequest request, HttpServletResponse response, String msg) throws IOException, ServletException {
+    private void handleException(HttpServletRequest request,
+                                 HttpServletResponse response,
+                                 String msg)
+            throws IOException, ServletException {
+
         SecurityContextHolder.clearContext();
-        //  关键：将消息存入 request
+
         request.setAttribute("jwt_exception_msg", msg);
-        // 💡 手动调用 EntryPoint，利用它将 ApiResult 写回前端处理未知异常的响应
-        jwtAuthenticationEntryPoint.commence(request, response, new AuthenticationServiceException(msg));
+
+        jwtAuthenticationEntryPoint.commence(
+                request,
+                response,
+                new AuthenticationServiceException(msg)
+        );
     }
 }
