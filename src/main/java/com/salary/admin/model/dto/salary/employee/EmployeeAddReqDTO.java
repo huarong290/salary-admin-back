@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.salary.employee;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -26,9 +27,19 @@ public class EmployeeAddReqDTO implements Serializable {
     @Schema(description = "部门")
     private String department;
 
-    @Schema(description = "在职状态")
-    private String employmentStatus;
-
-    @Schema(description = "住宿情况")
-    private String accommodationStatus;
+    /**
+     * 在职状态: 0-离职, 1-在职
+     */
+    @Schema(description = "在职状态: 0-离职, 1-在职")
+    private Integer employmentStatus;
+    /**
+     * 是否转岗: 0-否, 1-是
+     */
+    @Schema(description = "是否转岗")
+    private Integer isTransferred;
+    /**
+     * 住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴'
+     */
+    @Schema(description = "住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴'")
+    private Integer accommodationStatus;
 }

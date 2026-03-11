@@ -74,10 +74,11 @@ public class AuthServiceImpl implements IAuthService {
         }
         // 4. 构建 JWT 自定义载荷 (Claims)
         // 将设备ID和IP存入 Token，方便后续刷新时比对环境一致性
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", sysUser.getId());
-        claims.put("deviceId", dto.getClientInfo().getDeviceId());
-        claims.put("loginIp", dto.getLoginIp());
+        Map<String,Object> claims = Map.of(
+                "userId", sysUser.getId(),
+                "deviceId", dto.getClientInfo().getDeviceId(),
+                "loginIp", dto.getLoginIp()
+        );
 
         // 5. 生成双 Token (Access & Refresh)
         String accessToken = jwtUtil.generateAccessToken(sysUser.getUsername(), claims);
@@ -184,10 +185,10 @@ public class AuthServiceImpl implements IAuthService {
         String storedUserId = parts[0];
         String storedDeviceId = parts[1];
         String storedClientType = parts.length > 2 ? parts[2] : "UNKNOWN"; // 兼容旧数据
-        String tokenUserId = claims.get("userId", String.class);
+        Long tokenUserId = claims.get("userId", Long.class);
         // 🚨 增加逻辑：确保 Token 里的 userId (如果有) 与 Redis 存的一致
         // 如果你在 generateToken 时把 userId 塞进了 Claims，这里可以双重校验
-        if (tokenUserId != null && !tokenUserId.equals(storedUserId)) {
+        if (tokenUserId != null && !tokenUserId.equals(Long.valueOf(storedUserId))) {
             log.error("🚨 账号安全风险：Token 用户ID与缓存不符！User: {}", username);
             throw new BusinessException("认证状态异常，请重新登录");
         }
@@ -204,7 +205,7 @@ public class AuthServiceImpl implements IAuthService {
 
         // 6. 🟢 执行轮转：生成全新的双 Token
         Map<String, Object> newClaims = new HashMap<>();
-        newClaims.put("userId", user.getId().toString());
+        newClaims.put("userId", user.getId());
         newClaims.put("deviceId", deviceId);
         newClaims.put("loginIp", currentIp);
 

@@ -12,10 +12,15 @@ import lombok.EqualsAndHashCode;
 @Data
 @Schema(description = "修改员工薪资档案请求")
 public class EmployeeEditReqDTO extends EmployeeAddReqDTO {
+    /**
+     * 员工ID
+     */
     @NotNull(message = "员工ID不能为空")
     @Schema(description = "员工ID")
     private Long id;
-
-    @Schema(description = "是否转岗")
+    /**
+     * 是否转岗: 0-否, 1-是
+     */
+    @Schema(description = "是否转岗: 0-否, 1-是")
     private Integer isTransferred;
 }

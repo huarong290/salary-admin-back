@@ -134,9 +134,9 @@ CREATE TABLE `salary_employee`
     `employee_name`        VARCHAR(64) NOT NULL DEFAULT '' COMMENT '姓名',
     `company_name`         VARCHAR(128)         DEFAULT NULL COMMENT '所属公司',
     `department`           VARCHAR(128)         DEFAULT NULL COMMENT '部门',
-    `employment_status`    VARCHAR(32)          DEFAULT NULL COMMENT '在职状态',
+    `employment_status`    TINYINT(1) NOT NULL DEFAULT 1 COMMENT '在职状态: 0-离职, 1-在职'
     `is_transferred`       TINYINT(1) DEFAULT '0' COMMENT '是否转岗',
-    `accommodation_status` VARCHAR(32)          DEFAULT NULL COMMENT '住宿情况',
+    `accommodation_status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴';
     `delete_flag`          TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
     `create_by`            VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '创建者',
     `create_time`          DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

@@ -17,5 +17,5 @@ public class EmployeeQueryReqDTO extends PageQueryDTO {
     private String department;
 
     @Schema(description = "在职状态")
-    private String employmentStatus;
+    private Integer employmentStatus;
 }

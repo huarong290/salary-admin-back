@@ -58,23 +58,23 @@ public class SalaryEmployee extends BaseEntity<SalaryEmployee> {
     @TableField("department")
     private String department;
     /**
-     * 在职状态
+     * 在职状态: 0-离职, 1-在职
      */
-    @Schema(description = "在职状态")
+    @Schema(description = "在职状态: 0-离职, 1-在职")
     @TableField("employment_status")
-    private String employmentStatus;
+    private Integer employmentStatus;
     /**
-     * 是否转岗
+     * 是否转岗: 0-否, 1-是
      */
     @Schema(description = "是否转岗")
     @TableField("is_transferred")
     private Integer isTransferred;
     /**
-     * 住宿情况
+     * 住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴'
      */
-    @Schema(description = "住宿情况")
+    @Schema(description = "住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴'")
     @TableField("accommodation_status")
-    private String accommodationStatus;
+    private Integer accommodationStatus;
 
 
     @Override
