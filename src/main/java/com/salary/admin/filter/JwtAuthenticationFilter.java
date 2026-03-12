@@ -1,6 +1,7 @@
 package com.salary.admin.filter;
 
 import com.salary.admin.constants.redis.RedisCacheConstants;
+import com.salary.admin.constants.role.RoleConstants;
 import com.salary.admin.constants.security.JwtConstants;
 import com.salary.admin.exception.JwtAuthenticationException;
 import com.salary.admin.model.dto.LoginUserDTO;
@@ -29,7 +30,10 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -273,6 +277,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     iSysMenuService.selectPermissionsByUserId(userId);
 
             // Step 4：构建缓存对象
+            // 在 getAndCacheFullAuth 的 Step 4 附近
+            // 如果是 ID 为 1 的用户，强制赋予 SUPER_ADMIN 角色，防止数据库配置丢失导致超管进不去系统
+            if (Long.valueOf(1L).equals(userId)) {
+                roles.add(RoleConstants.SUPER_ADMIN);
+                // 很多系统习惯用 *:*:* 代表拥有所有操作权限
+                perms.add("*:*:*");
+            }
             LoginUserDTO dto = LoginUserDTO.builder()
                     .userId(userId)
                     .username(username)

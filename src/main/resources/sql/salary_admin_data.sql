@@ -16,7 +16,7 @@ INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `email`, `phon
 -- ==========================================================
 TRUNCATE TABLE `sys_role`;
 INSERT INTO `sys_role` (`id`, `role_name`, `role_code`, `role_sort`, `role_status`, `role_desc`, `remark`, `create_by`) VALUES
-                                                                                                                            (1, '超级管理员', 'ADMIN', 1, 1, '系统最高权限', '拥有系统所有资源和操作权限', 'system'),
+                                                                                                                            (1, '超级管理员', 'SUPER_ADMIN', 1, 1, '系统最高权限', '拥有系统所有资源和操作权限', 'system'),
                                                                                                                             (2, '普通员工', 'USER', 2, 1, '普通员工权限', '普通业务线办理权限', 'system'),
                                                                                                                             (3, '测试人员', 'TEST', 3, 1, '测试人员权限', '仅用于查看系统的只读账号', 'system');
 

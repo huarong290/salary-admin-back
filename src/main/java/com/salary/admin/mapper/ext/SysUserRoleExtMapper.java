@@ -2,6 +2,9 @@ package com.salary.admin.mapper.ext;
 
 import com.salary.admin.mapper.auto.SysUserRoleMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,13 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface SysUserRoleExtMapper extends SysUserRoleMapper {
+
+    /**
+     * 根据角色ID查询所有关联的用户ID
+     *
+     * @param roleId 角色ID
+     * @return 用户ID集合
+     */
+    List<Long> selectUserIdsByRoleId(@Param("roleId") Long roleId);
 }
+

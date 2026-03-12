@@ -19,4 +19,11 @@
         id, user_id, role_id, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
+    <select id="selectUserIdsByRoleId" resultType="java.lang.Long">
+        SELECT user_id
+        FROM sys_user_role
+        WHERE role_id = #{roleId}
+    </select>
+
+
 </mapper>

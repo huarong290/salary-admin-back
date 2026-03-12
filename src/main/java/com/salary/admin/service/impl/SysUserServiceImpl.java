@@ -1,9 +1,8 @@
 package com.salary.admin.service.impl;
 
 import com.alibaba.fastjson2.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.common.PageResult;
 import com.salary.admin.constants.role.RoleConstants;
 import com.salary.admin.convert.menu.SysMenuConvert;
@@ -13,13 +12,11 @@ import com.salary.admin.mapper.ext.SysUserExtMapper;
 import com.salary.admin.model.dto.user.*;
 import com.salary.admin.model.entity.sys.SysMenu;
 import com.salary.admin.model.entity.sys.SysUser;
-import com.salary.admin.mapper.auto.SysUserMapper;
 import com.salary.admin.model.vo.menu.MenuTreeVO;
 import com.salary.admin.model.vo.user.SysUserVO;
 import com.salary.admin.service.ISysMenuService;
 import com.salary.admin.service.ISysRoleService;
 import com.salary.admin.service.ISysUserService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.utils.UserContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -100,7 +97,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
     /**
      * 删除用户 (逻辑删除)
      *
-     * @param id 用户主键 ID
+     * @param id            用户主键 ID
      * @param logicalDelete 是否逻辑删除
      *                      true  = 逻辑删除（delete_flag = 1）
      *                      false = 物理删除（DELETE）
@@ -125,40 +122,50 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
         }
 
     }
+
     /**
      * 删除用户 (逻辑删除)
      */
     @Override
-    public boolean deleteUserByIds(List<Long> ids,boolean logicalDelete) {
+    public boolean deleteUserByIds(List<Long> ids, boolean logicalDelete) {
         if (ids == null || ids.isEmpty()) {
             throw new BusinessException("请选择要删除的用户");
         }
-        // 🛡️ 防御性编程 1：绝对不允许删除超级管理员 (假设 ID 为 1)
-        List<SysUser> users = this.listByIds(ids);
-        boolean hasSuperAdmin = users.stream()
-                .map(SysUser::getId)
-                .anyMatch(userId -> iSysRoleService
-                        .selectRoleCodesByUserId(userId)
-                        .contains(RoleConstants.SUPER_ADMIN));
-        if (hasSuperAdmin) {
-            throw new BusinessException("超级管理员账号不允许删除！");
+        // 🛡️ 1. 绝对防御：禁止删除 ID 为 1 的系统初始管理员
+        if (ids.contains(1L)) {
+            throw new BusinessException("系统内置超级管理员(ID:1)是系统运行底座，严禁删除！");
         }
-        //🛡️ 防御性编程 2：如果你想做得更严谨，可以从 UserContextUtil 获取当前登录人 ID，防止他把自己删了
+        // 🛡️ 2. 逻辑防御：禁止删除具有 SUPER_ADMIN 角色编码的用户
+        // 即使 ID 不是 1，只要拥有超管角色，也不允许通过此接口直接删除（防止误删高权限账号）
+        List<SysUser> users = this.listByIds(ids);
+        for (Long userId : ids) {
+            Set<String> roles = iSysRoleService.selectRoleCodesByUserId(userId);
+            if (roles.contains(RoleConstants.SUPER_ADMIN)) {
+                // 找到用户实体获取姓名，让报错更有针对性
+                String username = users.stream()
+                        .filter(u -> u.getId().equals(userId))
+                        .map(SysUser::getUsername)
+                        .findFirst().orElse("未知");
+                throw new BusinessException("账号 [" + username + "] 拥有超级管理员权限，禁止删除！");
+            }
+        }
+        //🛡️ 防御性编程3. 自我保护：防止用户把自己删了导致 Session 崩溃
         Long currentUserId = UserContextUtil.getUserId();
         if (ids.contains(currentUserId)) {
-            throw new BusinessException("不能删除当前登录的账号！");
+            throw new BusinessException("检测到当前登录账号在删除列表中，不能自杀式删除！");
         }
         // 💡 路由分发：批量逻辑删除 vs 批量物理删除
         if (logicalDelete) {
             // 💡 重点魔法：因为我们在 BaseEntity 的 deleteFlag 字段上加了 @TableLogic 注解
             // 所以底层执行的不是 DELETE FROM，而是 UPDATE sys_user SET delete_flag = 1 WHERE id IN (...)
             return sysUserExtMapper.deleteByIds(ids) > 0;
-        }else{
-            return sysUserExtMapper.batchPhysicalDeleteUserByIds(ids)>0;
+        } else {
+            return sysUserExtMapper.batchPhysicalDeleteUserByIds(ids) > 0;
         }
 
     }
     // ======================== 3. 修改操作 (Update) ========================
+
     /**
      * 修改用户
      *
@@ -188,6 +195,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
         // 💡 重点：直接返回 updateById 的 boolean 结果
         return sysUserExtMapper.updateById(sysUser);
     }
+
     /**
      * 重置密码
      */
@@ -212,6 +220,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
         return sysUserExtMapper.updateById(sysUser) > 0;
     }
     // ======================== 4. 查询操作 (Read) ========================
+
     /**
      * 分页查询用户列表
      *
@@ -234,6 +243,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
         // 4. 组装并返回统一分页结果
         return PageResult.of(pageResult, voList);
     }
+
     /**
      * 根据用户名查询系统用户
      *
@@ -264,21 +274,24 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
         // 3. 调用 RoleService 获取角色集合
         Set<String> roles = iSysRoleService.selectRoleCodesByUserId(userId);
         // 4. 调用 MenuService 获取权限和菜单
+
+        // 超级管理员：ID 为 1 或者 拥有 SUPER_ADMIN 编码
+        boolean isSuperAdmin = Long.valueOf(1L).equals(userId) || roles.contains(RoleConstants.SUPER_ADMIN);
+        // 普通管理员：拥有 ADMIN 编码但不是超管（或者你可以根据业务需求定义）
+        boolean isNormalAdmin = roles.contains(RoleConstants.ADMIN);
+        List<SysMenu> rawMenuList = new ArrayList<>();
         Set<String> permissions = new HashSet<>();
-        if (roles.contains(RoleConstants.SUPER_ADMIN)) {
-            permissions = iSysMenuService.list().stream()
+        if (isSuperAdmin) {
+            // 【超管特权】直接从 sys_menu 表捞取所有数据，不走关联表
+            rawMenuList = iSysMenuService.list();
+            permissions = rawMenuList.stream()
                     .map(SysMenu::getMenuPermission)
                     .filter(StringUtils::isNotBlank)
                     .collect(Collectors.toSet());
         } else {
-            permissions = iSysMenuService.selectPermissionsByUserId(userId);
-        }
-        List<SysMenu> rawMenuList = new ArrayList<>();
-        if (roles.contains(RoleConstants.SUPER_ADMIN)) {
-            // 超级管理员直接获取全部菜单
-            rawMenuList = iSysMenuService.list();
-        } else {
+            // 【普通管理员 & 其它角色】严谨地通过 sys_user_role -> sys_role_menu 关联表查询
             rawMenuList = iSysMenuService.selectMenuByUserId(userId);
+            permissions = iSysMenuService.selectPermissionsByUserId(userId);
         }
         // 5. 构建树形结构
         List<MenuTreeVO> menuTree = iSysMenuService.buildMenuTree(rawMenuList);
@@ -292,15 +305,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
         log.info("用户聚合信息装配完成, userId=[{}],userInfoDTO:[{}]", userId, JSON.toJSONString(userInfoDTO));
         return userInfoDTO;
     }
-
-
-
-
-
-
-
-
-
 
 
 }
