@@ -46,6 +46,12 @@ public class SalaryIncomeType extends BaseEntity<SalaryIncomeType> {
     @TableField("type_name")
     private String typeName;
     /**
+     * 拼音缩写
+     */
+    @Schema(description = "拼音缩写")
+    @TableField("pinyin_code")
+    private String pinyinCode;
+    /**
      * 收入分类
      */
     @Schema(description = "收入分类")

@@ -1,6 +1,7 @@
 package com.salary.admin.mapper.ext.salary;
 
 import com.salary.admin.mapper.auto.salary.SalarySummaryMapper;
+import com.salary.admin.model.entity.salary.SalarySummary;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -30,4 +31,9 @@ public interface SalarySummaryExtMapper extends SalarySummaryMapper {
      * @return 影响行数
      */
     int physicalDeleteByIds(@Param("ids") List<Long> ids);
+
+    /**
+     * 自定义批量插入方法
+     */
+    int batchInsert(@Param("list") List<SalarySummary> list);
 }

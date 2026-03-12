@@ -4,6 +4,7 @@ package com.salary.admin.service.salary;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.period.PeriodAddReqDTO;
+import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodEditReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
@@ -70,4 +71,10 @@ public interface ISalaryPeriodService extends IService<SalaryPeriod> {
      * @return 是否成功
      */
     boolean deletePeriodByIds(List<Long> ids, boolean logicalDelete);
+
+    /**
+     * 批量初始化薪资周期
+     * 逻辑：根据选择的员工（或全量在职员工）自动生成指定月份的周期记录及汇总记录
+     */
+    boolean batchInitPeriods(PeriodBatchInitReqDTO reqDTO);
 }

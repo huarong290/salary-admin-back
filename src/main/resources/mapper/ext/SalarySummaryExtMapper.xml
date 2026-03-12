@@ -36,6 +36,35 @@
         target_account, payment_status, pay_time,
         remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
+    <!-- 批量插入记录 -->
+    <insert id="batchInsert">
+        INSERT INTO salary_summary (
+        period_id,
+        currency,
+        exchange_rate,
+        salary_subtotal,
+        salary_deduction_total,
+        salary_total,
+        payment_status,
+        create_time,
+        update_time,
+        delete_flag
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.periodId},
+            #{item.currency},
+            #{item.exchangeRate},
+            #{item.salarySubtotal},
+            #{item.salaryDeductionTotal},
+            #{item.salaryTotal},
+            #{item.paymentStatus},
+            NOW(),
+            NOW(),
+            0
+            )
+        </foreach>
+    </insert>
 
     <!-- 物理删除：直接删除记录 -->
     <delete id="physicalDeleteById">

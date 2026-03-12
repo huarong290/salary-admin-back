@@ -83,7 +83,10 @@ public class SalaryIncomeTypeServiceImpl extends ServiceImpl<SalaryIncomeTypeExt
         if (StrUtil.isNotBlank(reqDTO.getKeyword())) {
             wrapper.and(q -> q.like(SalaryIncomeType::getTypeCode, reqDTO.getKeyword())
                     .or()
-                    .like(SalaryIncomeType::getTypeName, reqDTO.getKeyword()));
+                    .like(SalaryIncomeType::getTypeName, reqDTO.getKeyword())
+                    .or()
+                    // 🌟 新增：支持拼音缩写搜索
+                    .like(SalaryIncomeType::getPinyinCode, reqDTO.getKeyword()));
         }
         // 🌟 核心调整：优先按排序值升序，再按创建时间降序
         wrapper.orderByAsc(SalaryIncomeType::getSortValue)

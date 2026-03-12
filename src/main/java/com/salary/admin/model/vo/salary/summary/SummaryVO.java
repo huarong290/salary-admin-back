@@ -65,7 +65,7 @@ public class SummaryVO implements Serializable {
     private String targetAccount;
 
     @Schema(description = "支付状态(0未支付 1已支付 2失败 3锁定)")
-    private Boolean paymentStatus;
+    private Integer paymentStatus;
 
     @Schema(description = "实际发放/确认时间")
     private LocalDateTime payTime;

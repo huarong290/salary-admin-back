@@ -6,6 +6,7 @@ import com.salary.admin.model.dto.salary.employee.EmployeeAddReqDTO;
 import com.salary.admin.model.dto.salary.employee.EmployeeEditReqDTO;
 import com.salary.admin.model.dto.salary.employee.EmployeeQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryEmployee;
+import com.salary.admin.model.vo.salary.employee.EmployeeOptionVO;
 import com.salary.admin.model.vo.salary.employee.EmployeeVO;
 
 import java.util.List;
@@ -74,4 +75,11 @@ public interface ISalaryEmployeeService extends IService<SalaryEmployee> {
      * @return 是否成功
      */
     boolean deleteEmployeeByIds(List<Long> ids, boolean logicalDelete);
+
+    /**
+     * 获取在职员工简易列表(用于下拉选择)
+     * @param keyword 模糊搜索关键字(姓名/工号)
+     * @return 简易员工信息列表
+     */
+    List<EmployeeOptionVO> listOption(String keyword);
 }

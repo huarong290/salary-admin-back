@@ -21,13 +21,18 @@ public class IncomeTypeAddReqDTO implements Serializable {
     @NotBlank(message = "类型名称不能为空")
     @Schema(description = "类型名称 (如: 基本工资, 加班费)")
     private String typeName;
+    /**
+     * 拼音缩写
+     */
+    @NotBlank(message = "拼音缩写不能为空")
+    @Schema(description = "拼音缩写")
+    private String pinyinCode;
 
     @Schema(description = "分类 (如: 固定工资, 补贴, 奖金)")
     private String category;
 
-    @Schema(description = "备注")
-    private String remark;
-
+    @Schema(description = "收入项说明")
+    private String description;
     /**
      * 排序值
      */

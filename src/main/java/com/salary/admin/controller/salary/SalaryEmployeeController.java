@@ -6,6 +6,7 @@ import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.employee.EmployeeAddReqDTO;
 import com.salary.admin.model.dto.salary.employee.EmployeeEditReqDTO;
 import com.salary.admin.model.dto.salary.employee.EmployeeQueryReqDTO;
+import com.salary.admin.model.vo.salary.employee.EmployeeOptionVO;
 import com.salary.admin.model.vo.salary.employee.EmployeeVO;
 import com.salary.admin.service.salary.ISalaryEmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,5 +78,13 @@ public class SalaryEmployeeController {
             @RequestBody List<Long> ids,
             @Parameter(description = "是否逻辑删除(默认true)") @RequestParam(defaultValue = "true") boolean logicalDelete) {
         return ApiResult.successResult(iSalaryEmployeeService.deleteEmployeeByIds(ids, logicalDelete));
+    }
+
+    @GetMapping("/listOption")
+    @Operation(summary = "获取在职员工简易列表(用于下拉选择)")
+    @Loggable(title = "员工档案-获取在职员工简易列表(用于下拉选择)")
+    public ApiResult<List<EmployeeOptionVO>> listOption(
+            @Parameter(description = "模糊搜索关键字(姓名/工号)") @RequestParam(required = false) String keyword) {
+        return ApiResult.successResult(iSalaryEmployeeService.listOption(keyword));
     }
 }

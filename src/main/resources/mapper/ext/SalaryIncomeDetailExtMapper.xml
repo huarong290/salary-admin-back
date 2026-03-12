@@ -5,7 +5,6 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.salary.SalaryIncomeDetail">
         <id column="id" property="id" />
-        <result column="income_id" property="incomeId" />
         <result column="period_id" property="periodId" />
         <result column="income_type_id" property="incomeTypeId" />
         <result column="amount" property="amount" />
@@ -19,7 +18,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, income_id, period_id, income_type_id, amount, remark, delete_flag, create_by, create_time, update_by, update_time
+        id, period_id, income_type_id, amount, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
     <!-- 物理删除：直接删除记录 -->

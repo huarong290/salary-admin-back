@@ -4,6 +4,7 @@ import com.salary.admin.annotation.Loggable;
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.period.PeriodAddReqDTO;
+import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodEditReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
 import com.salary.admin.model.vo.salary.period.PeriodVO;
@@ -34,10 +35,17 @@ public class SalaryPeriodController {
     private ISalaryPeriodService iSalaryPeriodService;
 
     @PostMapping("/add")
-    @Operation(summary = "新增薪资周期")
+    @Operation(summary = "新增单条薪资周期")
     @Loggable(title = "薪资周期-新增")
     public ApiResult<Long> add(@Validated @RequestBody PeriodAddReqDTO reqDTO) {
         return ApiResult.successResult(iSalaryPeriodService.addPeriod(reqDTO));
+    }
+
+    @PostMapping("/batch-init")
+    @Operation(summary = "批量初始化薪资周期", description = "根据在职员工名单，一键生成指定月份的薪资周期及汇总记录")
+    @Loggable(title = "薪资周期-批量初始化")
+    public ApiResult<Boolean> batchInit(@Validated @RequestBody PeriodBatchInitReqDTO reqDTO) {
+        return ApiResult.successResult(iSalaryPeriodService.batchInitPeriods(reqDTO));
     }
 
     @PutMapping("/edit")
@@ -76,4 +84,6 @@ public class SalaryPeriodController {
             @Parameter(description = "是否逻辑删除") @RequestParam(defaultValue = "true") boolean logicalDelete) {
         return ApiResult.successResult(iSalaryPeriodService.deletePeriodByIds(ids, logicalDelete));
     }
+
+
 }

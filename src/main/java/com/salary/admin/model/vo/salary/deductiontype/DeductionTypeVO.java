@@ -36,13 +36,21 @@ public class DeductionTypeVO implements Serializable {
      */
     @Schema(description = "类型名称 (如: 个人所得税, 社保扣款)")
     private String typeName;
-
+    /**
+     * 拼音缩写
+     */
+    @Schema(description = "拼音缩写")
+    private String pinyinCode;
     /**
      * 扣款分类
      */
     @Schema(description = "扣款分类")
     private String category;
-
+    /**
+     * 是否固定扣款
+     */
+    @Schema(description = "是否固定扣款")
+    private Integer isFixed;
     /**
      * 扣款项说明
      */

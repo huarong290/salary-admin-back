@@ -14,6 +14,7 @@ import com.salary.admin.model.dto.salary.employee.EmployeeAddReqDTO;
 import com.salary.admin.model.dto.salary.employee.EmployeeEditReqDTO;
 import com.salary.admin.model.dto.salary.employee.EmployeeQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryEmployee;
+import com.salary.admin.model.vo.salary.employee.EmployeeOptionVO;
 import com.salary.admin.model.vo.salary.employee.EmployeeVO;
 import com.salary.admin.service.salary.ISalaryEmployeeService;
 import jakarta.annotation.Resource;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -152,5 +154,45 @@ public class SalaryEmployeeServiceImpl extends ServiceImpl<SalaryEmployeeExtMapp
             log.warn("正在对员工执行批量物理删除操作，IDs: {}", ids);
             return baseMapper.physicalDeleteByIds(ids) > 0;
         }
+    }
+
+    // 在 SalaryEmployeeServiceImpl.java 中实现方法
+
+    @Override
+    public List<EmployeeOptionVO> listOption(String keyword) {
+        // 1. 构造查询条件
+        LambdaQueryWrapper<SalaryEmployee> wrapper = new LambdaQueryWrapper<>();
+
+        // 条件一：必须是在职员工且未被删除
+        wrapper.eq(SalaryEmployee::getEmploymentStatus, 1)
+                .eq(SalaryEmployee::getDeleteFlag, 0);
+
+        // 条件二：如果传了关键字，则匹配姓名或工号
+        if (StrUtil.isNotBlank(keyword)) {
+            wrapper.and(q -> q.like(SalaryEmployee::getEmployeeName, keyword)
+                    .or()
+                    .like(SalaryEmployee::getEmployeeCode, keyword));
+        }
+
+        // 2. 性能优化：只查询特定的列 (ID, 姓名, 编号)
+        // 避免把“银行卡号”、“住址”等敏感且沉重的数据查出来
+        wrapper.select(SalaryEmployee::getId,
+                SalaryEmployee::getEmployeeName,
+                SalaryEmployee::getEmployeeCode);
+
+        // 3. 排序及数量限制 (企业级标准：防止全量加载)
+        wrapper.orderByAsc(SalaryEmployee::getEmployeeCode).last("LIMIT 50");
+
+        // 4. 执行查询并转换
+        List<SalaryEmployee> list = this.list(wrapper);
+
+        // 5. 将 Entity 转为轻量级的 OptionVO
+        return list.stream().map(item -> {
+            EmployeeOptionVO vo = new EmployeeOptionVO();
+            vo.setId(item.getId());
+            vo.setEmployeeName(item.getEmployeeName());
+            vo.setEmployeeCode(item.getEmployeeCode());
+            return vo;
+        }).collect(Collectors.toList());
     }
 }

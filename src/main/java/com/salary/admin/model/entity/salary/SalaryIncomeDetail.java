@@ -35,12 +35,6 @@ public class SalaryIncomeDetail extends BaseEntity<SalaryIncomeDetail> {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
-     * 主表ID
-     */
-    @Schema(description = "主表ID")
-    @TableField("income_id")
-    private Long incomeId;
-    /**
      * 薪资周期ID
      */
     @Schema(description = "薪资周期ID")

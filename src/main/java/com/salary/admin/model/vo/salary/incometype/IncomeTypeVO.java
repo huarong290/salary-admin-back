@@ -36,18 +36,26 @@ public class IncomeTypeVO implements Serializable {
      */
     @Schema(description = "类型名称 (如: 基本工资, 加班费)")
     private String typeName;
-
+    /**
+     * 拼音缩写
+     */
+    @Schema(description = "拼音缩写")
+    private String pinyinCode;
     /**
      * 分类
      */
     @Schema(description = "分类 (如: 固定工资, 补贴, 奖金)")
     private String category;
-
+    /**
+     * 是否固定扣款
+     */
+    @Schema(description = "是否固定扣款")
+    private Integer isFixed;
     /**
      * 备注
      */
     @Schema(description = "备注")
-    private String remark;
+    private String description;
 
 
     /**

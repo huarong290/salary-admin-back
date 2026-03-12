@@ -19,7 +19,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, type_code, type_name, category, description, is_fixed, delete_flag, create_by, create_time, update_by, update_time
+        id, type_code, type_name, pinyin_code, category, description, is_fixed, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 </mapper>

@@ -22,11 +22,25 @@ public class DeductionTypeAddReqDTO implements Serializable {
     @Schema(description = "类型名称")
     private String typeName;
 
+    /**
+     * 拼音缩写
+     */
+    @NotBlank(message = "拼音缩写不能为空")
+    @Schema(description = "拼音缩写")
+    private String pinyinCode;
+
     @Schema(description = "扣款分类")
     private String category;
 
+
     @Schema(description = "扣款项说明")
     private String description;
+
+    /**
+     * 是否固定扣款
+     */
+    @Schema(description = "是否固定扣款")
+    private Integer isFixed;
 
     @NotNull(message = "排序值不能为空")
     @Schema(description = "排序值 (数值越小越靠前)")

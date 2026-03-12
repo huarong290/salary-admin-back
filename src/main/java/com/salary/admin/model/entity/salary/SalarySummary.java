@@ -97,7 +97,7 @@ public class SalarySummary extends BaseEntity<SalarySummary> {
      */
     @Schema(description = "支付状态(0未支付 1已支付 2失败 3锁定)")
     @TableField("payment_status")
-    private Boolean paymentStatus;
+    private Integer paymentStatus;
     /**
      * 实际发放/确认时间
      */

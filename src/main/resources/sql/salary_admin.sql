@@ -134,7 +134,7 @@ CREATE TABLE `salary_employee`
     `employee_name`        VARCHAR(64) NOT NULL DEFAULT '' COMMENT '姓名',
     `company_name`         VARCHAR(128)         DEFAULT NULL COMMENT '所属公司',
     `department`           VARCHAR(128)         DEFAULT NULL COMMENT '部门',
-    `employment_status`    TINYINT(1) NOT NULL DEFAULT 1 COMMENT '在职状态: 0-离职, 1-在职'
+    `employment_status`    TINYINT(1) NOT NULL DEFAULT 1 COMMENT '在职状态: 0-离职, 1-在职',
     `is_transferred`       TINYINT(1) DEFAULT '0' COMMENT '是否转岗',
     `accommodation_status` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴';
     `delete_flag`          TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
@@ -196,31 +196,13 @@ CREATE TABLE `salary_summary`
     UNIQUE KEY `uk_period_id` (`period_id`) USING BTREE, -- 一个周期只能有一份汇总记录
     KEY `idx_currency` (`currency`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资汇总与结算表';
+
 -- ==========================================================
--- 9. 员工收入主表 salary_income
--- ==========================================================
-CREATE TABLE `salary_income`
-(
-    `id`           BIGINT      NOT NULL AUTO_INCREMENT COMMENT '收入记录ID',
-    `period_id`    BIGINT      NOT NULL DEFAULT '0' COMMENT '薪资周期ID',
-    `employee_id`  BIGINT      NOT NULL DEFAULT '0' COMMENT '员工ID',
-    `total_amount` DECIMAL(18, 8)       DEFAULT '0.00000000' COMMENT '总收入金额',
-    `delete_flag`  TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
-    `create_by`    VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '创建者',
-    `create_time`  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_by`    VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '修改者',
-    `update_time`  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-    PRIMARY KEY (`id`),
-    KEY            `idx_period_id` (`period_id`),
-    KEY            `idx_employee_id` (`employee_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工收入主表';
--- ==========================================================
--- 10. 员工收入明细表 salary_income_detail
+-- 9. 员工收入明细表 salary_income_detail
 -- ==========================================================
 CREATE TABLE `salary_income_detail`
 (
     `id`             BIGINT         NOT NULL AUTO_INCREMENT COMMENT '明细ID',
-    `income_id`      BIGINT         NOT NULL DEFAULT '0' COMMENT '主表ID',
     `period_id`      BIGINT         NOT NULL DEFAULT '0' COMMENT '薪资周期ID',
     `income_type_id` BIGINT         NOT NULL DEFAULT '0' COMMENT '收入类型ID',
     `amount`         DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '收入金额',
@@ -236,13 +218,14 @@ CREATE TABLE `salary_income_detail`
     KEY              `idx_income_type_id` (`income_type_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工收入明细表';
 -- ==========================================================
--- 11. 收入类型字典表 salary_income_type
+-- 10. 收入类型字典表 salary_income_type
 -- ==========================================================
 CREATE TABLE `salary_income_type`
 (
     `id`          BIGINT      NOT NULL AUTO_INCREMENT COMMENT '收入类型ID',
     `type_code`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '收入类型缩写简称',
     `type_name`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '收入类型名称',
+    `pinyin_code`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '拼音缩写',
     `category`    VARCHAR(64)          DEFAULT NULL COMMENT '收入分类',
     `description` VARCHAR(255)         DEFAULT NULL COMMENT '收入项说明',
     `sort_value`  INT         NOT NULL DEFAULT '0' COMMENT '排序值 (数值越小越靠前)',
@@ -256,7 +239,7 @@ CREATE TABLE `salary_income_type`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收入类型字典表';
 
 -- ==========================================================
--- 12. 员工扣款明细表 salary_deduction_detail
+-- 11. 员工扣款明细表 salary_deduction_detail
 -- ==========================================================
 CREATE TABLE `salary_deduction_detail`
 (
@@ -276,13 +259,14 @@ CREATE TABLE `salary_deduction_detail`
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工扣款明细表';
 -- ==========================================================
--- 13. 扣款类型字典表 salary_deduction_type
+-- 12. 扣款类型字典表 salary_deduction_type
 -- ==========================================================
 CREATE TABLE `salary_deduction_type`
 (
     `id`          BIGINT      NOT NULL AUTO_INCREMENT COMMENT '扣款类型ID',
     `type_code`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '扣款类型缩写简称',
     `type_name`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '扣款类型名称',
+    `pinyin_code`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '拼音缩写',
     `category`    VARCHAR(64)          DEFAULT NULL COMMENT '扣款分类',
     `description` VARCHAR(255)         DEFAULT NULL COMMENT '扣款项说明',
     `sort_value`  INT         NOT NULL DEFAULT '0' COMMENT '排序值 (数值越小越靠前)',

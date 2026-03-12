@@ -46,6 +46,12 @@ public class SalaryDeductionType extends BaseEntity<SalaryDeductionType> {
     @TableField("type_name")
     private String typeName;
     /**
+     * 拼音缩写
+     */
+    @Schema(description = "拼音缩写")
+    @TableField("pinyin_code")
+    private String pinyinCode;
+    /**
      * 扣款分类
      */
     @Schema(description = "扣款分类")
@@ -62,7 +68,7 @@ public class SalaryDeductionType extends BaseEntity<SalaryDeductionType> {
      */
     @Schema(description = "是否固定扣款")
     @TableField("is_fixed")
-    private Boolean isFixed;
+    private Integer isFixed;
     /**
      * 排序值 (数值越小越靠前)
      */
