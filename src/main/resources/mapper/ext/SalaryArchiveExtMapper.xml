@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.salary.admin.mapper.ext.salary.SalaryArchiveExtMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.salary.SalaryArchive">
+        <id column="id" property="id" />
+        <result column="employee_id" property="employeeId" />
+        <result column="version" property="version" />
+        <result column="is_latest" property="isLatest" />
+        <result column="effective_date" property="effectiveDate" />
+        <result column="expiry_date" property="expiryDate" />
+        <result column="audit_status" property="auditStatus" />
+        <result column="base_salary" property="baseSalary" />
+        <result column="probation_base_salary" property="probationBaseSalary" />
+        <result column="currency" property="currency" />
+        <result column="change_reason" property="changeReason" />
+        <result column="remark" property="remark" />
+        <result column="delete_flag" property="deleteFlag" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, employee_id, version, is_latest, effective_date, expiry_date, audit_status, base_salary, probation_base_salary, currency, change_reason, remark, delete_flag, create_by, create_time, update_by, update_time
+    </sql>
+
+
+    <resultMap id="SalaryArchiveVOResultMap" type="com.salary.admin.model.vo.salary.archive.SalaryArchiveVO">
+        <id property="id" column="id"/>
+        <result property="employeeId" column="employee_id"/>
+        <result property="employeeName" column="employee_name"/>
+        <result property="employeeCode" column="employee_code"/>
+        <result property="version" column="version"/>
+        <result property="isLatest" column="is_latest"/>
+        <result property="effectiveDate" column="effective_date"/>
+        <result property="baseSalary" column="base_salary"/>
+        <result property="probationBaseSalary" column="probation_base_salary"/>
+        <result property="currency" column="currency"/>
+        <result property="changeReason" column="change_reason"/>
+
+        <collection property="items" ofType="com.salary.admin.model.vo.salary.archiveitem.ArchiveItemDetailVO">
+            <result property="typeId" column="type_id"/>
+            <result property="itemType" column="item_type"/>
+            <result property="calcType" column="calc_type"/>
+            <result property="baseAmount" column="base_amount"/>
+            <result property="amount" column="amount"/>
+            <result property="ratio" column="ratio"/>
+            <result property="typeName" column="type_name"/>
+            <result property="typeCode" column="type_code"/>
+        </collection>
+    </resultMap>
+    <select id="selectArchivePage" resultType="com.salary.admin.model.vo.salary.archive.SalaryArchiveVO">
+        SELECT
+        sa.id, sa.employee_id, sa.version, sa.is_latest, sa.effective_date, sa.expiry_date, sa.audit_status,
+        sa.base_salary, sa.probation_base_salary, sa.currency, sa.change_reason, sa.remark,
+        se.employee_name, se.employee_code
+        FROM salary_archive sa
+        INNER JOIN salary_employee se ON sa.employee_id = se.id AND se.delete_flag = 0
+        WHERE sa.delete_flag = 0
+        <if test="req.isLatest != null">
+            AND sa.is_latest = #{req.isLatest}
+        </if>
+        <if test="req.keyword != null and req.keyword != ''">
+            AND (se.employee_name LIKE CONCAT('%', #{req.keyword}, '%')
+            OR se.employee_code LIKE CONCAT('%', #{req.keyword}, '%'))
+        </if>
+        ORDER BY sa.update_time DESC
+    </select>
+    <select id="getArchiveDetailById" resultMap="SalaryArchiveVOResultMap">
+        SELECT
+            sa.id, sa.employee_id, sa.version, sa.is_latest, sa.effective_date,
+            sa.base_salary, sa.probation_base_salary, sa.currency, sa.change_reason,
+            se.employee_name, se.employee_code,
+            sai.type_id, sai.item_type, sai.calc_type, sai.base_amount, sai.amount, sai.ratio,
+            -- 动态判断：如果是收入项去收入字典查，如果是扣款项去扣款字典查
+            CASE
+                WHEN sai.item_type = 1 THEN sit.type_name
+                WHEN sai.item_type = 2 THEN sdt.type_name
+                END AS type_name,
+            CASE
+                WHEN sai.item_type = 1 THEN sit.type_code
+                WHEN sai.item_type = 2 THEN sdt.type_code
+                END AS type_code
+        FROM salary_archive sa
+                 INNER JOIN salary_employee se ON sa.employee_id = se.id AND se.delete_flag = 0
+                 LEFT JOIN salary_archive_item sai ON sa.id = sai.archive_id AND sai.delete_flag = 0
+            -- 关联收入字典
+                 LEFT JOIN salary_income_type sit ON sai.item_type = 1 AND sai.type_id = sit.id AND sit.delete_flag = 0
+            -- 关联扣款字典
+                 LEFT JOIN salary_deduction_type sdt ON sai.item_type = 2 AND sai.type_id = sdt.id AND sdt.delete_flag = 0
+        WHERE sa.id = #{archiveId}
+          AND sa.delete_flag = 0
+    </select>
+
+    <select id="getLatestArchiveByEmployeeId" resultMap="SalaryArchiveVOResultMap">
+        SELECT
+            sa.id, sa.employee_id, sa.version, sa.is_latest, sa.effective_date,
+            sa.base_salary, sa.probation_base_salary, sa.currency, sa.change_reason,
+            se.employee_name, se.employee_code,
+            sai.type_id, sai.item_type, sai.calc_type, sai.base_amount, sai.amount, sai.ratio,
+            CASE WHEN sai.item_type = 1 THEN sit.type_name WHEN sai.item_type = 2 THEN sdt.type_name END AS type_name,
+            CASE WHEN sai.item_type = 1 THEN sit.type_code WHEN sai.item_type = 2 THEN sdt.type_code END AS type_code
+        FROM salary_archive sa
+                 INNER JOIN salary_employee se ON sa.employee_id = se.id AND se.delete_flag = 0
+                 LEFT JOIN salary_archive_item sai ON sa.id = sai.archive_id AND sai.delete_flag = 0
+                 LEFT JOIN salary_income_type sit ON sai.item_type = 1 AND sai.type_id = sit.id AND sit.delete_flag = 0
+                 LEFT JOIN salary_deduction_type sdt ON sai.item_type = 2 AND sai.type_id = sdt.id AND sdt.delete_flag = 0
+        WHERE sa.employee_id = #{employeeId}
+          AND sa.is_latest = 1
+          AND sa.audit_status = 1 -- 只查审核通过的生效版本
+          AND sa.delete_flag = 0
+    </select>
+
+
+</mapper>

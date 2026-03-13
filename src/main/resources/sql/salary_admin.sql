@@ -279,3 +279,52 @@ CREATE TABLE `salary_deduction_type`
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_type_code` (`type_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='扣款类型字典表';
+
+-- ==========================================================
+-- 13. 员工薪资标准配置表 (档案主表)
+-- ==========================================================
+CREATE TABLE `salary_archive`
+(
+    `id`                    BIGINT         NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `employee_id`           BIGINT         NOT NULL COMMENT '员工ID',
+    `version`               INT            NOT NULL DEFAULT 1 COMMENT '版本号 (每次调薪递增)',
+    `is_latest`             TINYINT(1)     NOT NULL DEFAULT 1 COMMENT '是否当前最新版本: 0-历史, 1-最新',
+    `effective_date`        DATE           NOT NULL COMMENT '生效起始日期',
+    `expiry_date`           DATE           DEFAULT '9999-12-31' COMMENT '失效日期',
+    `audit_status`          TINYINT(4)     NOT NULL DEFAULT 1 COMMENT '审核状态: 0-草稿/待审, 1-已生效, 2-驳回', -- 🌟 新增：支持调薪审批流
+    `base_salary`           DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '基本工资/转正底薪',
+    `probation_base_salary` DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '试用期底薪(选填)',
+    `currency`              VARCHAR(16)    NOT NULL DEFAULT 'CNY' COMMENT '默认结算币种',
+    `change_reason`         VARCHAR(255)   NOT NULL DEFAULT '' COMMENT '调薪原因 (如: 年度普调、晋升)',
+    `remark`                VARCHAR(255)   NOT NULL DEFAULT '' COMMENT '档案备注',
+    `delete_flag`           TINYINT(1)     NOT NULL DEFAULT '0',
+    `create_by`             VARCHAR(64)    NOT NULL DEFAULT 'admin',
+    `create_time`           DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_by`             VARCHAR(64)    NOT NULL DEFAULT 'admin',
+    `update_time`           DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_emp_version` (`employee_id`, `version`),
+    KEY `idx_emp_latest` (`employee_id`, `is_latest`, `audit_status`), -- 🌟 联合索引优化：用于核算时精准抓取
+    KEY `idx_effective_date` (`effective_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工薪资标准配置表(含版本历史)';
+
+-- ==========================================================
+-- 14. 薪资档案固定项明细表 (档案从表)
+-- ==========================================================
+CREATE TABLE `salary_archive_item`
+(
+    `id`                BIGINT         NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `archive_id`        BIGINT         NOT NULL COMMENT '关联具体的某一个版本的档案ID',
+    `item_type`         TINYINT(1)     NOT NULL COMMENT '项目类型: 1-收入项, 2-扣款项',
+    `type_id`           BIGINT         NOT NULL COMMENT '对应的收入/扣款类型ID',
+    `calc_type`         TINYINT(1)     NOT NULL DEFAULT 1 COMMENT '计算方式: 1-固定金额, 2-按基数比例',
+    `base_amount`       DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '计算基数 (为空则默认取主表base_salary)', -- 🌟 新增：解决社保基数与底薪不同的问题
+    `amount`            DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '固定金额 (若为比例计算，此字段可作为计算结果缓存)',
+    `ratio`             DECIMAL(8, 4)  NOT NULL DEFAULT '0.0000' COMMENT '计算比例 (如 0.0800 代表 8%)', -- 🌟 修改：精度调到(8,4)，防止极端高倍率场景
+    `delete_flag`       TINYINT(1)     NOT NULL DEFAULT '0',
+    `create_by`         VARCHAR(64)    NOT NULL DEFAULT 'admin',
+    `create_time`       DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_by`         VARCHAR(64)    NOT NULL DEFAULT 'admin',
+    `update_time`       DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_archive_id` (`archive_id`),
+    UNIQUE KEY `uk_archive_item` (`archive_id`, `item_type`, `type_id`) -- 🌟 新增：防止同一版本重复添加相同项
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资档案固定项明细表';
