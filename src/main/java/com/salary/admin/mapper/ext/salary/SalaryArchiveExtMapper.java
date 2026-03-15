@@ -7,6 +7,8 @@ import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * <p>
  * 员工薪资标准配置表(含版本历史)扩展 Mapper 接口
@@ -36,4 +38,10 @@ public interface SalaryArchiveExtMapper extends SalaryArchiveMapper {
      * 根据员工ID获取当前最新生效的薪资档案详情
      */
     SalaryArchiveVO getLatestArchiveByEmployeeId(@Param("employeeId") Long employeeId);
+
+    /**
+     * 🌟 新增：批量获取所有在职员工的最新生效档案
+     * 用于全员核算引擎，一次性拉取所有待发薪人员的薪资标准
+     */
+    List<SalaryArchiveVO> listActiveEmployeeArchives();
 }

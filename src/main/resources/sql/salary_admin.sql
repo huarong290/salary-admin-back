@@ -193,7 +193,7 @@ CREATE TABLE `salary_summary`
     `update_by`            VARCHAR(64)    NOT NULL DEFAULT 'admin' COMMENT '修改者',
     `update_time`          DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY `uk_period_id` (`period_id`) USING BTREE, -- 一个周期只能有一份汇总记录
+    UNIQUE KEY `uk_period_delete` (`period_id`, `delete_flag`) USING BTREE, -- 一个周期只能有一份汇总记录
     KEY `idx_currency` (`currency`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资汇总与结算表';
 
@@ -213,8 +213,7 @@ CREATE TABLE `salary_income_detail`
     `update_by`      VARCHAR(64)    NOT NULL DEFAULT 'admin' COMMENT '修改者',
     `update_time`    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    KEY              `idx_income_id` (`income_id`),
-    KEY              `idx_period_income` (`period_id`, `income_id`),
+    KEY              `idx_period_income` (`period_id`, `income_type_id`),
     KEY              `idx_income_type_id` (`income_type_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工收入明细表';
 -- ==========================================================
@@ -291,7 +290,7 @@ CREATE TABLE `salary_archive`
     `is_latest`             TINYINT(1)     NOT NULL DEFAULT 1 COMMENT '是否当前最新版本: 0-历史, 1-最新',
     `effective_date`        DATE           NOT NULL COMMENT '生效起始日期',
     `expiry_date`           DATE           DEFAULT '9999-12-31' COMMENT '失效日期',
-    `audit_status`          TINYINT(4)     NOT NULL DEFAULT 1 COMMENT '审核状态: 0-草稿/待审, 1-已生效, 2-驳回', -- 🌟 新增：支持调薪审批流
+    `audit_status`          TINYINT(4)     NOT NULL DEFAULT 0 COMMENT '审核状态: 0-草稿/待审, 1-已生效, 2-驳回', -- 🌟 新增：支持调薪审批流
     `base_salary`           DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '基本工资/转正底薪',
     `probation_base_salary` DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '试用期底薪(选填)',
     `currency`              VARCHAR(16)    NOT NULL DEFAULT 'CNY' COMMENT '默认结算币种',
@@ -328,3 +327,33 @@ CREATE TABLE `salary_archive_item`
     INDEX `idx_archive_id` (`archive_id`),
     UNIQUE KEY `uk_archive_item` (`archive_id`, `item_type`, `type_id`) -- 🌟 新增：防止同一版本重复添加相同项
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资档案固定项明细表';
+
+-- ==========================================================
+-- 15：薪资计算结果快照表 (用于存储计算出的明细或直接录入的总额)
+-- ==========================================================
+CREATE TABLE `salary_payment_record`
+(
+    `id`              BIGINT         NOT NULL AUTO_INCREMENT COMMENT '记录ID',
+    `summary_id`      BIGINT         NOT NULL COMMENT '关联汇总ID',
+    `employee_id`     BIGINT         NOT NULL COMMENT '员工ID',
+    `archive_id`      BIGINT         NOT NULL DEFAULT 0 COMMENT '关联薪资档案版本ID(系统计算必填)',
+
+    -- 核心金额字段
+    `base_salary`     DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '基本工资(系统计算快照)',
+    `income_total`    DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '收入合计',
+    `deduction_total` DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '扣款合计',
+    `final_salary`    DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '最终总计(无论是计算还是手动录入)',
+    -- 标志位
+    `is_manual`       TINYINT(1)     NOT NULL DEFAULT '0' COMMENT '是否手动录入总额(0系统计算 1手动录入)',
+
+    `detail_json`     JSON                    DEFAULT NULL COMMENT '计算详情快照(存储当时所有income/deduction的JSON)',
+    `remark`          TEXT                    DEFAULT NULL COMMENT '备注',
+    `delete_flag`     TINYINT(1)     NOT NULL DEFAULT '0',
+    `create_time`     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `create_by`       VARCHAR(64)    NOT NULL DEFAULT 'admin',
+    `update_time`     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `update_by`       VARCHAR(64)    NOT NULL DEFAULT 'admin',
+    PRIMARY KEY (`id`) USING BTREE,
+    KEY               `idx_summary_id` (`summary_id`),
+    KEY               `idx_employee_id` (`employee_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资结算明细记录表';

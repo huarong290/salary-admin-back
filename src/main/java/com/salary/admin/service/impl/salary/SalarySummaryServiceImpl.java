@@ -10,9 +10,10 @@ import com.salary.admin.common.PageResult;
 import com.salary.admin.convert.salary.summary.SummaryConvert;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.mapper.ext.salary.SalarySummaryExtMapper;
-import com.salary.admin.model.dto.salary.summary.SummaryCalcReqDTO;
 import com.salary.admin.model.dto.salary.summary.SummaryQueryReqDTO;
-import com.salary.admin.model.entity.salary.*;
+import com.salary.admin.model.entity.salary.SalaryEmployee;
+import com.salary.admin.model.entity.salary.SalaryPeriod;
+import com.salary.admin.model.entity.salary.SalarySummary;
 import com.salary.admin.model.vo.salary.summary.SummaryVO;
 import com.salary.admin.service.salary.*;
 import com.salary.admin.utils.UserContextUtil;
@@ -22,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,10 +41,6 @@ public class SalarySummaryServiceImpl extends ServiceImpl<SalarySummaryExtMapper
     @Resource
     private SalarySummaryExtMapper salarySummaryExtMapper;
     @Resource
-    private ISalaryIncomeDetailService incomeDetailService;
-    @Resource
-    private ISalaryDeductionDetailService deductionDetailService;
-    @Resource
     private ISalaryPeriodService periodService;
     @Resource
     private ISalaryEmployeeService employeeService;
@@ -54,69 +50,6 @@ public class SalarySummaryServiceImpl extends ServiceImpl<SalarySummaryExtMapper
     @Value("${salary.delete.allow-physical:false}")
     private boolean allowPhysicalDelete;
 
-    /**
-     * 🌟 核心引擎：一键汇总结算
-     * 逻辑：根据 PeriodID 拉取所有收入/扣款明细 -> 累加 -> 计算实发金额 -> 存在则更新，不存在则插入
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Long calculateSummary(SummaryCalcReqDTO reqDTO) {
-        Long periodId = reqDTO.getPeriodId();
-
-        // 1. 业务前置校验：确保该周期真实存在
-        SalaryPeriod period = periodService.getById(periodId);
-        if (period == null) {
-            throw new BusinessException("异常操作：对应的薪资周期不存在，无法结算");
-        }
-
-        // 2. 累加应发合计 (总收入)
-        // 使用 stream map-reduce 优雅累加 BigDecimal，若无明细则兜底为 ZERO
-        BigDecimal totalIncome = incomeDetailService.list(
-                        new LambdaQueryWrapper<SalaryIncomeDetail>().eq(SalaryIncomeDetail::getPeriodId, periodId)
-                ).stream()
-                .map(SalaryIncomeDetail::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // 3. 累加应扣合计 (总扣款)
-        BigDecimal totalDeduction = deductionDetailService.list(
-                        new LambdaQueryWrapper<SalaryDeductionDetail>().eq(SalaryDeductionDetail::getPeriodId, periodId)
-                ).stream()
-                .map(SalaryDeductionDetail::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // 4. 计算实发工资 (TotalIncome - TotalDeduction)
-        BigDecimal netSalary = totalIncome.subtract(totalDeduction);
-
-        // 5. 数据持久化 (幂等性设计)
-        // 尝试查询当前周期是否已经生成过汇总单
-        SalarySummary summary = this.getOne(new LambdaQueryWrapper<SalarySummary>().eq(SalarySummary::getPeriodId, periodId));
-        if (summary == null) {
-            summary = new SalarySummary(); // 首次结算，新建实体
-        }
-
-
-        // 覆盖最新计算结果 (严格对齐真实实体类字段)
-        summary.setPeriodId(periodId);
-
-        // 应发小计 (本币)
-        summary.setSalarySubtotal(totalIncome);
-
-        // 扣款小计 (本币)
-        summary.setSalaryDeductionTotal(totalDeduction);
-
-        // 最终结算薪资 (本币：应发 - 应扣)
-        summary.setSalaryTotal(netSalary);
-
-        // 如果传入了新备注时才更新，避免覆盖原有的审批备注
-        if (StrUtil.isNotBlank(reqDTO.getRemark())) {
-            summary.setRemark(reqDTO.getRemark());
-        }
-
-
-        this.saveOrUpdate(summary);
-        log.info("周期ID [{}] 结算完成。总收入:{}, 总扣款:{}, 实发:{}", periodId, totalIncome, totalDeduction, netSalary);
-        return summary.getId();
-    }
 
     @Override
     public PageResult<SummaryVO> selectSummaryPage(SummaryQueryReqDTO reqDTO) {
@@ -177,6 +110,17 @@ public class SalarySummaryServiceImpl extends ServiceImpl<SalarySummaryExtMapper
         if (logicalDelete) return this.removeByIds(ids);
         validateDeleteAuth();
         return salarySummaryExtMapper.physicalDeleteByIds(ids) > 0;
+    }
+
+    @Override
+    public int batchInsert(List<SalarySummary> summaries) {
+
+        return salarySummaryExtMapper.batchInsert(summaries);
+    }
+
+    @Override
+    public Long findIdByEmployeeAndMonth(Long employeeId, String settlementMonth) {
+        return salarySummaryExtMapper.findIdByEmployeeAndMonth(employeeId,settlementMonth);
     }
 
     /**

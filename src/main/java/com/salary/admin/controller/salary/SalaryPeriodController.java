@@ -8,6 +8,7 @@ import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodEditReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
 import com.salary.admin.model.vo.salary.period.PeriodVO;
+import com.salary.admin.service.salary.ISalaryCoreEngine;
 import com.salary.admin.service.salary.ISalaryPeriodService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,6 +34,9 @@ public class SalaryPeriodController {
 
     @Autowired
     private ISalaryPeriodService iSalaryPeriodService;
+    @Autowired
+    private ISalaryCoreEngine iSalaryCoreEngine;
+
 
     @PostMapping("/add")
     @Operation(summary = "新增单条薪资周期")
@@ -45,7 +49,7 @@ public class SalaryPeriodController {
     @Operation(summary = "批量初始化薪资周期", description = "根据在职员工名单，一键生成指定月份的薪资周期及汇总记录")
     @Loggable(title = "薪资周期-批量初始化")
     public ApiResult<Boolean> batchInit(@Validated @RequestBody PeriodBatchInitReqDTO reqDTO) {
-        return ApiResult.successResult(iSalaryPeriodService.batchInitPeriods(reqDTO));
+        return ApiResult.successResult(iSalaryCoreEngine.batchInitPeriods(reqDTO));
     }
 
     @PutMapping("/edit")

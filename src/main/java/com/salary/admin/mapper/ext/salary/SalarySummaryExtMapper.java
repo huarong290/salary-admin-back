@@ -36,4 +36,10 @@ public interface SalarySummaryExtMapper extends SalarySummaryMapper {
      * 自定义批量插入方法
      */
     int batchInsert(@Param("list") List<SalarySummary> list);
+
+    /**
+     * 根据员工ID和结算月份查找汇总单ID
+     * 用于核算引擎精准定位明细项的归属
+     */
+    Long findIdByEmployeeAndMonth(@Param("employeeId") Long employeeId, @Param("settlementMonth") String settlementMonth);
 }

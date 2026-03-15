@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.salary.admin.mapper.auto.salary.SalaryPaymentRecordMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.salary.SalaryPaymentRecord">
+        <id column="id" property="id" />
+        <result column="summary_id" property="summaryId" />
+        <result column="employee_id" property="employeeId" />
+        <result column="archive_id" property="archiveId" />
+        <result column="base_salary" property="baseSalary" />
+        <result column="income_total" property="incomeTotal" />
+        <result column="deduction_total" property="deductionTotal" />
+        <result column="final_salary" property="finalSalary" />
+        <result column="is_manual" property="isManual" />
+        <result column="detail_json" property="detailJson" />
+        <result column="remark" property="remark" />
+        <result column="delete_flag" property="deleteFlag" />
+        <result column="create_time" property="createTime" />
+        <result column="create_by" property="createBy" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_by" property="updateBy" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, summary_id, employee_id, archive_id, base_salary, income_total, deduction_total, final_salary, is_manual, detail_json, remark, delete_flag, create_time, create_by, update_time, update_by
+    </sql>
+
+</mapper>

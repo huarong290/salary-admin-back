@@ -8,6 +8,8 @@ import com.salary.admin.model.dto.salary.archive.ArchiveQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryArchive;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
 
+import java.util.List;
+
 /**
  * <p>
  * 员工薪资标准配置表(含版本历史) 服务类
@@ -56,4 +58,10 @@ public interface ISalaryArchiveService extends IService<SalaryArchive> {
      * @return 是否操作成功
      */
     boolean auditArchive(ArchiveAuditDTO auditDTO);
+
+    /**
+     * 🌟 新增：批量获取所有在职员工的最新生效档案
+     * 用于 SalaryCoreEngine 全员核算引擎，一次性拉取所有待发薪人员的核算基准
+     */
+    List<SalaryArchiveVO> listActiveEmployeeArchives();
 }

@@ -64,6 +64,9 @@
             0
             )
         </foreach>
+        ON DUPLICATE KEY UPDATE
+        update_time = VALUES(update_time),
+        payment_status = IF(payment_status = 1, 1, VALUES(payment_status))
     </insert>
 
     <!-- 物理删除：直接删除记录 -->
@@ -75,4 +78,14 @@
         DELETE FROM salary_summary WHERE id IN
         <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
     </delete>
+
+    <select id="findIdByEmployeeAndMonth" resultType="java.lang.Long">
+        SELECT s.id
+        FROM salary_summary s
+                 INNER JOIN salary_period p ON s.period_id = p.id
+        WHERE p.employee_id = #{employeeId}
+          AND p.settlement_month = #{settlementMonth}
+          AND s.delete_flag = 0
+            LIMIT 1
+    </select>
 </mapper>

@@ -73,8 +73,9 @@ public interface ISalaryPeriodService extends IService<SalaryPeriod> {
     boolean deletePeriodByIds(List<Long> ids, boolean logicalDelete);
 
     /**
-     * 批量初始化薪资周期
-     * 逻辑：根据选择的员工（或全量在职员工）自动生成指定月份的周期记录及汇总记录
+     * 仅批量初始化薪资周期 (剥离汇总逻辑)
+     * @param reqDTO 初始化请求对象
+     * @return 成功生成的周期实体列表 (返回给 Engine 联动使用)
      */
-    boolean batchInitPeriods(PeriodBatchInitReqDTO reqDTO);
+    List<SalaryPeriod> batchInitPeriodsOnly(PeriodBatchInitReqDTO reqDTO);
 }

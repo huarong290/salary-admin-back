@@ -65,6 +65,17 @@ public class SalaryArchiveVO implements Serializable {
     private LocalDate effectiveDate;
 
     /**
+     * 失效日期
+     */
+    @Schema(description = "失效日期")
+    private LocalDate expiryDate;
+
+    /**
+     * 审核状态: 0-草稿/待审, 1-已生效, 2-驳回
+     */
+    @Schema(description = "审核状态: 0-草稿/待审, 1-已生效, 2-驳回 ")
+    private Integer auditStatus;
+    /**
      * 基本工资/转正底薪
      */
     @Schema(description = "基本工资/转正底薪")

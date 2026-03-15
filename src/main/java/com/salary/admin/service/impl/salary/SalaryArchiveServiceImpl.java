@@ -2,7 +2,6 @@ package com.salary.admin.service.impl.salary;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -14,9 +13,11 @@ import com.salary.admin.model.dto.salary.archive.ArchiveAuditDTO;
 import com.salary.admin.model.dto.salary.archive.ArchiveQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryArchive;
 import com.salary.admin.model.entity.salary.SalaryArchiveItem;
+import com.salary.admin.model.entity.salary.SalaryPaymentRecord;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
 import com.salary.admin.service.salary.ISalaryArchiveItemService;
 import com.salary.admin.service.salary.ISalaryArchiveService;
+import com.salary.admin.service.salary.ISalaryPaymentRecordService;
 import com.salary.admin.utils.UserContextUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,8 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
 
     @Resource
     private ISalaryArchiveItemService iSalaryArchiveItemService;
+    @Resource
+    private ISalaryPaymentRecordService iSalaryPaymentRecordService;
 
     @Resource
     private SalaryArchiveExtMapper salaryArchiveExtMapper;
@@ -62,7 +65,9 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
     }
 
     /**
-     * 定薪或调薪：企业级拉链表实现
+     * 定薪或调薪：企业级拉链表实现逻辑
+     * 1. 闭合当前生效版本
+     * 2. 生成新版本并计算动态金额项
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -101,11 +106,15 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
                 BeanUtils.copyProperties(itemDto, item);
                 item.setArchiveId(newArchive.getId());
 
-                // 核心计算逻辑：如果是比例计算(2)，自动根据基数计算出 amount 缓存
-                if (item.getCalcType() != null && item.getCalcType() == 2) {
-                    BigDecimal base = item.getBaseAmount() != null ? item.getBaseAmount() : newArchive.getBaseSalary();
-                    // 这里 ratio 假设前端传 0.0800
-                    item.setAmount(base.multiply(item.getRatio()).setScale(8, RoundingMode.HALF_UP));
+                // 核心计算逻辑：如果是比例计算(2)，自动根据基数（档案底薪）计算出具体金额并缓存
+                if (Integer.valueOf(2).equals(item.getCalcType())) {
+                    BigDecimal base = item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0
+                            ? item.getBaseAmount() : newArchive.getBaseSalary();
+
+                    if (base != null && item.getRatio() != null) {
+                        // 财务标准保留2位小数
+                        item.setAmount(base.multiply(item.getRatio()).setScale(2, RoundingMode.HALF_UP));
+                    }
                 }
                 return item;
             }).collect(Collectors.toList());
@@ -138,9 +147,12 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
             throw new BusinessException("未找到该员工的薪资档案记录");
         }
 
-        // 2. 核心拦截：已生效的记录坚决不准撤销，防止破坏已算出的历史工资账单！业务隔离：版本 1 是初始定薪，通常不允许直接 revoke，建议用删除逻辑
-        if (latestArchive.getAuditStatus() == 1) {
-            throw new BusinessException("初始定薪版本无法通过‘撤销’移除，请使用删除功能或发起调薪");
+        // 2. 核心拦截：如果该版本的档案已经被用于某次薪资结算核算，严禁撤销
+        boolean isUsedInPayment = iSalaryPaymentRecordService.lambdaQuery()
+                .eq(SalaryPaymentRecord::getArchiveId, latestArchive.getId())
+                .exists();
+        if (isUsedInPayment) {
+            throw new BusinessException("该档案版本已被薪资结算记录引用，无法撤销，请通过发起新调薪申请来修正");
         }
 
         // 3. 删除最新版本主表及对应的明细记录（真删或逻辑删除视业务要求，此处示例为逻辑删除）
@@ -165,38 +177,57 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
 
     @Transactional(rollbackFor = Exception.class)
     public boolean auditArchive(ArchiveAuditDTO auditDTO) {
-        // 1. 查询当前待审核的档案
+        // 1. 严谨查询：获取当前最新的实体（含 version 字段）
         SalaryArchive currentArchive = this.getById(auditDTO.getId());
-        if (currentArchive == null || currentArchive.getAuditStatus() != 0) {
-            throw new BusinessException("档案不存在或已处理");
+
+        // 2. 业务防御校验
+        if (currentArchive == null) {
+            throw new BusinessException("档案不存在");
         }
-        // 只有待审核(0)状态的档案才允许审核
         if (currentArchive.getAuditStatus() != 0) {
-            throw new BusinessException("该档案已处理，请勿重复操作");
+            throw new BusinessException("档案已处理，请勿重复操作");
         }
-        // 2. 如果审核通过 (status = 1)
+
+        // 3. 处理审核通过逻辑
         if (auditDTO.getAuditStatus() == 1) {
-            // A. 将该员工之前所有标记为 is_latest = 1 的旧版本全部更新为 0
-            this.update(new LambdaUpdateWrapper<SalaryArchive>()
+            // A. 批量将旧版本置为 0。注意：使用 LambdaUpdateWrapper 不会触发乐观锁插件，
+            // 它是按条件执行 SQL，不涉及实体对象的版本比对。
+            this.update(Wrappers.<SalaryArchive>lambdaUpdate()
                     .eq(SalaryArchive::getEmployeeId, currentArchive.getEmployeeId())
                     .eq(SalaryArchive::getIsLatest, 1)
+                    // 🚩 必须排除当前审核的 ID，否则当前对象的 version 会在数据库先变动，导致最后一步 updateById 失败
+                    .ne(SalaryArchive::getId, currentArchive.getId())
                     .set(SalaryArchive::getIsLatest, 0));
 
-            // B. 设置当前档案为最新且生效
             currentArchive.setIsLatest(1);
             currentArchive.setAuditStatus(1);
-        }
-        // 3. 如果审核驳回 (status = 2)
-        else if (auditDTO.getAuditStatus() == 2) {
+        }// 审批驳回
+        else if (Integer.valueOf(2).equals(auditDTO.getAuditStatus())) {
             currentArchive.setAuditStatus(2);
-            currentArchive.setIsLatest(0); // 驳回的版本不作为最新版本显示在默认列表
+            currentArchive.setIsLatest(0);
         }
 
-        // 4. 更新备注及审核信息
+        // 4. 设置审计信息
         currentArchive.setRemark(auditDTO.getRemark());
         currentArchive.setUpdateBy(UserContextUtil.getUsername());
         currentArchive.setUpdateTime(LocalDateTime.now());
 
-        return this.updateById(currentArchive);
+        // 5. 执行乐观锁更新
+        // 插件会自动生成：WHERE id = ? AND version = ?
+        boolean success = this.updateById(currentArchive);
+
+        if (!success) {
+            // 如果失败，说明在执行第 1 步到第 5 步之间，有其他人修改了这条记录
+            throw new BusinessException("审核失败：数据已被他人抢先处理，请刷新页面重试");
+        }
+
+        return true;
+    }
+
+    @Override
+    public List<SalaryArchiveVO> listActiveEmployeeArchives() {
+        log.info("SalaryArchiveService: 正在获取全员核算基准数据...");
+        // 调用 ExtMapper 中定义的联表查询，一次性拉取在职员工 + 最新档案 + 所有明细项
+        return salaryArchiveExtMapper.listActiveEmployeeArchives();
     }
 }

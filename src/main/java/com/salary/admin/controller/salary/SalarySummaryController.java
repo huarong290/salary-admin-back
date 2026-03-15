@@ -3,7 +3,6 @@ package com.salary.admin.controller.salary;
 import com.salary.admin.annotation.Loggable;
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.common.PageResult;
-import com.salary.admin.model.dto.salary.summary.SummaryCalcReqDTO;
 import com.salary.admin.model.dto.salary.summary.SummaryQueryReqDTO;
 import com.salary.admin.model.vo.salary.summary.SummaryVO;
 import com.salary.admin.service.salary.ISalarySummaryService;
@@ -11,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,13 +29,6 @@ public class SalarySummaryController {
 
     @Autowired
     private ISalarySummaryService iSalarySummaryService;
-
-    @PostMapping("/calculate")
-    @Operation(summary = "一键结算薪资 (支持重复调用以刷新金额)")
-    @Loggable(title = "薪资汇总-一键结算")
-    public ApiResult<Long> calculateSummary(@Validated @RequestBody SummaryCalcReqDTO reqDTO) {
-        return ApiResult.successResult(iSalarySummaryService.calculateSummary(reqDTO));
-    }
 
     @PostMapping("/page")
     @Operation(summary = "分页查询薪资结算单")

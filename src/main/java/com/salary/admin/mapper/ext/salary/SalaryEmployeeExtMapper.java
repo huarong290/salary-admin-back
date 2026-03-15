@@ -27,4 +27,11 @@ public interface SalaryEmployeeExtMapper extends SalaryEmployeeMapper {
      * 批量物理删除
      */
     int physicalDeleteByIds(@Param("ids") List<Long> ids);
+
+
+    /**
+     * 根据员工ID和结算月份查找汇总单ID
+     * 用于核算引擎精准定位明细项的归属
+     */
+    Long findIdByEmployeeAndMonth(@Param("employeeId") Long employeeId, @Param("settlementMonth") String settlementMonth);
 }

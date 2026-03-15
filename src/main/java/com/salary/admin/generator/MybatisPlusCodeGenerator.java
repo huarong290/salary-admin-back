@@ -15,7 +15,7 @@ public class MybatisPlusCodeGenerator {
     public static void main(String[] args) {
         List<String> tableList = List.of(
 
-                "salary_summary"
+                "salary_payment_record"
 
         );
 

@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 /**
  * <p>
@@ -53,6 +52,10 @@ public class SalaryArchiveController {
     public ApiResult<SalaryArchiveVO> getCurrentArchive(
             @Parameter(description = "员工ID", required = true) @PathVariable("employeeId") Long employeeId) {
         SalaryArchiveVO vo = salaryArchiveService.getCurrentArchive(employeeId);
+        if (vo == null) {
+            // 这样前端会进入 catch 块并显示“暂无档案”，而不是报错 null 引用
+            return ApiResult.failResult("未找到该员工生效的薪资档案，请先进行入职定薪");
+        }
         return ApiResult.successResult(vo);
     }
 
@@ -76,7 +79,6 @@ public class SalaryArchiveController {
 
     @Operation(summary = "审核薪资档案")
     @PostMapping("/audit")
-    @PreAuthorize("@ss.hasPermi('salary:archive:audit')")
     @Loggable(title = "薪资档案管理-审核薪资档案")
     public ApiResult<Boolean> auditArchive(@RequestBody ArchiveAuditDTO auditDTO) {
         return ApiResult.successResult(salaryArchiveService.auditArchive(auditDTO));

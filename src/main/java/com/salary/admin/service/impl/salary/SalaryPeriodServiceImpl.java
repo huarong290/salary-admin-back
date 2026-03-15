@@ -17,7 +17,6 @@ import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryEmployee;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.period.PeriodVO;
-import com.salary.admin.service.salary.ISalaryCoreEngine;
 import com.salary.admin.service.salary.ISalaryEmployeeService;
 import com.salary.admin.service.salary.ISalaryPeriodService;
 import com.salary.admin.utils.UserContextUtil;
@@ -54,11 +53,6 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
 
     @Autowired
     private ISalaryEmployeeService employeeService;
-    /**
-     * 🌟 注入引擎接口，解除与 SummaryService 的循环依赖
-     */
-    @Autowired
-    private ISalaryCoreEngine salaryCoreEngine;
 
     @Value("${salary.delete.allow-physical:false}")
     private boolean allowPhysicalDelete;
@@ -76,10 +70,6 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         SalaryPeriod entity = periodConvert.toEntity(reqDTO);
         fillWorkMonth(entity);
         this.save(entity);
-
-        // 3. 🌟 通过引擎联动初始化汇总记录
-        salaryCoreEngine.initSummaryForPeriods(Collections.singletonList(entity));
-
         return entity.getId();
     }
 
@@ -88,7 +78,7 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean batchInitPeriods(PeriodBatchInitReqDTO reqDTO) {
+    public List<SalaryPeriod> batchInitPeriodsOnly(PeriodBatchInitReqDTO reqDTO) {
         String month = reqDTO.getSettlementMonth();
         List<Long> targetEmpIds = reqDTO.getEmployeeIds();
 
@@ -116,7 +106,7 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
 
         if (CollUtil.isEmpty(readyIds)) {
             log.info("{} 月份周期已全部初始化", month);
-            return true;
+            return Collections.emptyList(); // 没人生效，返回空列表
         }
 
         // 3. 构造并批量保存周期记录
@@ -133,13 +123,8 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         }).collect(Collectors.toList());
 
         this.saveBatch(periods);
-
-        // 4. 🌟 通过引擎批量联动初始化
-        salaryCoreEngine.initSummaryForPeriods(periods);
-
-        log.info("批量初始化成功：总选 {} 人，排除已存 {} 人，实际新增 {} 条",
-                targetEmpIds.size(), existIds.size(), periods.size());
-        return true;
+        log.info("基础周期表批量初始化成功：新增 {} 条", periods.size());
+        return periods;
     }
 
     /**

@@ -37,6 +37,7 @@
         <result property="version" column="version"/>
         <result property="isLatest" column="is_latest"/>
         <result property="effectiveDate" column="effective_date"/>
+        <result column="audit_status" property="auditStatus" />
         <result property="baseSalary" column="base_salary"/>
         <result property="probationBaseSalary" column="probation_base_salary"/>
         <result property="currency" column="currency"/>
@@ -128,4 +129,31 @@
     </select>
 
 
+    <select id="listActiveEmployeeArchives" resultMap="SalaryArchiveVOResultMap">
+        SELECT
+            sa.id, sa.employee_id, sa.version, sa.is_latest, sa.effective_date,
+            sa.base_salary, sa.probation_base_salary, sa.currency, sa.change_reason,
+            se.employee_name, se.employee_code,
+            sai.type_id, sai.item_type, sai.calc_type, sai.base_amount, sai.amount, sai.ratio,
+            CASE
+                WHEN sai.item_type = 1 THEN sit.type_name
+                WHEN sai.item_type = 2 THEN sdt.type_name
+                END AS type_name,
+            CASE
+                WHEN sai.item_type = 1 THEN sit.type_code
+                WHEN sai.item_type = 2 THEN sdt.type_code
+                END AS type_code
+        FROM salary_employee se
+                 -- 必须有生效档案的员工才参与核算
+                 INNER JOIN salary_archive sa ON se.id = sa.employee_id
+            AND sa.is_latest = 1
+            AND sa.audit_status = 1
+            AND sa.delete_flag = 0
+            -- 关联明细项
+                 LEFT JOIN salary_archive_item sai ON sa.id = sai.archive_id AND sai.delete_flag = 0
+                 LEFT JOIN salary_income_type sit ON sai.item_type = 1 AND sai.type_id = sit.id AND sit.delete_flag = 0
+                 LEFT JOIN salary_deduction_type sdt ON sai.item_type = 2 AND sai.type_id = sdt.id AND sdt.delete_flag = 0
+        WHERE se.employment_status = 1 -- 只要在职的
+          AND se.delete_flag = 0
+    </select>
 </mapper>
