@@ -5,6 +5,7 @@ import com.salary.admin.common.ApiResult;
 import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.summary.SummaryQueryReqDTO;
 import com.salary.admin.model.vo.salary.summary.SummaryVO;
+import com.salary.admin.service.salary.ISalaryCoreEngine;
 import com.salary.admin.service.salary.ISalarySummaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,6 +30,10 @@ public class SalarySummaryController {
 
     @Autowired
     private ISalarySummaryService iSalarySummaryService;
+
+    // 🌟 注入引擎，用于触发核心逻辑
+    @Autowired
+    private ISalaryCoreEngine salaryCoreEngine;
 
     @PostMapping("/page")
     @Operation(summary = "分页查询薪资结算单")
@@ -58,5 +63,14 @@ public class SalarySummaryController {
             @RequestBody List<Long> ids,
             @Parameter(description = "是否逻辑删除(默认true)") @RequestParam(defaultValue = "true") boolean logicalDelete) {
         return ApiResult.successResult(iSalarySummaryService.deleteByIds(ids, logicalDelete));
+    }
+
+    @PostMapping("/execute-settlement")
+    @Operation(summary = "发起月度全员薪资核算", description = "根据结算月份抓取生效档案，自动生成所有员工的发薪明细")
+    @Loggable(title = "薪资引擎-全员核算")
+    public ApiResult<Void> executeSettlement(@RequestParam String settlementMonth) {
+        // 调用我们之前写好的引擎方法
+        salaryCoreEngine.executeGlobalSettlement(settlementMonth);
+        return ApiResult.defaultSuccessResult();
     }
 }
