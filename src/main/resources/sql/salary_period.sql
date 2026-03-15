@@ -41,9 +41,27 @@ INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_compo
                                                                                                                                                                        (173, '查看详情', 'salary_archive_detail', '', '', '', 'salary:archive:detail', 3, 170, 3),
                                                                                                                                                                        (174, '撤销版本', 'salary_archive_revoke', '', '', '', 'salary:archive:revoke', 3, 170, 4),
                                                                                                                                                                        (175, '调薪(修改)', 'salary_archive_edit', '', '', '', 'salary:archive:edit', 3, 170, 5),
-                                                                                                                                                                       (176, '审核档案', 'salary_archive_audit', '', '', '', 'salary:archive:audit', 3, 170, 5),
+                                                                                                                                                                       (176, '审核档案', 'salary_archive_audit', '', '', '', 'salary:archive:audit', 3, 170, 6);
 
-;
+-- ==========================================================
+-- 5. 结算汇总管理 (Salary Summary)
+-- ==========================================================
+INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`) VALUES
+                                                                                                                                                                       (180, '结算汇总管理', 'salary_summary_mgr', 'summary', 'salary/summary/SummaryPage', 'DataAnalysis', 'salary:summary:list', 2, 125, 5),
+                                                                                                                                                                       (181, '查询汇总', 'salary_summary_query', '', '', '', 'salary:summary:query', 3, 180, 1),
+                                                                                                                                                                       (182, '一键核算', 'salary_summary_calc', '', '', '', 'salary:summary:calc', 3, 180, 2),
+                                                                                                                                                                       (183, '查看详情', 'salary_summary_detail', '', '', '', 'salary:summary:detail', 3, 180, 3),
+                                                                                                                                                                       (184, '作废汇总', 'salary_summary_del', '', '', '', 'salary:summary:del', 3, 180, 4),
+                                                                                                                                                                       (185, '批量作废', 'salary_summary_batch_del', '', '', '', 'salary:summary:batch_del', 3, 180, 5);
+-- ==========================================================
+-- 6. 发薪明细记录 (Salary Payment Record)
+-- ==========================================================
+INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`) VALUES
+                                                                                                                                                                       (190, '发薪明细记录', 'salary_payment_record_mgr', 'paymentrecord', 'salary/paymentrecord/PaymentRecordPage', 'List', 'salary:payment_record:list', 2, 125, 6),
+                                                                                                                                                                       (191, '查询明细', 'salary_payment_record_query', '', '', '', 'salary:payment_record:query', 3, 190, 1),
+                                                                                                                                                                       (192, '手动调整', 'salary_payment_record_edit', '', '', '', 'salary:payment_record:edit', 3, 190, 2),
+                                                                                                                                                                       (193, '删除明细', 'salary_payment_record_del', '', '', '', 'salary:payment_record:del', 3, 190, 3),
+                                                                                                                                                                       (194, '明细导出', 'salary_payment_record_export', '', '', '', 'salary:payment_record:export', 3, 190, 4);
 -- =================================================================================
 -- 薪资周期数据初始化 (员工ID: 1)
 -- 包含 2024, 2025, 2026 三个年度的在岗记录

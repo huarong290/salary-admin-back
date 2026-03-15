@@ -1,11 +1,15 @@
 package com.salary.admin.controller.salary;
 
+import cn.hutool.core.util.StrUtil;
 import com.salary.admin.annotation.Loggable;
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.common.PageResult;
+import com.salary.admin.model.dto.salary.summary.SummaryCalcReqDTO;
 import com.salary.admin.model.dto.salary.summary.SummaryQueryReqDTO;
+import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.summary.SummaryVO;
 import com.salary.admin.service.salary.ISalaryCoreEngine;
+import com.salary.admin.service.salary.ISalaryPeriodService;
 import com.salary.admin.service.salary.ISalarySummaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +37,9 @@ public class SalarySummaryController {
 
     // 🌟 注入引擎，用于触发核心逻辑
     @Autowired
-    private ISalaryCoreEngine salaryCoreEngine;
+    private ISalaryCoreEngine iSalaryCoreEngine;
+    @Autowired
+    private ISalaryPeriodService iSalaryPeriodService;
 
     @PostMapping("/page")
     @Operation(summary = "分页查询薪资结算单")
@@ -65,12 +71,29 @@ public class SalarySummaryController {
         return ApiResult.successResult(iSalarySummaryService.deleteByIds(ids, logicalDelete));
     }
 
-    @PostMapping("/execute-settlement")
-    @Operation(summary = "发起月度全员薪资核算", description = "根据结算月份抓取生效档案，自动生成所有员工的发薪明细")
-    @Loggable(title = "薪资引擎-全员核算")
-    public ApiResult<Void> executeSettlement(@RequestParam String settlementMonth) {
-        // 调用我们之前写好的引擎方法
-        salaryCoreEngine.executeGlobalSettlement(settlementMonth);
+    @PostMapping("/calculate") // 🌟 路径与前端 api 保持一致
+    @Operation(summary = "触发薪资引擎核算")
+    @Loggable(title = "薪资引擎-核算")
+    public ApiResult<Void> executeSettlement(@RequestBody SummaryCalcReqDTO reqDTO) {
+        String targetMonth = reqDTO.getSettlementMonth();
+
+        // 如果前端只传了 periodId，我们需要查出它属于哪个月
+        if (StrUtil.isBlank(targetMonth) && reqDTO.getPeriodId() != null) {
+            SalaryPeriod period = iSalaryPeriodService.getById(reqDTO.getPeriodId());
+            if (period == null) {
+                return ApiResult.failResult("指定的薪资周期不存在");
+            }
+            targetMonth = period.getSettlementMonth();
+        }
+
+        if (StrUtil.isBlank(targetMonth)) {
+            return ApiResult.failResult("结算月份或周期ID不能为空");
+        }
+
+        // 调用引擎：执行全员核算
+        // 注意：你可以扩展引擎方法，把 remark 也传进去存入 Summary 表
+        iSalaryCoreEngine.executeGlobalSettlement(targetMonth);
+
         return ApiResult.defaultSuccessResult();
     }
 }
