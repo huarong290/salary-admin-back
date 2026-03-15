@@ -3,6 +3,7 @@ package com.salary.admin.convert.salary.incometype;
 import com.salary.admin.model.dto.salary.imcometype.IncomeTypeAddReqDTO;
 import com.salary.admin.model.dto.salary.imcometype.IncomeTypeEditReqDTO;
 import com.salary.admin.model.entity.salary.SalaryIncomeType;
+import com.salary.admin.model.vo.salary.incometype.IncomeTypeOptionVO;
 import com.salary.admin.model.vo.salary.incometype.IncomeTypeVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -37,4 +38,16 @@ public interface IncomeTypeConvert {
      * 实体列表转换为 VO 列表
      */
     List<IncomeTypeVO> toVOList(List<SalaryIncomeType> list);
+
+    // 🌟 --- 新增下拉选项转换方法 --- 🌟
+
+    /**
+     * 实体转换为下拉选项 VO
+     */
+    IncomeTypeOptionVO toOptionVO(SalaryIncomeType entity);
+
+    /**
+     * 实体列表转换为下拉选项 VO 列表
+     */
+    List<IncomeTypeOptionVO> toOptionVOList(List<SalaryIncomeType> list);
 }

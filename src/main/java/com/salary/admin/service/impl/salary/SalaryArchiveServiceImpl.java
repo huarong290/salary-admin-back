@@ -2,6 +2,7 @@ package com.salary.admin.service.impl.salary;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -9,12 +10,14 @@ import com.salary.admin.common.PageResult;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.mapper.ext.salary.SalaryArchiveExtMapper;
 import com.salary.admin.model.dto.salary.archive.ArchiveAddReqDTO;
+import com.salary.admin.model.dto.salary.archive.ArchiveAuditDTO;
 import com.salary.admin.model.dto.salary.archive.ArchiveQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryArchive;
 import com.salary.admin.model.entity.salary.SalaryArchiveItem;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
 import com.salary.admin.service.salary.ISalaryArchiveItemService;
 import com.salary.admin.service.salary.ISalaryArchiveService;
+import com.salary.admin.utils.UserContextUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -159,5 +163,40 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         return true;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public boolean auditArchive(ArchiveAuditDTO auditDTO) {
+        // 1. 查询当前待审核的档案
+        SalaryArchive currentArchive = this.getById(auditDTO.getId());
+        if (currentArchive == null || currentArchive.getAuditStatus() != 0) {
+            throw new BusinessException("档案不存在或已处理");
+        }
+        // 只有待审核(0)状态的档案才允许审核
+        if (currentArchive.getAuditStatus() != 0) {
+            throw new BusinessException("该档案已处理，请勿重复操作");
+        }
+        // 2. 如果审核通过 (status = 1)
+        if (auditDTO.getAuditStatus() == 1) {
+            // A. 将该员工之前所有标记为 is_latest = 1 的旧版本全部更新为 0
+            this.update(new LambdaUpdateWrapper<SalaryArchive>()
+                    .eq(SalaryArchive::getEmployeeId, currentArchive.getEmployeeId())
+                    .eq(SalaryArchive::getIsLatest, 1)
+                    .set(SalaryArchive::getIsLatest, 0));
 
+            // B. 设置当前档案为最新且生效
+            currentArchive.setIsLatest(1);
+            currentArchive.setAuditStatus(1);
+        }
+        // 3. 如果审核驳回 (status = 2)
+        else if (auditDTO.getAuditStatus() == 2) {
+            currentArchive.setAuditStatus(2);
+            currentArchive.setIsLatest(0); // 驳回的版本不作为最新版本显示在默认列表
+        }
+
+        // 4. 更新备注及审核信息
+        currentArchive.setRemark(auditDTO.getRemark());
+        currentArchive.setUpdateBy(UserContextUtil.getUsername());
+        currentArchive.setUpdateTime(LocalDateTime.now());
+
+        return this.updateById(currentArchive);
+    }
 }

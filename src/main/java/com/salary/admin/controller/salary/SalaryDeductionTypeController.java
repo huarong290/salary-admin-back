@@ -6,6 +6,7 @@ import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeAddReqDTO;
 import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeEditReqDTO;
 import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeQueryReqDTO;
+import com.salary.admin.model.vo.salary.deductiontype.DeductionTypeOptionVO;
 import com.salary.admin.model.vo.salary.deductiontype.DeductionTypeVO;
 import com.salary.admin.service.salary.ISalaryDeductionTypeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,7 +54,7 @@ public class SalaryDeductionTypeController {
         return ApiResult.successResult(iSalaryDeductionTypeService.selectDeductionTypePage(reqDTO));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     @Operation(summary = "获取扣款类型详情")
     public ApiResult<DeductionTypeVO> detail(@PathVariable("id") Long id) {
         return ApiResult.successResult(iSalaryDeductionTypeService.getDeductionTypeDetail(id));
@@ -75,5 +76,11 @@ public class SalaryDeductionTypeController {
             @RequestBody List<Long> ids,
             @Parameter(description = "是否逻辑删除") @RequestParam(defaultValue = "true") boolean logicalDelete) {
         return ApiResult.successResult(iSalaryDeductionTypeService.deleteByIds(ids, logicalDelete));
+    }
+
+    @GetMapping("/listOptions")
+    @Operation(summary = "获取扣款类型下拉列表")
+    public ApiResult<List<DeductionTypeOptionVO>> listOptions() {
+        return ApiResult.successResult(iSalaryDeductionTypeService.listDeductionTypeOptions());
     }
 }

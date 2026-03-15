@@ -3,6 +3,7 @@ package com.salary.admin.service.salary;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.archive.ArchiveAddReqDTO;
+import com.salary.admin.model.dto.salary.archive.ArchiveAuditDTO;
 import com.salary.admin.model.dto.salary.archive.ArchiveQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryArchive;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
@@ -47,4 +48,12 @@ public interface ISalaryArchiveService extends IService<SalaryArchive> {
      * 撤销/删除最新版本 (仅限最新版本且未被核算引用时)
      */
     boolean revokeLatestVersion(Long employeeId);
+
+    /**
+     * 审核薪资档案方案
+     * 包含：通过后切换版本状态、驳回后记录原因
+     * @param auditDTO 审核请求对象（含ID、结果状态、备注）
+     * @return 是否操作成功
+     */
+    boolean auditArchive(ArchiveAuditDTO auditDTO);
 }

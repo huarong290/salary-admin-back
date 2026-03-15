@@ -4,6 +4,7 @@ package com.salary.admin.convert.salary.deductiontype;
 import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeAddReqDTO;
 import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeEditReqDTO;
 import com.salary.admin.model.entity.salary.SalaryDeductionType;
+import com.salary.admin.model.vo.salary.deductiontype.DeductionTypeOptionVO;
 import com.salary.admin.model.vo.salary.deductiontype.DeductionTypeVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -51,5 +52,21 @@ public interface DeductionTypeConvert {
      * @return 转换后的 DeductionTypeVO 列表
      */
     List<DeductionTypeVO> toVOList(List<SalaryDeductionType> list);
+
+    // 🌟 --- 新增下拉选项转换方法 --- 🌟
+
+    /**
+     * 将实体对象转换为下拉选项 VO
+     * @param entity 扣款类型实体
+     * @return DeductionTypeOptionVO
+     */
+    DeductionTypeOptionVO toOptionVO(SalaryDeductionType entity);
+
+    /**
+     * 将实体对象列表转换为下拉选项 VO 列表
+     * @param list 实体列表
+     * @return 下拉选项 VO 列表
+     */
+    List<DeductionTypeOptionVO> toOptionVOList(List<SalaryDeductionType> list);
 }
 

@@ -53,12 +53,23 @@
             <result property="typeCode" column="type_code"/>
         </collection>
     </resultMap>
-    <select id="selectArchivePage" resultType="com.salary.admin.model.vo.salary.archive.SalaryArchiveVO">
+
+
+    <select id="selectArchivePage" resultMap="SalaryArchiveVOResultMap">
         SELECT
-        sa.id, sa.employee_id, sa.version, sa.is_latest, sa.effective_date, sa.expiry_date, sa.audit_status,
-        sa.base_salary, sa.probation_base_salary, sa.currency, sa.change_reason, sa.remark,
-        se.employee_name, se.employee_code
-        FROM salary_archive sa
+        sa.id,
+        sa.employee_id,
+        sa.version,
+        sa.is_latest,
+        sa.effective_date,
+        sa.expiry_date,
+        sa.audit_status,
+        sa.base_salary,
+        sa.probation_base_salary,
+        sa.currency,
+        sa.change_reason,
+        sa.remark,
+        se.employee_name,  se.employee_code   FROM salary_archive sa
         INNER JOIN salary_employee se ON sa.employee_id = se.id AND se.delete_flag = 0
         WHERE sa.delete_flag = 0
         <if test="req.isLatest != null">
@@ -70,6 +81,7 @@
         </if>
         ORDER BY sa.update_time DESC
     </select>
+
     <select id="getArchiveDetailById" resultMap="SalaryArchiveVOResultMap">
         SELECT
             sa.id, sa.employee_id, sa.version, sa.is_latest, sa.effective_date,

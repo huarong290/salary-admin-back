@@ -6,6 +6,7 @@ import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.imcometype.IncomeTypeAddReqDTO;
 import com.salary.admin.model.dto.salary.imcometype.IncomeTypeEditReqDTO;
 import com.salary.admin.model.dto.salary.imcometype.IncomeTypeQueryReqDTO;
+import com.salary.admin.model.vo.salary.incometype.IncomeTypeOptionVO;
 import com.salary.admin.model.vo.salary.incometype.IncomeTypeVO;
 import com.salary.admin.service.salary.ISalaryIncomeTypeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -75,5 +76,14 @@ public class SalaryIncomeTypeController {
             @RequestBody List<Long> ids,
             @Parameter(description = "是否逻辑删除") @RequestParam(defaultValue = "true") boolean logicalDelete) {
         return ApiResult.successResult(iSalaryIncomeTypeService.deleteByIds(ids, logicalDelete));
+    }
+
+
+    @GetMapping("/listOptions")
+    @Operation(summary = "获取收入类型下拉列表")
+    public ApiResult<List<IncomeTypeOptionVO>> listOptions() {
+        // 调用 Service 获取所有未删除的收入类型，并按 sortValue 排序
+        List<IncomeTypeOptionVO> list = iSalaryIncomeTypeService.listIncomeTypeOptions();
+        return ApiResult.successResult(list);
     }
 }

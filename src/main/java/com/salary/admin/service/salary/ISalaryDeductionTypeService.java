@@ -6,6 +6,7 @@ import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeAddReqDTO;
 import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeEditReqDTO;
 import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryDeductionType;
+import com.salary.admin.model.vo.salary.deductiontype.DeductionTypeOptionVO;
 import com.salary.admin.model.vo.salary.deductiontype.DeductionTypeVO;
 
 import java.util.List;
@@ -63,4 +64,9 @@ public interface ISalaryDeductionTypeService extends IService<SalaryDeductionTyp
      * @return 是否删除成功
      */
     boolean deleteByIds(List<Long> ids, boolean logicalDelete);
+    /**
+     * 获取扣款类型下拉列表 (用于定薪/调薪表单)
+     * * @return 包含ID和名称的简易对象列表
+     */
+    List<DeductionTypeOptionVO> listDeductionTypeOptions();
 }

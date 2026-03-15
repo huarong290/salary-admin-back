@@ -14,6 +14,7 @@ import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeAddReqDTO;
 import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeEditReqDTO;
 import com.salary.admin.model.dto.salary.deductiontype.DeductionTypeQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryDeductionType;
+import com.salary.admin.model.vo.salary.deductiontype.DeductionTypeOptionVO;
 import com.salary.admin.model.vo.salary.deductiontype.DeductionTypeVO;
 import com.salary.admin.service.salary.ISalaryDeductionTypeService;
 import com.salary.admin.utils.UserContextUtil;
@@ -149,6 +150,16 @@ public class SalaryDeductionTypeServiceImpl
         if (logicalDelete) return this.removeByIds(ids);
         validateDeleteAuth();
         return salaryDeductionTypeExtMapper.physicalDeleteByIds(ids) > 0;
+    }
+
+    @Override
+    public List<DeductionTypeOptionVO> listDeductionTypeOptions() {
+        // 按排序值升序查询所有
+        List<SalaryDeductionType> list = this.lambdaQuery()
+                .orderByAsc(SalaryDeductionType::getSortValue)
+                .list();
+        // 使用你刚刚调整好的 Convert 进行转换
+        return deductionTypeConvert.toOptionVOList(list);
     }
 
     /**

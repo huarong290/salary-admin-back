@@ -6,6 +6,7 @@ import com.salary.admin.model.dto.salary.imcometype.IncomeTypeAddReqDTO;
 import com.salary.admin.model.dto.salary.imcometype.IncomeTypeEditReqDTO;
 import com.salary.admin.model.dto.salary.imcometype.IncomeTypeQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryIncomeType;
+import com.salary.admin.model.vo.salary.incometype.IncomeTypeOptionVO;
 import com.salary.admin.model.vo.salary.incometype.IncomeTypeVO;
 
 import java.util.List;
@@ -69,4 +70,10 @@ public interface ISalaryIncomeTypeService extends IService<SalaryIncomeType> {
      * @return 是否成功
      */
     boolean deleteByIds(List<Long> ids, boolean logicalDelete);
+
+    /**
+     * 获取收入类型下拉列表 (用于定薪/调薪表单)
+     * * @return 包含ID和名称的简易对象列表
+     */
+    List<IncomeTypeOptionVO> listIncomeTypeOptions();
 }

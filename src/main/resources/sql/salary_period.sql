@@ -39,7 +39,11 @@ INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_compo
                                                                                                                                                                        (171, '查询档案', 'salary_archive_query', '', '', '', 'salary:archive:query', 3, 170, 1),
                                                                                                                                                                        (172, '定薪调薪(新增)', 'salary_archive_add', '', '', '', 'salary:archive:add', 3, 170, 2),
                                                                                                                                                                        (173, '查看详情', 'salary_archive_detail', '', '', '', 'salary:archive:detail', 3, 170, 3),
-                                                                                                                                                                       (174, '撤销版本', 'salary_archive_revoke', '', '', '', 'salary:archive:revoke', 3, 170, 4);
+                                                                                                                                                                       (174, '撤销版本', 'salary_archive_revoke', '', '', '', 'salary:archive:revoke', 3, 170, 4),
+                                                                                                                                                                       (175, '调薪(修改)', 'salary_archive_edit', '', '', '', 'salary:archive:edit', 3, 170, 5),
+                                                                                                                                                                       (176, '审核档案', 'salary_archive_audit', '', '', '', 'salary:archive:audit', 3, 170, 5),
+
+;
 -- =================================================================================
 -- 薪资周期数据初始化 (员工ID: 1)
 -- 包含 2024, 2025, 2026 三个年度的在岗记录

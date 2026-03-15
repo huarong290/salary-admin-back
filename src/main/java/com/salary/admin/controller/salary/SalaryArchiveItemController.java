@@ -1,5 +1,6 @@
 package com.salary.admin.controller.salary;
 
+import com.salary.admin.annotation.Loggable;
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.model.entity.salary.SalaryArchiveItem;
 import com.salary.admin.service.salary.ISalaryArchiveItemService;
@@ -23,7 +24,7 @@ import java.util.List;
  * @since 2026-03-13
  */
 @RestController
-@RequestMapping("/salary-archive-item")
+@RequestMapping("/api/salary-archive-item")
 @Tag(name = "薪资档案明细管理", description = "仅提供档案明细项的只读查询接口")
 public class SalaryArchiveItemController {
     @Autowired
@@ -31,6 +32,7 @@ public class SalaryArchiveItemController {
 
     @GetMapping("/list/{archiveId}")
     @Operation(summary = "获取指定档案的明细项列表", description = "根据主表档案ID，获取该版本下配置的所有固定收入/扣款明细项（用于前端列表懒加载展开）")
+    @Loggable(title = "薪资档案明细管理-获取指定档案的明细项列表")
     public ApiResult<List<SalaryArchiveItem>> listItemsByArchiveId(
             @Parameter(description = "档案主表ID", required = true) @PathVariable("archiveId") Long archiveId) {
 

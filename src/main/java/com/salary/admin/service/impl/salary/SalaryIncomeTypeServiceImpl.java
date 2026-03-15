@@ -13,6 +13,7 @@ import com.salary.admin.model.dto.salary.imcometype.IncomeTypeAddReqDTO;
 import com.salary.admin.model.dto.salary.imcometype.IncomeTypeEditReqDTO;
 import com.salary.admin.model.dto.salary.imcometype.IncomeTypeQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryIncomeType;
+import com.salary.admin.model.vo.salary.incometype.IncomeTypeOptionVO;
 import com.salary.admin.model.vo.salary.incometype.IncomeTypeVO;
 import com.salary.admin.service.salary.ISalaryIncomeTypeService;
 import com.salary.admin.utils.UserContextUtil;
@@ -136,6 +137,22 @@ public class SalaryIncomeTypeServiceImpl extends ServiceImpl<SalaryIncomeTypeExt
         log.warn("用户 {} 正在批量物理删除收入类型，目标IDs: {}", UserContextUtil.getUsername(), ids);
         return salaryIncomeTypeExtMapper.physicalDeleteByIds(ids) > 0;
     }
+
+    @Override
+    public List<IncomeTypeOptionVO> listIncomeTypeOptions() {
+        // 1. 构造查询条件：只查询未删除的记录，并按排序值升序、创建时间降序排列
+        LambdaQueryWrapper<SalaryIncomeType> wrapper = new LambdaQueryWrapper<SalaryIncomeType>()
+                .orderByAsc(SalaryIncomeType::getSortValue)
+                .orderByDesc(SalaryIncomeType::getCreateTime);
+
+        // 2. 执行查询获取实体列表
+        List<SalaryIncomeType> entityList = this.list(wrapper);
+
+        // 3. 使用转换器将实体列表转换为 OptionVO 列表
+        // 提示：请确保你的 IncomeTypeConvert 中已经定义了 toOptionVOList 方法
+        return incomeTypeConvert.toOptionVOList(entityList);
+    }
+
     /**
      * 内部私有方法：校验 TypeCode 的全局唯一性
      */
