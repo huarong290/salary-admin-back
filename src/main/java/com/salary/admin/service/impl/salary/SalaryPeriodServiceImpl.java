@@ -16,6 +16,7 @@ import com.salary.admin.model.dto.salary.period.PeriodEditReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryEmployee;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
+import com.salary.admin.model.vo.salary.period.PeriodOptionVO;
 import com.salary.admin.model.vo.salary.period.PeriodVO;
 import com.salary.admin.service.salary.ISalaryEmployeeService;
 import com.salary.admin.service.salary.ISalaryPeriodService;
@@ -205,6 +206,17 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         return baseMapper.physicalDeleteByIds(ids) > 0;
     }
 
+    @Override
+    public List<PeriodOptionVO> listOption() {
+        // 1. 使用 LambdaQueryWrapper 进行去重查询
+        List<SalaryPeriod> list = this.list(new LambdaQueryWrapper<SalaryPeriod>()
+                .select(SalaryPeriod::getSettlementMonth, SalaryPeriod::getWorkMonth)
+                .groupBy(SalaryPeriod::getSettlementMonth, SalaryPeriod::getWorkMonth)
+                .orderByDesc(SalaryPeriod::getSettlementMonth));
+
+        // 2. 利用 MapStruct 转换器进行类型转换
+        return periodConvert.toOptionVOList(list);
+    }
     // ============================ 私有辅助方法 ============================
 
     /**

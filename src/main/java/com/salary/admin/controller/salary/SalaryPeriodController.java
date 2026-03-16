@@ -7,6 +7,7 @@ import com.salary.admin.model.dto.salary.period.PeriodAddReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodEditReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
+import com.salary.admin.model.vo.salary.period.PeriodOptionVO;
 import com.salary.admin.model.vo.salary.period.PeriodVO;
 import com.salary.admin.service.salary.ISalaryCoreEngine;
 import com.salary.admin.service.salary.ISalaryPeriodService;
@@ -89,5 +90,11 @@ public class SalaryPeriodController {
         return ApiResult.successResult(iSalaryPeriodService.deletePeriodByIds(ids, logicalDelete));
     }
 
-
+    @GetMapping("/listOption")
+    @Operation(summary = "获取可选的结算月份列表")
+    public ApiResult<List<PeriodOptionVO>> listOption() {
+        // 逻辑：查询数据库中已存在的 settlementMonth，并进行去重排序
+        // SELECT DISTINCT settlementMonth FROM salary_period ORDER BY settlementMonth DESC
+        return ApiResult.successResult(iSalaryPeriodService.listOption());
+    }
 }

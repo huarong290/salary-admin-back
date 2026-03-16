@@ -8,6 +8,7 @@ import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodEditReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
+import com.salary.admin.model.vo.salary.period.PeriodOptionVO;
 import com.salary.admin.model.vo.salary.period.PeriodVO;
 
 import java.util.List;
@@ -78,4 +79,10 @@ public interface ISalaryPeriodService extends IService<SalaryPeriod> {
      * @return 成功生成的周期实体列表 (返回给 Engine 联动使用)
      */
     List<SalaryPeriod> batchInitPeriodsOnly(PeriodBatchInitReqDTO reqDTO);
+
+    /**
+     * 获取去重后的结算月份下拉列表
+     * @return 简易选项列表 (settlementMonth -> YYYYMM)
+     */
+    List<PeriodOptionVO> listOption();
 }
