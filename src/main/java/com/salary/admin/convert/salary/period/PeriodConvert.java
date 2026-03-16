@@ -7,7 +7,6 @@ import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.period.PeriodOptionVO;
 import com.salary.admin.model.vo.salary.period.PeriodVO;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
@@ -58,10 +57,8 @@ public interface PeriodConvert {
 
     /**
      * 实体映射为简易下拉选项
-     * 将业务字段映射为通用的 label/value 结构
+     * 将业务字段映射为通用的结构
      */
-    @Mapping(source = "workMonth", target = "label")
-    @Mapping(source = "settlementMonth", target = "value")
     PeriodOptionVO toOptionVO(SalaryPeriod entity);
 
     /**

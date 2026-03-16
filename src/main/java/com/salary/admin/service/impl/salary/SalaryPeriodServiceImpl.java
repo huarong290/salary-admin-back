@@ -208,13 +208,21 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
 
     @Override
     public List<PeriodOptionVO> listOption() {
-        // 1. 使用 LambdaQueryWrapper 进行去重查询
+        // 1. 增加 startDate 和 endDate 的查询，确保转换器能拿到数据
         List<SalaryPeriod> list = this.list(new LambdaQueryWrapper<SalaryPeriod>()
-                .select(SalaryPeriod::getSettlementMonth, SalaryPeriod::getWorkMonth)
-                .groupBy(SalaryPeriod::getSettlementMonth, SalaryPeriod::getWorkMonth)
+                .select(SalaryPeriod::getId,
+                        SalaryPeriod::getSettlementMonth,
+                        SalaryPeriod::getWorkMonth,
+                        SalaryPeriod::getStartDate,
+                        SalaryPeriod::getEndDate)
+                .groupBy(SalaryPeriod::getId,
+                        SalaryPeriod::getSettlementMonth,
+                        SalaryPeriod::getWorkMonth,
+                        SalaryPeriod::getStartDate,
+                        SalaryPeriod::getEndDate)
                 .orderByDesc(SalaryPeriod::getSettlementMonth));
 
-        // 2. 利用 MapStruct 转换器进行类型转换
+        // 2. 转换类型
         return periodConvert.toOptionVOList(list);
     }
     // ============================ 私有辅助方法 ============================

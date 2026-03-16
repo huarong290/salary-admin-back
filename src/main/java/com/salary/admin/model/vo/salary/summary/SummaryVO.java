@@ -28,6 +28,11 @@ public class SummaryVO implements Serializable {
     private Long periodId;
 
     /* ================== 🌟 扩展显示字段 (内存拼接) ================== */
+    @Schema(description = "员工Id")
+    private Long employeeId;
+
+    @Schema(description = "员工Code")
+    private String employeeCode;
 
     @Schema(description = "员工姓名")
     private String employeeName;

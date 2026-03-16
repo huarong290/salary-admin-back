@@ -3,29 +3,29 @@
 <mapper namespace="com.salary.admin.mapper.ext.salary.SalarySummaryExtMapper">
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.salary.SalarySummary">
-        <id column="id" property="id" />
-        <result column="period_id" property="periodId" />
-        <result column="currency" property="currency" />
-        <result column="exchange_rate" property="exchangeRate" />
+        <id column="id" property="id"/>
+        <result column="period_id" property="periodId"/>
+        <result column="currency" property="currency"/>
+        <result column="exchange_rate" property="exchangeRate"/>
 
-        <result column="salary_subtotal" property="salarySubtotal" />
-        <result column="salary_deduction_total" property="salaryDeductionTotal" />
-        <result column="salary_total" property="salaryTotal" />
+        <result column="salary_subtotal" property="salarySubtotal"/>
+        <result column="salary_deduction_total" property="salaryDeductionTotal"/>
+        <result column="salary_total" property="salaryTotal"/>
 
-        <result column="salary_converted" property="salaryConverted" />
-        <result column="salary_rmb" property="salaryRmb" />
-        <result column="salary_usdt" property="salaryUsdt" />
+        <result column="salary_converted" property="salaryConverted"/>
+        <result column="salary_rmb" property="salaryRmb"/>
+        <result column="salary_usdt" property="salaryUsdt"/>
 
-        <result column="target_account" property="targetAccount" />
-        <result column="payment_status" property="paymentStatus" />
-        <result column="pay_time" property="payTime" />
+        <result column="target_account" property="targetAccount"/>
+        <result column="payment_status" property="paymentStatus"/>
+        <result column="pay_time" property="payTime"/>
 
-        <result column="remark" property="remark" />
-        <result column="delete_flag" property="deleteFlag" />
-        <result column="create_by" property="createBy" />
-        <result column="create_time" property="createTime" />
-        <result column="update_by" property="updateBy" />
-        <result column="update_time" property="updateTime" />
+        <result column="remark" property="remark"/>
+        <result column="delete_flag" property="deleteFlag"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
@@ -66,12 +66,17 @@
         </foreach>
         ON DUPLICATE KEY UPDATE
         update_time = VALUES(update_time),
+        salary_subtotal = VALUES(salary_subtotal),
+        salary_deduction_total = VALUES(salary_deduction_total),
+        salary_total = VALUES(salary_total),
         payment_status = IF(payment_status = 1, 1, VALUES(payment_status))
     </insert>
 
     <!-- 物理删除：直接删除记录 -->
     <delete id="physicalDeleteById">
-        DELETE FROM salary_summary WHERE id = #{id}
+        DELETE
+        FROM salary_summary
+        WHERE id = #{id}
     </delete>
     <!-- 批量物理删除 -->
     <delete id="physicalDeleteByIds">
@@ -83,9 +88,56 @@
         SELECT s.id
         FROM salary_summary s
                  INNER JOIN salary_period p ON s.period_id = p.id
-        WHERE p.employee_id = #{employeeId}
-          AND p.settlement_month = #{settlementMonth}
-          AND s.delete_flag = 0
-            LIMIT 1
+        <where>
+            s.delete_flag = 0
+            AND p.employee_id = #{employeeId}
+            AND p.settlement_month = #{settlementMonth}
+        </where>
+        LIMIT 1
+    </select>
+
+    <select id="selectSummaryPageVo" resultType="com.salary.admin.model.vo.salary.summary.SummaryVO">
+        SELECT
+        s.*,
+        p.settlement_month AS settlementMonth,
+        p.employee_id AS employeeId,
+        e.employee_code AS employeeCode,
+        e.employee_name AS employeeName
+        FROM salary_summary s
+        INNER JOIN salary_period p ON s.period_id = p.id
+        LEFT JOIN salary_employee e ON p.employee_id = e.id
+        <where>
+            s.delete_flag = 0
+
+            <if test="req.employeeId != null">
+                AND p.employee_id = #{req.employeeId}
+            </if>
+
+            <if test="req.settlementMonth != null and req.settlementMonth != ''">
+                AND p.settlement_month = #{req.settlementMonth}
+            </if>
+
+            <if test="req.periodId != null">
+                AND s.period_id = #{req.periodId}
+            </if>
+        </where>
+        ORDER BY s.create_time DESC
+    </select>
+    <select id="selectSummaryVoById" resultType="com.salary.admin.model.vo.salary.summary.SummaryVO">
+        SELECT
+        s.*,
+        p.settlement_month AS settlementMonth,
+        p.employee_id AS employeeId,
+        e.employee_code AS employeeCode,
+        e.employee_name AS employeeName
+        FROM salary_summary s
+        INNER JOIN salary_period p ON s.period_id = p.id
+        LEFT JOIN salary_employee e ON p.employee_id = e.id
+        <where>
+            s.delete_flag = 0
+            AND s.id = #{id}
+
+        </where>
+        LIMIT 1
     </select>
 </mapper>

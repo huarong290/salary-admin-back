@@ -32,7 +32,7 @@ public interface ISalaryCoreEngine {
      * 3. 系统核算生成记录 (从 PaymentRecordService 迁移)
      * 逻辑：根据薪资档案配置自动计算各项收入扣款并存入快照
      */
-    Long createRecordByCalculation(Long summaryId, SalaryArchiveVO archive);
+    Long createRecordByCalculation(Long summaryId, SalaryArchiveVO archive, SalaryPeriod period);
 
     /**
      * 4. 手动录入总额生成记录 (从 PaymentRecordService 迁移)
