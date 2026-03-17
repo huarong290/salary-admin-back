@@ -324,7 +324,7 @@ CREATE TABLE `salary_archive_item`
     `type_id`       BIGINT         NOT NULL DEFAULT 0 COMMENT '对应的收入/扣款类型ID',
     `type_name`     VARCHAR(64)    NOT NULL DEFAULT '' COMMENT '对应的收入/扣款类型ID',
     `category_name` VARCHAR(64)    NOT NULL DEFAULT '' COMMENT '分类名称快照',
-    `calc_type`     TINYINT(1)     NOT NULL DEFAULT 1 COMMENT '计算方式: 1-固定金额, 2-按基数比例',
+    `calc_type`     TINYINT(1)     NOT NULL DEFAULT 1 COMMENT '计算方式: 1-固定金额, 2-按基数比例 3-按出勤折算额度',
     `base_amount`   DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '计算基数 (为空则默认取主表base_salary)', -- 🌟 新增：解决社保基数与底薪不同的问题
     `amount`        DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '固定金额 (若为比例计算，此字段可作为计算结果缓存)',
     `ratio`         DECIMAL(8, 4)  NOT NULL DEFAULT '0.0000' COMMENT '计算比例 (如 0.0800 代表 8%)',               -- 🌟 修改：精度调到(8,4)，防止极端高倍率场景

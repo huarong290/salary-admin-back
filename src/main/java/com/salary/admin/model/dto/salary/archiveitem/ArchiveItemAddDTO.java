@@ -1,8 +1,10 @@
 package com.salary.admin.model.dto.salary.archiveitem;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
 import java.math.BigDecimal;
 
 /**
@@ -10,6 +12,7 @@ import java.math.BigDecimal;
  */
 @Data
 @Schema(description = "薪资档案明细保存入参")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ArchiveItemAddDTO {
 
     @NotNull(message = "项目类型不能为空")

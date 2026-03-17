@@ -153,15 +153,26 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             String formulaStr = "";
 
             // 计算绝对金额与透明化公式
+            // 1. 纯固定金额 (如：通讯补贴、社保代扣)
             if (item.getCalcType() == 1) {
                 itemAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
                 formulaStr = "固定金额配置";
-            } else if (item.getCalcType() == 2) {
+            }
+            // 2. 按基数比例 (如：公积金 8%)
+            else if (item.getCalcType() == 2) {
                 BigDecimal calcBase = (item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0)
                         ? item.getBaseAmount() : baseSalary;
                 BigDecimal ratio = item.getRatio() != null ? item.getRatio() : BigDecimal.ZERO;
                 itemAmount = calcBase.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
                 formulaStr = String.format("基数 %s × 比例 %s%%", calcBase, ratio.multiply(new BigDecimal("100")).setScale(2));
+            }// 🌟 3. 新增：按出勤天数折算的固定额度 (如：餐补、按比例发放的全勤奖等)
+            else if (item.getCalcType() == 3) {
+                BigDecimal standardAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
+                // 丝滑计算：标准额 × (出勤天数 ÷ 计薪天数)
+                itemAmount = standardAmount.multiply(attendanceDays)
+                        .divide(monthDays, 2, RoundingMode.HALF_UP);
+                formulaStr = String.format("标准额 %s × (出勤 %s ÷ 计薪 %s)",
+                        standardAmount, attendanceDays, monthDays);
             }
 
             // 翻译名称与分类，并累加总额
