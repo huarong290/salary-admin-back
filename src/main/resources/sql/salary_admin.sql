@@ -318,21 +318,23 @@ CREATE TABLE `salary_archive`
 -- ==========================================================
 CREATE TABLE `salary_archive_item`
 (
-    `id`          BIGINT         NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `archive_id`  BIGINT         NOT NULL COMMENT '关联具体的某一个版本的档案ID',
-    `item_type`   TINYINT(1)     NOT NULL COMMENT '项目类型: 1-收入项, 2-扣款项',
-    `type_id`     BIGINT         NOT NULL COMMENT '对应的收入/扣款类型ID',
-    `calc_type`   TINYINT(1)     NOT NULL DEFAULT 1 COMMENT '计算方式: 1-固定金额, 2-按基数比例',
-    `base_amount` DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '计算基数 (为空则默认取主表base_salary)', -- 🌟 新增：解决社保基数与底薪不同的问题
-    `amount`      DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '固定金额 (若为比例计算，此字段可作为计算结果缓存)',
-    `ratio`       DECIMAL(8, 4)  NOT NULL DEFAULT '0.0000' COMMENT '计算比例 (如 0.0800 代表 8%)',               -- 🌟 修改：精度调到(8,4)，防止极端高倍率场景
-    `delete_flag` TINYINT(1)     NOT NULL DEFAULT '0',
-    `create_by`   VARCHAR(64)    NOT NULL DEFAULT 'admin',
-    `create_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `update_by`   VARCHAR(64)    NOT NULL DEFAULT 'admin',
-    `update_time` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX         `idx_archive_id` (`archive_id`),
-    UNIQUE KEY `uk_archive_item` (`archive_id`, `item_type`, `type_id`)                                          -- 🌟 新增：防止同一版本重复添加相同项
+    `id`            BIGINT         NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `archive_id`    BIGINT         NOT NULL DEFAULT 0 COMMENT '关联具体的某一个版本的档案ID',
+    `item_type`     TINYINT(1)     NOT NULL DEFAULT 0 COMMENT '项目类型: 1-收入项, 2-扣款项',
+    `type_id`       BIGINT         NOT NULL DEFAULT 0 COMMENT '对应的收入/扣款类型ID',
+    `type_name`     VARCHAR(64)    NOT NULL DEFAULT '' COMMENT '对应的收入/扣款类型ID',
+    `category_name` VARCHAR(64)    NOT NULL DEFAULT '' COMMENT '分类名称快照',
+    `calc_type`     TINYINT(1)     NOT NULL DEFAULT 1 COMMENT '计算方式: 1-固定金额, 2-按基数比例',
+    `base_amount`   DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '计算基数 (为空则默认取主表base_salary)', -- 🌟 新增：解决社保基数与底薪不同的问题
+    `amount`        DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '固定金额 (若为比例计算，此字段可作为计算结果缓存)',
+    `ratio`         DECIMAL(8, 4)  NOT NULL DEFAULT '0.0000' COMMENT '计算比例 (如 0.0800 代表 8%)',               -- 🌟 修改：精度调到(8,4)，防止极端高倍率场景
+    `delete_flag`   TINYINT(1)     NOT NULL DEFAULT '0',
+    `create_by`     VARCHAR(64)    NOT NULL DEFAULT 'admin',
+    `create_time`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_by`     VARCHAR(64)    NOT NULL DEFAULT 'admin',
+    `update_time`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX           `idx_archive_id` (`archive_id`),
+    UNIQUE KEY `uk_archive_item` (`archive_id`, `item_type`, `type_id`)                                            -- 🌟 新增：防止同一版本重复添加相同项
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资档案固定项明细表';
 
 -- ==========================================================

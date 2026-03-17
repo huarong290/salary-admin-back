@@ -44,7 +44,7 @@
         <result property="currency" column="currency"/>
         <result property="changeReason" column="change_reason"/>
         <result column="remark" property="remark" />
-        <collection property="items" ofType="com.salary.admin.model.vo.salary.archiveitem.ArchiveItemDetailVO">
+        <collection property="items" ofType="com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO">
             <result property="typeId" column="type_id"/>
             <result property="itemType" column="item_type"/>
             <result property="calcType" column="calc_type"/>

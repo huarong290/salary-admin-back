@@ -15,10 +15,14 @@ import java.math.BigDecimal;
  */
 @Data
 @Schema(description = "薪资档案项明细视图对象")
-public class ArchiveItemDetailVO implements Serializable {
+public class SalaryArchiveItemVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    /**
+     * 明细记录ID
+     */
+    @Schema(description = "明细记录ID")
+    private Long id;
     /**
      * 对应的收入/扣款类型ID
      */
@@ -32,11 +36,10 @@ public class ArchiveItemDetailVO implements Serializable {
     private String typeName;
 
     /**
-     * 收入/扣款类型编码 (关联字典获取)
+     * 业务分类名称 (如：津贴补贴、五险一金)
      */
-    @Schema(description = "收入/扣款类型编码 (关联字典获取)")
-    private String typeCode;
-
+    @Schema(description = "业务分类名称")
+    private String categoryName;
     /**
      * 项目类型: 1-收入项, 2-扣款项
      */
@@ -66,4 +69,16 @@ public class ArchiveItemDetailVO implements Serializable {
      */
     @Schema(description = "计算比例 (如 0.0800 代表 8%)")
     private BigDecimal ratio;
+
+    /**
+     * 计算公式描述 (用于前端直观展示计算过程)
+     */
+    @Schema(description = "计算公式描述")
+    private String formulaLabel;
+
+    /**
+     * 比例百分比标签 (用于前端展示，如：8%)
+     */
+    @Schema(description = "比例百分比标签")
+    private String ratioLabel;
 }

@@ -49,6 +49,18 @@ public class SalaryArchiveItem extends BaseEntity<SalaryArchiveItem> {
     @TableField("type_id")
     private Long typeId;
     /**
+     * 收入/扣款项名称快照 (如：基本工资、养老保险)
+     */
+    @Schema(description = "收入/扣款项名称快照")
+    @TableField("type_name")
+    private String typeName;
+    /**
+     * 分类名称快照 (如：津贴补贴、五险一金)
+     */
+    @Schema(description = "分类名称快照")
+    @TableField("category_name")
+    private String categoryName;
+    /**
      * 计算方式: 1-固定金额, 2-按基数比例
      */
     @Schema(description = "计算方式: 1-固定金额, 2-按基数比例")

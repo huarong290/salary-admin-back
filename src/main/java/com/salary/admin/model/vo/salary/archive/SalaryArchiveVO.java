@@ -1,6 +1,6 @@
 package com.salary.admin.model.vo.salary.archive;
 
-import com.salary.admin.model.vo.salary.archiveitem.ArchiveItemDetailVO;
+import com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -107,5 +107,5 @@ public class SalaryArchiveVO implements Serializable {
      * 薪资项明细列表
      */
     @Schema(description = "薪资项明细列表")
-    private List<ArchiveItemDetailVO> items;
+    private List<SalaryArchiveItemVO> items;
 }

@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.common.PageResult;
+import com.salary.admin.convert.salary.archive.ArchiveConvert;
+import com.salary.admin.convert.salary.archiveitem.ArchiveItemConvert;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.mapper.ext.salary.SalaryArchiveExtMapper;
 import com.salary.admin.model.dto.salary.archive.ArchiveAddReqDTO;
@@ -15,13 +17,10 @@ import com.salary.admin.model.entity.salary.SalaryArchive;
 import com.salary.admin.model.entity.salary.SalaryArchiveItem;
 import com.salary.admin.model.entity.salary.SalaryPaymentRecord;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
-import com.salary.admin.service.salary.ISalaryArchiveItemService;
-import com.salary.admin.service.salary.ISalaryArchiveService;
-import com.salary.admin.service.salary.ISalaryPaymentRecordService;
+import com.salary.admin.service.salary.*;
 import com.salary.admin.utils.UserContextUtil;
-import jakarta.annotation.Resource;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,15 +41,25 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper, SalaryArchive> implements ISalaryArchiveService {
 
-    @Resource
-    private ISalaryArchiveItemService iSalaryArchiveItemService;
-    @Resource
-    private ISalaryPaymentRecordService iSalaryPaymentRecordService;
 
-    @Resource
-    private SalaryArchiveExtMapper salaryArchiveExtMapper;
+    private final ISalaryArchiveItemService iSalaryArchiveItemService;
+
+    private final ISalaryPaymentRecordService iSalaryPaymentRecordService;
+
+    private final SalaryArchiveExtMapper salaryArchiveExtMapper;
+
+    // 【新增】注入 MapStruct 转换器
+    private final ArchiveConvert archiveConvert;
+
+    private final ArchiveItemConvert archiveItemConvert;
+
+    // 【新增】注入字典服务，用于冗余快照填充
+    private final ISalaryIncomeTypeService iSalaryIncomeTypeService;
+
+    private final ISalaryDeductionTypeService iSalaryDeductionTypeService;
 
     @Override
     public PageResult<SalaryArchiveVO> selectArchivePage(ArchiveQueryReqDTO queryReq) {
@@ -94,27 +103,24 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
                 throw new BusinessException("新生效日期 [" + req.getEffectiveDate() + "] 必须晚于当前版本生效日期 [" + currentArchive.getEffectiveDate() + "]");
             }
             nextVersion = currentArchive.getVersion() + 1;
-
-            // 🚨 注意：这里删除了原来修改旧版本 isLatest 和 expiryDate 的代码。
-            // 旧版本必须保持生效，直到新版本审核通过！
         }
 
         // 3. 创建新版本档案主表
-        SalaryArchive newArchive = new SalaryArchive();
-        BeanUtils.copyProperties(req, newArchive);
+        SalaryArchive newArchive = archiveConvert.toEntity(req);
         newArchive.setVersion(nextVersion);
         newArchive.setIsLatest(1);
         newArchive.setAuditStatus(0); // 🌟 核心修正：强制设为 0-待审核状态
         this.save(newArchive);
 
-        // 4. 处理并保存明细项 (Items) - 保持你原来完美的比例计算逻辑不变
+        // 4. 处理并保存明细项 (Items) - 保持你原来完美的比例计算逻辑不变:增强计算严谨性 + 冗余名称填充
         if (CollUtil.isNotEmpty(req.getItems())) {
             List<SalaryArchiveItem> items = req.getItems().stream().map(itemDto -> {
-                SalaryArchiveItem item = new SalaryArchiveItem();
-                BeanUtils.copyProperties(itemDto, item);
+                // 【调整】使用 MapStruct 转换明细
+                SalaryArchiveItem item = archiveItemConvert.toEntity(itemDto);
                 item.setArchiveId(newArchive.getId());
-
+                // 【修正】比例计算逻辑：解决基数为0导致的 KPI 失效问题
                 if (Integer.valueOf(2).equals(item.getCalcType())) {
+                    // 判断优先级：明细设置的基数 > 主表底薪
                     BigDecimal base = item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0
                             ? item.getBaseAmount() : newArchive.getBaseSalary();
 
@@ -122,6 +128,8 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
                         item.setAmount(base.multiply(item.getRatio()).setScale(2, RoundingMode.HALF_UP));
                     }
                 }
+                // 【新增】企业级冗余：填充项目名称和分类（快照存入）
+                this.fillItemSnapshotInfo(item);
                 return item;
             }).collect(Collectors.toList());
 
@@ -240,5 +248,40 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         log.info("SalaryArchiveService: 正在获取全员核算基准数据...");
         // 调用 ExtMapper 中定义的联表查询，一次性拉取在职员工 + 最新档案 + 所有明细项
         return salaryArchiveExtMapper.listActiveEmployeeArchives();
+    }
+
+    /**
+     * 【完善逻辑】填充档案项的名称和分类快照
+     * 作用：在定薪一瞬间，将当时的项目名称和分类“刻录”在明细表中。
+     * 解决：避免后期字典表修改名称或删除后，导致历史薪资档案显示异常。
+     */
+    private void fillItemSnapshotInfo(SalaryArchiveItem item) {
+        if (item.getTypeId() == null || item.getItemType() == null) {
+            return;
+        }
+
+        // 1. 处理收入项 (itemType = 1)
+        if (Integer.valueOf(1).equals(item.getItemType())) {
+            var incomeType = iSalaryIncomeTypeService.getById(item.getTypeId());
+            // 查收入字典
+            if (incomeType != null) {
+                // 🌟 将字典中的名称填入冗余字段 (请确保 Entity 中有对应的 set 方法)
+                // 如果你的字段名叫 typeName，就用 setItemName
+                 item.setTypeName(incomeType.getTypeName());
+                 item.setCategoryName(incomeType.getCategoryName());
+                log.debug("冗余填充-收入项: {}, 分类: {}", incomeType.getTypeName(), incomeType.getCategoryName());
+            }
+        }
+        // 2. 处理扣款项 (itemType = 2)
+        else if (Integer.valueOf(2).equals(item.getItemType())) {
+            // 查扣款字典
+            var deductionType = iSalaryDeductionTypeService.getById(item.getTypeId());
+            if (deductionType != null) {
+                // 🌟 同理，将扣款字典中的名称填入冗余字段
+                 item.setTypeName(deductionType.getTypeName());
+                 item.setCategoryName(deductionType.getCategoryName());
+                log.debug("冗余填充-扣款项: {}, 分类: {}", deductionType.getTypeName(), deductionType.getCategoryName());
+            }
+        }
     }
 }

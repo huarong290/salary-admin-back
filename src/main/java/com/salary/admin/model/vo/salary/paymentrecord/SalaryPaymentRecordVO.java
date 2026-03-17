@@ -2,7 +2,7 @@ package com.salary.admin.model.vo.salary.paymentrecord;
 
 
 import com.salary.admin.model.entity.salary.SalaryPaymentRecord;
-import com.salary.admin.model.vo.salary.archiveitem.ArchiveItemDetailVO;
+import com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -40,5 +40,5 @@ public class SalaryPaymentRecordVO extends SalaryPaymentRecord implements Serial
      * 解析后的明细列表
      */
     @Schema(description = "解析后的计算详情明细 (由 detail_json 反序列化而来)")
-    private List<ArchiveItemDetailVO> itemDetails;
+    private List<SalaryArchiveItemVO> itemDetails;
 }

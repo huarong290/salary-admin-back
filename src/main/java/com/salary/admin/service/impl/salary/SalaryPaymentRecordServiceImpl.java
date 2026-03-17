@@ -11,7 +11,7 @@ import com.salary.admin.model.dto.salary.paymentrecord.PaymentRecordQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryPaymentRecord;
 import com.salary.admin.model.entity.salary.SalarySummary;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
-import com.salary.admin.model.vo.salary.archiveitem.ArchiveItemDetailVO;
+import com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO;
 import com.salary.admin.model.vo.salary.paymentrecord.SalaryPaymentRecordVO;
 import com.salary.admin.service.salary.ISalaryPaymentRecordService;
 import com.salary.admin.service.salary.ISalarySummaryService;
@@ -48,7 +48,7 @@ public class SalaryPaymentRecordServiceImpl extends ServiceImpl<SalaryPaymentRec
         resultPage.getRecords().forEach(vo -> {
             if (vo.getDetailJson() != null) {
                 try {
-                    List<ArchiveItemDetailVO> details = JSONUtil.toList(vo.getDetailJson(), ArchiveItemDetailVO.class);
+                    List<SalaryArchiveItemVO> details = JSONUtil.toList(vo.getDetailJson(), SalaryArchiveItemVO.class);
                     vo.setItemDetails(details);
                 } catch (Exception e) {
                     log.error("解析薪资明细JSON失败, recordId: {}", vo.getId(), e);
@@ -83,7 +83,7 @@ public class SalaryPaymentRecordServiceImpl extends ServiceImpl<SalaryPaymentRec
         BigDecimal deductionTotal = BigDecimal.ZERO;
 
         if (CollUtil.isNotEmpty(archive.getItems())) {
-            for (ArchiveItemDetailVO item : archive.getItems()) {
+            for (SalaryArchiveItemVO item : archive.getItems()) {
                 BigDecimal amount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
                 // itemType: 1-收入, 2-扣款
                 if (Integer.valueOf(1).equals(item.getItemType())) {
