@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -69,13 +70,13 @@ public class SalaryPeriod extends BaseEntity<SalaryPeriod> {
      */
     @Schema(description = "月天数")
     @TableField("month_days")
-    private Integer monthDays;
+    private BigDecimal monthDays;
     /**
      * 出勤天数
      */
     @Schema(description = "出勤天数")
     @TableField("attendance_days")
-    private Integer attendanceDays;
+    private BigDecimal attendanceDays;
 
 
     @Override

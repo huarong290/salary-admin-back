@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -60,13 +61,13 @@ public class PeriodVO implements Serializable {
      * 月天数
      */
     @Schema(description = "本月自然天数")
-    private Integer monthDays;
+    private BigDecimal monthDays;
 
     /**
      * 出勤天数
      */
     @Schema(description = "实际出勤天数")
-    private Integer attendanceDays;
+    private BigDecimal attendanceDays;
 
     /**
      * 创建时间

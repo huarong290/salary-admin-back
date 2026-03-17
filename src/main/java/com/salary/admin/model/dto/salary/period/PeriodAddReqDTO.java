@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -41,12 +42,12 @@ public class PeriodAddReqDTO implements Serializable {
      * 月天数
      */
     @Schema(description = "月天数")
-    private Integer monthDays;
+    private BigDecimal monthDays;
     /**
      * 出勤天数
      */
     @Schema(description = "出勤天数")
-    private Integer attendanceDays;
+    private BigDecimal attendanceDays;
 
     /**
      * 在岗月份 (前端传来的字符串数字)

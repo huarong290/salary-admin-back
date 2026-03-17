@@ -72,23 +72,31 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean createNewSalaryVersion(ArchiveAddReqDTO req) {
-        // 1. 寻找该员工当前生效的最新版本 (is_latest = 1)
+        // 1. 🌟 强管控防线：检查是否已经有正在【待审核】的档案，防止HR重复点击提交
+        boolean hasPending = this.lambdaQuery()
+                .eq(SalaryArchive::getEmployeeId, req.getEmployeeId())
+                .eq(SalaryArchive::getAuditStatus, 0) // 0-待审核
+                .exists();
+        if (hasPending) {
+            throw new BusinessException("该员工已有正在待审核的调薪申请，请先处理完毕后再提交！");
+        }
+
+        // 2. 获取当前生效的最新版本，计算下一个版本号
         SalaryArchive currentArchive = this.getOne(new LambdaQueryWrapper<SalaryArchive>()
                 .eq(SalaryArchive::getEmployeeId, req.getEmployeeId())
+                .eq(SalaryArchive::getAuditStatus, 1) // 1-已生效
                 .eq(SalaryArchive::getIsLatest, 1));
 
         int nextVersion = 1;
         if (currentArchive != null) {
-            // 【日期重叠校验：新版本生效日期必须晚于当前版本
+            // 日期重叠校验
             if (!req.getEffectiveDate().isAfter(currentArchive.getEffectiveDate())) {
                 throw new BusinessException("新生效日期 [" + req.getEffectiveDate() + "] 必须晚于当前版本生效日期 [" + currentArchive.getEffectiveDate() + "]");
             }
-            // 2. 闭合旧版本：将其设为历史版本，并设置失效日期
-            currentArchive.setIsLatest(0);
-            currentArchive.setExpiryDate(req.getEffectiveDate().minusDays(1));
-            this.updateById(currentArchive);
-
             nextVersion = currentArchive.getVersion() + 1;
+
+            // 🚨 注意：这里删除了原来修改旧版本 isLatest 和 expiryDate 的代码。
+            // 旧版本必须保持生效，直到新版本审核通过！
         }
 
         // 3. 创建新版本档案主表
@@ -96,23 +104,21 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         BeanUtils.copyProperties(req, newArchive);
         newArchive.setVersion(nextVersion);
         newArchive.setIsLatest(1);
-        newArchive.setAuditStatus(1); // 直接生效，或根据权限设为待审
+        newArchive.setAuditStatus(0); // 🌟 核心修正：强制设为 0-待审核状态
         this.save(newArchive);
 
-        // 4. 处理并保存明细项 (Items)
+        // 4. 处理并保存明细项 (Items) - 保持你原来完美的比例计算逻辑不变
         if (CollUtil.isNotEmpty(req.getItems())) {
             List<SalaryArchiveItem> items = req.getItems().stream().map(itemDto -> {
                 SalaryArchiveItem item = new SalaryArchiveItem();
                 BeanUtils.copyProperties(itemDto, item);
                 item.setArchiveId(newArchive.getId());
 
-                // 核心计算逻辑：如果是比例计算(2)，自动根据基数（档案底薪）计算出具体金额并缓存
                 if (Integer.valueOf(2).equals(item.getCalcType())) {
                     BigDecimal base = item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0
                             ? item.getBaseAmount() : newArchive.getBaseSalary();
 
                     if (base != null && item.getRatio() != null) {
-                        // 财务标准保留2位小数
                         item.setAmount(base.multiply(item.getRatio()).setScale(2, RoundingMode.HALF_UP));
                     }
                 }
@@ -175,49 +181,54 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         return true;
     }
 
+    /**
+     * 审核薪资档案 (权力交接阶段)
+     */
     @Transactional(rollbackFor = Exception.class)
+    @Override
     public boolean auditArchive(ArchiveAuditDTO auditDTO) {
-        // 1. 严谨查询：获取当前最新的实体（含 version 字段）
-        SalaryArchive currentArchive = this.getById(auditDTO.getId());
+        // 1. 严谨查询：获取当前正在审核的实体
+        SalaryArchive pendingArchive = this.getById(auditDTO.getId());
 
         // 2. 业务防御校验
-        if (currentArchive == null) {
+        if (pendingArchive == null) {
             throw new BusinessException("档案不存在");
         }
-        if (currentArchive.getAuditStatus() != 0) {
+        if (pendingArchive.getAuditStatus() != 0) {
             throw new BusinessException("档案已处理，请勿重复操作");
         }
 
         // 3. 处理审核通过逻辑
         if (auditDTO.getAuditStatus() == 1) {
-            // A. 批量将旧版本置为 0。注意：使用 LambdaUpdateWrapper 不会触发乐观锁插件，
-            // 它是按条件执行 SQL，不涉及实体对象的版本比对。
-            this.update(Wrappers.<SalaryArchive>lambdaUpdate()
-                    .eq(SalaryArchive::getEmployeeId, currentArchive.getEmployeeId())
-                    .eq(SalaryArchive::getIsLatest, 1)
-                    // 🚩 必须排除当前审核的 ID，否则当前对象的 version 会在数据库先变动，导致最后一步 updateById 失败
-                    .ne(SalaryArchive::getId, currentArchive.getId())
-                    .set(SalaryArchive::getIsLatest, 0));
+            // 🌟 核心交接：闭合旧的已生效版本 (设为非最新，并截断有效期)
+            LocalDate newEffectiveDate = pendingArchive.getEffectiveDate();
 
-            currentArchive.setIsLatest(1);
-            currentArchive.setAuditStatus(1);
-        }// 审批驳回
+            this.update(Wrappers.<SalaryArchive>lambdaUpdate()
+                    .eq(SalaryArchive::getEmployeeId, pendingArchive.getEmployeeId())
+                    .eq(SalaryArchive::getAuditStatus, 1) // 找到还在生效的旧版本
+                    .eq(SalaryArchive::getIsLatest, 1)
+                    .ne(SalaryArchive::getId, pendingArchive.getId())
+                    .set(SalaryArchive::getIsLatest, 0)
+                    .set(SalaryArchive::getExpiryDate, newEffectiveDate.minusDays(1))); // 截断到新版本生效的前一天
+
+            // 让新版本正式生效
+            pendingArchive.setAuditStatus(1);
+            pendingArchive.setIsLatest(1);
+        }
+        // 4. 处理审批驳回逻辑
         else if (Integer.valueOf(2).equals(auditDTO.getAuditStatus())) {
-            currentArchive.setAuditStatus(2);
-            currentArchive.setIsLatest(0);
+            pendingArchive.setAuditStatus(2);
+            pendingArchive.setIsLatest(0); // 驳回后直接沦为废弃历史，不再是 latest
         }
 
-        // 4. 设置审计信息
-        currentArchive.setRemark(auditDTO.getRemark());
-        currentArchive.setUpdateBy(UserContextUtil.getUsername());
-        currentArchive.setUpdateTime(LocalDateTime.now());
+        // 5. 设置审计信息
+        pendingArchive.setRemark(auditDTO.getRemark());
+        pendingArchive.setUpdateBy(UserContextUtil.getUsername());
+        pendingArchive.setUpdateTime(LocalDateTime.now());
 
-        // 5. 执行乐观锁更新
-        // 插件会自动生成：WHERE id = ? AND version = ?
-        boolean success = this.updateById(currentArchive);
-
+        // 6. 执行更新
+        boolean success = this.updateById(pendingArchive);
         if (!success) {
-            // 如果失败，说明在执行第 1 步到第 5 步之间，有其他人修改了这条记录
             throw new BusinessException("审核失败：数据已被他人抢先处理，请刷新页面重试");
         }
 

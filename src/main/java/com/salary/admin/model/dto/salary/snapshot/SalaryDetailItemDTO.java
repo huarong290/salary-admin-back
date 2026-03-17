@@ -1,4 +1,4 @@
-package com.salary.admin.model.dto.salary;
+package com.salary.admin.model.dto.salary.snapshot;
 
 
 import lombok.AllArgsConstructor;

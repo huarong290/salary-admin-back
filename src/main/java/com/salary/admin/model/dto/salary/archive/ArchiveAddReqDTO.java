@@ -1,6 +1,7 @@
 package com.salary.admin.model.dto.salary.archive;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.salary.admin.model.dto.salary.archiveitem.ArchiveItemAddDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Data
 @Schema(description = "薪资档案保存请求(含明细)")
+@JsonIgnoreProperties(ignoreUnknown = true) // 🌟 企业级防御：自动忽略前端传来的多余字段
 public class ArchiveAddReqDTO {
 
     @Schema(description = "员工ID", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -37,6 +39,12 @@ public class ArchiveAddReqDTO {
 
     @Schema(description = "调薪原因")
     private String changeReason;
+
+    /**
+     * 版本号（如果是新增定薪，前端可能传0或空；如果是调薪，前端传当前版本）
+     */
+    @Schema(description = "版本号")
+    private Integer version;
 
     @Schema(description = "备注")
     private String remark;

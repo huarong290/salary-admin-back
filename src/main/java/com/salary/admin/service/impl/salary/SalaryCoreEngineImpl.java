@@ -2,10 +2,11 @@ package com.salary.admin.service.impl.salary;
 
 
 import cn.hutool.core.collection.CollUtil;
-import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.salary.admin.model.dto.salary.period.PeriodAddReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
+import com.salary.admin.model.dto.salary.snapshot.SalaryDetailItemDTO;
+import com.salary.admin.model.dto.salary.snapshot.SalarySnapshotDTO;
 import com.salary.admin.model.entity.salary.*;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
 import com.salary.admin.service.salary.*;
@@ -17,8 +18,10 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +44,11 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
     private final ISalaryArchiveItemService iSalaryArchiveItemService;
 
-    private final ISalaryEmployeeService iSalaryEmployeeService;
+
+    // 注入字典表服务（用于给 FIXED 项目反查名称和分类）
+    private final ISalaryIncomeTypeService iSalaryIncomeTypeService;
+
+    private final ISalaryDeductionTypeService iSalaryDeductionTypeService;
 
     // 接管批量初始化
     @Override
@@ -87,121 +94,167 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         log.info("SalaryCoreEngine: 联动初始化汇总表成功，记录数: {}", summaries.size());
     }
 
+
     @Override
     public Long createRecordByCalculation(Long summaryId, SalaryArchiveVO archive, SalaryPeriod period) {
         // ==========================================
-        // 1. 基础工资与出勤折算
+        // 1. 基础工资与出勤严谨折算
         // ==========================================
         BigDecimal baseSalary = archive.getBaseSalary() != null ? archive.getBaseSalary() : BigDecimal.ZERO;
-        BigDecimal monthDays = (period.getMonthDays() != null && period.getMonthDays() > 0)
-                ? new BigDecimal(period.getMonthDays())
+
+        //使用 compareTo 比较大小，且直接引用 BigDecimal 对象
+        BigDecimal monthDays = (period.getMonthDays() != null && period.getMonthDays().compareTo(BigDecimal.ZERO) > 0)
+                ? period.getMonthDays()
                 : new BigDecimal("21.75"); // 默认法定计薪天数
+
+        // 直接引用，消除多余的 new BigDecimal()
         BigDecimal attendanceDays = period.getAttendanceDays() != null
-                ? new BigDecimal(period.getAttendanceDays())
+                ? period.getAttendanceDays()
                 : BigDecimal.ZERO;
 
-        // 实发底薪 = (底薪 / 计薪天数) * 出勤天数
         BigDecimal proratedBaseSalary = baseSalary.divide(monthDays, 4, RoundingMode.HALF_UP)
-                .multiply(attendanceDays)
-                .setScale(2, RoundingMode.HALF_UP);
+                .multiply(attendanceDays).setScale(2, RoundingMode.HALF_UP);
 
-        // ==========================================
-        // 2. 初始化统计变量与快照 JSON 对象
-        // ==========================================
-        BigDecimal incomeTotal = proratedBaseSalary; // 收入先计入折算后的底薪
+        BigDecimal incomeTotal = BigDecimal.ZERO;
         BigDecimal deductionTotal = BigDecimal.ZERO;
 
-        // 用于存储明细快照，方便前端查阅和后期审计
-        JSONObject detailJson = new JSONObject();
-        detailJson.put("baseSalary", baseSalary);
-        detailJson.put("monthDays", monthDays);
-        detailJson.put("attendanceDays", attendanceDays);
-        detailJson.put("proratedBaseSalary", proratedBaseSalary);
+        // 🌟 使用你定义的完美 DTO 集合来代替 JSONObject
+        List<SalaryDetailItemDTO> snapshotItems = new ArrayList<>();
+
+        // --- 写入底薪明细 ---
+        incomeTotal = incomeTotal.add(proratedBaseSalary);
+        snapshotItems.add(SalaryDetailItemDTO.builder()
+                .itemName("基本工资")
+                .amount(proratedBaseSalary)
+                .itemType(1)
+                .category("基本薪酬")
+                .source("BASE")
+                .formula(String.format("底薪 %s ÷ %s天 × 出勤 %s天", baseSalary, monthDays, attendanceDays))
+                .build());
 
         // ==========================================
-        // 3. 处理薪资档案中的【固定配置项】 (津贴、社保等)
+        // 2. 提前拉取字典，用于翻译 FIXED 档案项
+        // ==========================================
+        // 建议在真实项目中增加缓存，防止每次发薪都查全表
+        Map<Long, SalaryIncomeType> incomeTypeMap = iSalaryIncomeTypeService.list().stream()
+                .collect(Collectors.toMap(SalaryIncomeType::getId, t -> t));
+        Map<Long, SalaryDeductionType> deductionTypeMap = iSalaryDeductionTypeService.list().stream()
+                .collect(Collectors.toMap(SalaryDeductionType::getId, t -> t));
+
+        // ==========================================
+        // 3. 处理薪资档案中的【固定配置项】 (FIXED)
         // ==========================================
         List<SalaryArchiveItem> archiveItems = iSalaryArchiveItemService.list(
                 Wrappers.<SalaryArchiveItem>lambdaQuery().eq(SalaryArchiveItem::getArchiveId, archive.getId())
         );
 
-        BigDecimal archiveIncome = BigDecimal.ZERO;
-        BigDecimal archiveDeduction = BigDecimal.ZERO;
-
         for (SalaryArchiveItem item : archiveItems) {
             BigDecimal itemAmount = BigDecimal.ZERO;
+            String formulaStr = "";
 
-            // 判定计算方式：1-固定金额, 2-按基数比例
+            // 计算绝对金额与透明化公式
             if (item.getCalcType() == 1) {
                 itemAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
+                formulaStr = "固定金额配置";
             } else if (item.getCalcType() == 2) {
-                // 取基数（为空则取主表底薪）
                 BigDecimal calcBase = (item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0)
-                        ? item.getBaseAmount()
-                        : baseSalary;
+                        ? item.getBaseAmount() : baseSalary;
                 BigDecimal ratio = item.getRatio() != null ? item.getRatio() : BigDecimal.ZERO;
                 itemAmount = calcBase.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
+                formulaStr = String.format("基数 %s × 比例 %s%%", calcBase, ratio.multiply(new BigDecimal("100")).setScale(2));
             }
 
-            // 判定加减项：1-收入项, 2-扣款项
+            // 翻译名称与分类，并累加总额
+            String itemName = "未知项";
+            String category = "未分类";
             if (item.getItemType() == 1) {
-                archiveIncome = archiveIncome.add(itemAmount);
-            } else if (item.getItemType() == 2) {
-                archiveDeduction = archiveDeduction.add(itemAmount);
+                incomeTotal = incomeTotal.add(itemAmount);
+                SalaryIncomeType dict = incomeTypeMap.get(item.getTypeId());
+                if (dict != null) {
+                    itemName = dict.getTypeName();
+                    category = dict.getCategoryName();
+                }
+            } else {
+                deductionTotal = deductionTotal.add(itemAmount);
+                SalaryDeductionType dict = deductionTypeMap.get(item.getTypeId());
+                if (dict != null) {
+                    itemName = dict.getTypeName();
+                    category = dict.getCategoryName();
+                }
             }
-            // 将每一项的计算结果也存入快照 (使用 typeId 作为 key)
-            detailJson.put("archive_item_" + item.getTypeId(), itemAmount);
+
+            // --- 写入档案固定项明细 ---
+            snapshotItems.add(SalaryDetailItemDTO.builder()
+                    .itemName(itemName)
+                    .amount(itemAmount)
+                    .itemType(item.getItemType())
+                    .category(category)
+                    .source("FIXED")
+                    .formula(formulaStr)
+                    .build());
         }
 
-        incomeTotal = incomeTotal.add(archiveIncome);
-        deductionTotal = deductionTotal.add(archiveDeduction);
-
         // ==========================================
-        // 4. 处理当月【临时变动项】 (奖金、罚款、请假扣除等)
+        // 4. 处理当月【临时变动项】 (VARIABLE)
         // ==========================================
-        // 查询当月临时收入
         List<SalaryIncomeDetail> periodIncomes = iSalaryIncomeDetailService.list(
                 Wrappers.<SalaryIncomeDetail>lambdaQuery().eq(SalaryIncomeDetail::getPeriodId, period.getId())
         );
-        BigDecimal periodIncomeTotal = periodIncomes.stream()
-                .map(SalaryIncomeDetail::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        for (SalaryIncomeDetail pInc : periodIncomes) {
+            incomeTotal = incomeTotal.add(pInc.getAmount());
+            snapshotItems.add(SalaryDetailItemDTO.builder()
+                    .itemName(pInc.getIncomeTypeName()) // 你的表结构里直接冗余了这个，很赞
+                    .amount(pInc.getAmount())
+                    .itemType(1)
+                    .category(pInc.getCategoryName())
+                    .source("VARIABLE")
+                    .formula(pInc.getRemark() != null ? pInc.getRemark() : "当月临时导入")
+                    .build());
+        }
 
-        // 查询当月临时扣款
         List<SalaryDeductionDetail> periodDeductions = iSalaryDeductionDetailService.list(
                 Wrappers.<SalaryDeductionDetail>lambdaQuery().eq(SalaryDeductionDetail::getPeriodId, period.getId())
         );
-        BigDecimal periodDeductionTotal = periodDeductions.stream()
-                .map(SalaryDeductionDetail::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        incomeTotal = incomeTotal.add(periodIncomeTotal);
-        deductionTotal = deductionTotal.add(periodDeductionTotal);
-
-        detailJson.put("periodIncomeTotal", periodIncomeTotal);
-        detailJson.put("periodDeductionTotal", periodDeductionTotal);
+        for (SalaryDeductionDetail pDed : periodDeductions) {
+            deductionTotal = deductionTotal.add(pDed.getAmount());
+            snapshotItems.add(SalaryDetailItemDTO.builder()
+                    .itemName(pDed.getDeductionTypeName())
+                    .amount(pDed.getAmount())
+                    .itemType(2)
+                    .category(pDed.getCategoryName())
+                    .source("VARIABLE")
+                    .formula(pDed.getRemark() != null ? pDed.getRemark() : "当月临时导入")
+                    .build());
+        }
 
         // ==========================================
         // 5. 最终实发计算与数据入库
         // ==========================================
         BigDecimal finalSalary = incomeTotal.subtract(deductionTotal);
+        // 兜底防御，防止扣成负数
+        if (finalSalary.compareTo(BigDecimal.ZERO) < 0) {
+            finalSalary = BigDecimal.ZERO;
+        }
 
-        // 构建明细快照记录
+        // 🌟 组装最终 JSON 快照
+        SalarySnapshotDTO finalSnapshot = new SalarySnapshotDTO();
+        finalSnapshot.setMonthDays(monthDays);
+        finalSnapshot.setAttendanceDays(attendanceDays);
+        finalSnapshot.setBaseSalary(baseSalary);
+        finalSnapshot.setItems(snapshotItems); // 注入明细列表
+
         SalaryPaymentRecord record = new SalaryPaymentRecord();
         record.setSummaryId(summaryId);
         record.setEmployeeId(archive.getEmployeeId());
         record.setArchiveId(archive.getId());
-
-        // 核心金额赋值
-        record.setBaseSalary(baseSalary);
+        record.setBaseSalary(proratedBaseSalary);
         record.setIncomeTotal(incomeTotal);
         record.setDeductionTotal(deductionTotal);
         record.setFinalSalary(finalSalary);
+        record.setIsManual(0);
+        // 🌟 使用 Fastjson2 序列化对象写入数据库
+        record.setDetailJson(com.alibaba.fastjson2.JSON.toJSONString(finalSnapshot));
 
-        record.setIsManual(0); // 系统自动计算
-        record.setDetailJson(detailJson.toString()); // 🌟 存入完美的防篡改计算快照
-
-        // 保存记录并刷新汇总表
         iSalaryPaymentRecordService.save(record);
         this.refreshSummaryAmountBySummaryId(summaryId);
 
@@ -242,34 +295,46 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             return;
         }
 
+        int successCount = 0;
+        int failCount = 0;
+
         for (SalaryPeriod period : periods) {
-            // 2. 获取对应的汇总单 ID
-            SalarySummary summary = iSalarySummaryService.getOne(
-                    Wrappers.<SalarySummary>lambdaQuery().eq(SalarySummary::getPeriodId, period.getId())
-            );
-            if (summary == null) {
-                log.warn("周期ID {} 缺失汇总单，跳过", period.getId());
-                continue;
+            // 🌟 核心防线：单人核算独立 Try-Catch，绝不能让一个人报错卡死全公司发薪
+            try {
+                // 2. 获取对应的汇总单 ID
+                SalarySummary summary = iSalarySummaryService.getOne(
+                        Wrappers.<SalarySummary>lambdaQuery().eq(SalarySummary::getPeriodId, period.getId())
+                );
+                if (summary == null) {
+                    log.warn("周期ID {} 缺失汇总单，跳过", period.getId());
+                    continue;
+                }
+
+                // 3. 获取员工核算月对应的生效档案
+                SalaryArchiveVO archive = iSalaryArchiveService.getCurrentArchive(period.getEmployeeId());
+                if (archive == null) {
+                    log.warn("员工ID {} 缺失生效薪资档案，跳过核算", period.getEmployeeId());
+                    continue;
+                }
+
+                // 4. 清理旧账，保证幂等性
+                iSalaryPaymentRecordService.remove(
+                        Wrappers.<SalaryPaymentRecord>lambdaQuery().eq(SalaryPaymentRecord::getSummaryId, summary.getId())
+                );
+
+                // 5. 执行单人核算
+                this.createRecordByCalculation(summary.getId(), archive, period);
+                successCount++;
+
+            } catch (Exception e) {
+                failCount++;
+                // 打印出具体是哪个员工报错，方便实施人员去修改该员工档案
+                log.error("❌ 员工ID {} 核算异常: {}", period.getEmployeeId(), e.getMessage(), e);
             }
-
-            // 3. 获取员工核算月对应的生效档案 (需调用档案服务)
-            SalaryArchiveVO archive = iSalaryArchiveService.getCurrentArchive(period.getEmployeeId());
-            if (archive == null) {
-                log.warn("员工ID {} 缺失生效薪资档案，跳过核算", period.getEmployeeId());
-                continue;
-            }
-
-            // 4. 【核心防御】清理旧账，保证幂等性。允许财务无脑多次点击“重新核算”
-            iSalaryPaymentRecordService.remove(
-                    Wrappers.<SalaryPaymentRecord>lambdaQuery().eq(SalaryPaymentRecord::getSummaryId, summary.getId())
-            );
-
-            // 5. 执行单人核算并生成记录 (调用 Engine 自身的计算方法把 period 也传进去)
-            // 注意：内部会包含金额计算和 refreshSummaryAmountBySummaryId 动作
-            this.createRecordByCalculation(summary.getId(), archive, period);
         }
 
-        log.info("✅ [薪资引擎] {} 月份全员核算任务执行完毕，共处理 {} 条周期", settlementMonth, periods.size());
+        log.info("✅ [薪资引擎] {} 月份全员核算任务执行完毕！总计 {} 人，成功 {} 人，失败 {} 人",
+                settlementMonth, periods.size(), successCount, failCount);
     }
 
     @Override

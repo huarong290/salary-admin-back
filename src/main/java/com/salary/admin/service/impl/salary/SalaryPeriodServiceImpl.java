@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -112,6 +114,20 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
 
         // 3. 构造并批量保存周期记录
         String workMonth = month.substring(0, 4) + "-" + month.substring(4);
+
+        // ==========================================
+        // 🚀 企业级优化：智能计算本周期自然天数或法定天数
+        // ==========================================
+        BigDecimal calcMonthDays;
+        if (reqDTO.getStartDate() != null && reqDTO.getEndDate() != null) {
+            // 如果传了具体日期，按实际日历天数计算 (包含起止当天所以需要 +1)
+            long daysBetween = ChronoUnit.DAYS.between(reqDTO.getStartDate(), reqDTO.getEndDate()) + 1;
+            calcMonthDays = BigDecimal.valueOf(daysBetween);
+        } else {
+            // 如果没传起止日期，兜底使用国家标准法定计薪天数 21.75 天
+            calcMonthDays = new BigDecimal("21.75");
+        }
+
         List<SalaryPeriod> periods = readyIds.stream().map(empId -> {
             SalaryPeriod p = new SalaryPeriod();
             p.setEmployeeId(empId);
@@ -119,7 +135,11 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
             p.setWorkMonth(workMonth);
             p.setStartDate(reqDTO.getStartDate());
             p.setEndDate(reqDTO.getEndDate());
-            p.setMonthDays(30); // 默认 30 天，建议根据具体日期计算
+
+            // 🚀 使用高精度 BigDecimal 赋值，并且默认初始化为“满勤”
+            p.setMonthDays(calcMonthDays);
+            p.setAttendanceDays(calcMonthDays);
+
             return p;
         }).collect(Collectors.toList());
 
