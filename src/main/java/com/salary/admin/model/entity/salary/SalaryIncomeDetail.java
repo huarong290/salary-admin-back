@@ -41,11 +41,29 @@ public class SalaryIncomeDetail extends BaseEntity<SalaryIncomeDetail> {
     @TableField("period_id")
     private Long periodId;
     /**
+     * 员工ID
+     */
+    @Schema(description = "员工ID")
+    @TableField("employee_id")
+    private Long employeeId;
+    /**
      * 收入类型ID
      */
     @Schema(description = "收入类型ID")
     @TableField("income_type_id")
     private Long incomeTypeId;
+    /**
+     * 收入类型名称
+     */
+    @Schema(description = "收入类型名称")
+    @TableField("income_type_name")
+    private String incomeTypeName;
+    /**
+     * 收入类型分类
+     */
+    @Schema(description = "收入类型分类")
+    @TableField("category_name")
+    private String categoryName;
     /**
      * 收入金额
      */

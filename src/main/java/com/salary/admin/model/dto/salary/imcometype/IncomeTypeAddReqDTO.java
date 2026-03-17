@@ -13,11 +13,15 @@ import java.io.Serializable;
 @Data
 @Schema(description = "新增收入类型请求")
 public class IncomeTypeAddReqDTO implements Serializable {
-
+    /**
+     * 类型编码 (唯一标识)
+     */
     @NotBlank(message = "类型编码不能为空")
     @Schema(description = "类型编码 (如: BASE, OVERTIME)")
     private String typeCode;
-
+    /**
+     * 类型名称
+     */
     @NotBlank(message = "类型名称不能为空")
     @Schema(description = "类型名称 (如: 基本工资, 加班费)")
     private String typeName;
@@ -27,10 +31,14 @@ public class IncomeTypeAddReqDTO implements Serializable {
     @NotBlank(message = "拼音缩写不能为空")
     @Schema(description = "拼音缩写")
     private String pinyinCode;
-
+    /**
+     * 收入项分类
+     */
     @Schema(description = "分类 (如: 固定工资, 补贴, 奖金)")
-    private String category;
-
+    private String categoryName;
+    /**
+     * 收入项说明
+     */
     @Schema(description = "收入项说明")
     private String description;
     /**

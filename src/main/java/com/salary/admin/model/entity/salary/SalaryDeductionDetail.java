@@ -41,17 +41,39 @@ public class SalaryDeductionDetail extends BaseEntity<SalaryDeductionDetail> {
     @TableField("period_id")
     private Long periodId;
     /**
+     * 员工ID
+     */
+    @Schema(description = "员工ID")
+    @TableField("employee_id")
+    private Long employeeId;
+    /**
      * 扣款类型ID
      */
     @Schema(description = "扣款类型ID")
     @TableField("deduction_type_id")
     private Long deductionTypeId;
     /**
+     * 扣款类型名称
+     */
+    @Schema(description = "扣款类型名称")
+    @TableField("deduction_type_name")
+    private String deductionTypeName;
+    /**
+     * 扣款分类
+     */
+    @Schema(description = "扣款分类")
+    @TableField("category_name")
+    private String categoryName;
+    /**
      * 扣款金额
      */
     @Schema(description = "扣款金额")
     @TableField("amount")
     private BigDecimal amount;
+    /**
+     * 备注
+     */
+    @Schema(description = "备注")
     @TableField("remark")
     private String remark;
 

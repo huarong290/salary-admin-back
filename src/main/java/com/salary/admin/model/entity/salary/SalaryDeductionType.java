@@ -55,8 +55,8 @@ public class SalaryDeductionType extends BaseEntity<SalaryDeductionType> {
      * 扣款分类
      */
     @Schema(description = "扣款分类")
-    @TableField("category")
-    private String category;
+    @TableField("category_name")
+    private String categoryName;
     /**
      * 扣款项说明
      */

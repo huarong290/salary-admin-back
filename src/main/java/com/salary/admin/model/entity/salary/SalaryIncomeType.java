@@ -55,8 +55,8 @@ public class SalaryIncomeType extends BaseEntity<SalaryIncomeType> {
      * 收入分类
      */
     @Schema(description = "收入分类")
-    @TableField("category")
-    private String category;
+    @TableField("category_name")
+    private String categoryName;
     /**
      * 收入项说明
      */

@@ -8,7 +8,7 @@
         <result column="type_code" property="typeCode" />
         <result column="type_name" property="typeName" />
         <result column="pinyin_code" property="pinyinCode" />
-        <result column="category" property="category" />
+        <result column="category_name" property="categoryName" />
         <result column="description" property="description" />
         <result column="sort_value" property="sortValue" />
         <result column="delete_flag" property="deleteFlag" />
@@ -20,7 +20,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, type_code, type_name,pinyin_code, category, description, sort_value , delete_flag, create_by, create_time, update_by, update_time
+        id, type_code, type_name,pinyin_code, category_name, description, sort_value , delete_flag, create_by, create_time, update_by, update_time
     </sql>
     <!-- 物理删除：直接删除记录 -->
     <delete id="physicalDeleteById">

@@ -45,7 +45,7 @@ public class DeductionTypeVO implements Serializable {
      * 扣款分类
      */
     @Schema(description = "扣款分类")
-    private String category;
+    private String categoryName;
     /**
      * 是否固定扣款
      */

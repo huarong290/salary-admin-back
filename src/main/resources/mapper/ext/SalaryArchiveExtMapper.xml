@@ -37,12 +37,13 @@
         <result property="version" column="version"/>
         <result property="isLatest" column="is_latest"/>
         <result property="effectiveDate" column="effective_date"/>
+        <result column="expiry_date" property="expiryDate" />
         <result column="audit_status" property="auditStatus" />
         <result property="baseSalary" column="base_salary"/>
         <result property="probationBaseSalary" column="probation_base_salary"/>
         <result property="currency" column="currency"/>
         <result property="changeReason" column="change_reason"/>
-
+        <result column="remark" property="remark" />
         <collection property="items" ofType="com.salary.admin.model.vo.salary.archiveitem.ArchiveItemDetailVO">
             <result property="typeId" column="type_id"/>
             <result property="itemType" column="item_type"/>
@@ -69,6 +70,7 @@
         sa.probation_base_salary,
         sa.currency,
         sa.change_reason,
+        sa.version,
         sa.remark,
         se.employee_name,  se.employee_code   FROM salary_archive sa
         INNER JOIN salary_employee se ON sa.employee_id = se.id AND se.delete_flag = 0
@@ -85,10 +87,27 @@
 
     <select id="getArchiveDetailById" resultMap="SalaryArchiveVOResultMap">
         SELECT
-            sa.id, sa.employee_id, sa.version, sa.is_latest, sa.effective_date,
-            sa.base_salary, sa.probation_base_salary, sa.currency, sa.change_reason,
-            se.employee_name, se.employee_code,
-            sai.type_id, sai.item_type, sai.calc_type, sai.base_amount, sai.amount, sai.ratio,
+            sa.id,
+            sa.employee_id,
+            sa.version,
+            sa.is_latest,
+            sa.effective_date,
+            sa.expiry_date,
+            sa.audit_status,
+            sa.base_salary,
+            sa.probation_base_salary,
+            sa.currency,
+            sa.change_reason,
+            sa.version,
+            sa.remark,
+            se.employee_name,
+            se.employee_code,
+            sai.type_id,
+            sai.item_type,
+            sai.calc_type,
+            sai.base_amount,
+            sai.amount,
+            sai.ratio,
             -- 动态判断：如果是收入项去收入字典查，如果是扣款项去扣款字典查
             CASE
                 WHEN sai.item_type = 1 THEN sit.type_name
@@ -111,10 +130,27 @@
 
     <select id="getLatestArchiveByEmployeeId" resultMap="SalaryArchiveVOResultMap">
         SELECT
-            sa.id, sa.employee_id, sa.version, sa.is_latest, sa.effective_date,
-            sa.base_salary, sa.probation_base_salary, sa.currency, sa.change_reason,
-            se.employee_name, se.employee_code,
-            sai.type_id, sai.item_type, sai.calc_type, sai.base_amount, sai.amount, sai.ratio,
+            sa.id,
+            sa.employee_id,
+            sa.version,
+            sa.is_latest,
+            sa.effective_date,
+            sa.expiry_date,
+            sa.audit_status,
+            sa.base_salary,
+            sa.probation_base_salary,
+            sa.currency,
+            sa.change_reason,
+            sa.version,
+            sa.remark,
+            se.employee_name,
+            se.employee_code,
+            sai.type_id,
+            sai.item_type,
+            sai.calc_type,
+            sai.base_amount,
+            sai.amount,
+            sai.ratio,
             CASE WHEN sai.item_type = 1 THEN sit.type_name WHEN sai.item_type = 2 THEN sdt.type_name END AS type_name,
             CASE WHEN sai.item_type = 1 THEN sit.type_code WHEN sai.item_type = 2 THEN sdt.type_code END AS type_code
         FROM salary_archive sa
@@ -131,10 +167,25 @@
 
     <select id="listActiveEmployeeArchives" resultMap="SalaryArchiveVOResultMap">
         SELECT
-            sa.id, sa.employee_id, sa.version, sa.is_latest, sa.effective_date,
-            sa.base_salary, sa.probation_base_salary, sa.currency, sa.change_reason,
-            se.employee_name, se.employee_code,
-            sai.type_id, sai.item_type, sai.calc_type, sai.base_amount, sai.amount, sai.ratio,
+            sa.id,
+            sa.employee_id,
+            sa.version,
+            sa.is_latest,
+            sa.effective_date,
+            sa.base_salary,
+            sa.probation_base_salary,
+            sa.currency,
+            sa.change_reason,
+            sa.version,
+            sa.remark,
+            se.employee_name,
+            se.employee_code,
+            sai.type_id,
+            sai.item_type,
+            sai.calc_type,
+            sai.base_amount,
+            sai.amount,
+            sai.ratio,
             CASE
                 WHEN sai.item_type = 1 THEN sit.type_name
                 WHEN sai.item_type = 2 THEN sdt.type_name

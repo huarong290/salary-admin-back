@@ -45,7 +45,7 @@ public class IncomeTypeVO implements Serializable {
      * 分类
      */
     @Schema(description = "分类 (如: 固定工资, 补贴, 奖金)")
-    private String category;
+    private String categoryName;
     /**
      * 是否固定扣款
      */

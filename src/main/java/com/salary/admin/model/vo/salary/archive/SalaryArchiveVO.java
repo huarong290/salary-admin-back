@@ -98,7 +98,11 @@ public class SalaryArchiveVO implements Serializable {
      */
     @Schema(description = "调薪原因 (如: 年度普调、晋升)")
     private String changeReason;
-
+    /**
+     * 档案备注
+     */
+    @Schema(description = "档案备注")
+    private String remark;
     /**
      * 薪资项明细列表
      */

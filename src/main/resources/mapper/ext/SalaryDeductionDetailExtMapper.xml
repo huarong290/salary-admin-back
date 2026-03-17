@@ -6,7 +6,10 @@
     <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.salary.SalaryDeductionDetail">
         <id column="id" property="id" />
         <result column="period_id" property="periodId" />
+        <result column="employee_id" property="employeeId" />
         <result column="deduction_type_id" property="deductionTypeId" />
+        <result column="deduction_type_name" property="deductionTypeName" />
+        <result column="category_name" property="categoryName" />
         <result column="amount" property="amount" />
         <result column="remark" property="remark" />
         <result column="delete_flag" property="deleteFlag" />
@@ -18,7 +21,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, period_id, deduction_type_id, amount, remark, delete_flag, create_by, create_time, update_by, update_time
+        id, period_id, employee_id,deduction_type_id,deduction_type_name, category_name,amount, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
     <!-- 物理删除：直接删除记录 -->
