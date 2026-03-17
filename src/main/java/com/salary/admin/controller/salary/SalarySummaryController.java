@@ -43,12 +43,14 @@ public class SalarySummaryController {
 
     @PostMapping("/page")
     @Operation(summary = "分页查询薪资结算单")
+    @Loggable(title = "薪资汇总-分页查询薪资结算单")
     public ApiResult<PageResult<SummaryVO>> page(@RequestBody SummaryQueryReqDTO reqDTO) {
         return ApiResult.successResult(iSalarySummaryService.selectSummaryPage(reqDTO));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "获取薪资结算单详情")
+    @Loggable(title = "薪资汇总-获取薪资结算单详情")
     public ApiResult<SummaryVO> detail(@PathVariable("id") Long id) {
         return ApiResult.successResult(iSalarySummaryService.getSummaryDetail(id));
     }
