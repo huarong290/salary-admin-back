@@ -53,6 +53,7 @@
             <result property="ratio" column="ratio"/>
             <result property="typeName" column="type_name"/>
             <result property="typeCode" column="type_code"/>
+            <result property="categoryName" column="category_name"/>
         </collection>
     </resultMap>
 
@@ -84,22 +85,9 @@
         </if>
         ORDER BY sa.update_time DESC
     </select>
-
     <select id="getArchiveDetailById" resultMap="SalaryArchiveVOResultMap">
         SELECT
-            sa.id,
-            sa.employee_id,
-            sa.version,
-            sa.is_latest,
-            sa.effective_date,
-            sa.expiry_date,
-            sa.audit_status,
-            sa.base_salary,
-            sa.probation_base_salary,
-            sa.currency,
-            sa.change_reason,
-            sa.version,
-            sa.remark,
+            sa.*,
             se.employee_name,
             se.employee_code,
             sai.type_id,
@@ -108,41 +96,17 @@
             sai.base_amount,
             sai.amount,
             sai.ratio,
-            -- 动态判断：如果是收入项去收入字典查，如果是扣款项去扣款字典查
-            CASE
-                WHEN sai.item_type = 1 THEN sit.type_name
-                WHEN sai.item_type = 2 THEN sdt.type_name
-                END AS type_name,
-            CASE
-                WHEN sai.item_type = 1 THEN sit.type_code
-                WHEN sai.item_type = 2 THEN sdt.type_code
-                END AS type_code
+            sai.type_name,
+            sai.category_name
         FROM salary_archive sa
                  INNER JOIN salary_employee se ON sa.employee_id = se.id AND se.delete_flag = 0
                  LEFT JOIN salary_archive_item sai ON sa.id = sai.archive_id AND sai.delete_flag = 0
-            -- 关联收入字典
-                 LEFT JOIN salary_income_type sit ON sai.item_type = 1 AND sai.type_id = sit.id AND sit.delete_flag = 0
-            -- 关联扣款字典
-                 LEFT JOIN salary_deduction_type sdt ON sai.item_type = 2 AND sai.type_id = sdt.id AND sdt.delete_flag = 0
         WHERE sa.id = #{archiveId}
           AND sa.delete_flag = 0
     </select>
-
     <select id="getLatestArchiveByEmployeeId" resultMap="SalaryArchiveVOResultMap">
         SELECT
-            sa.id,
-            sa.employee_id,
-            sa.version,
-            sa.is_latest,
-            sa.effective_date,
-            sa.expiry_date,
-            sa.audit_status,
-            sa.base_salary,
-            sa.probation_base_salary,
-            sa.currency,
-            sa.change_reason,
-            sa.version,
-            sa.remark,
+            sa.*,
             se.employee_name,
             se.employee_code,
             sai.type_id,
@@ -151,33 +115,21 @@
             sai.base_amount,
             sai.amount,
             sai.ratio,
-            CASE WHEN sai.item_type = 1 THEN sit.type_name WHEN sai.item_type = 2 THEN sdt.type_name END AS type_name,
-            CASE WHEN sai.item_type = 1 THEN sit.type_code WHEN sai.item_type = 2 THEN sdt.type_code END AS type_code
+            -- 🌟 调整：直接取冗余字段
+            sai.type_name,
+            sai.category_name
         FROM salary_archive sa
                  INNER JOIN salary_employee se ON sa.employee_id = se.id AND se.delete_flag = 0
                  LEFT JOIN salary_archive_item sai ON sa.id = sai.archive_id AND sai.delete_flag = 0
-                 LEFT JOIN salary_income_type sit ON sai.item_type = 1 AND sai.type_id = sit.id AND sit.delete_flag = 0
-                 LEFT JOIN salary_deduction_type sdt ON sai.item_type = 2 AND sai.type_id = sdt.id AND sdt.delete_flag = 0
         WHERE sa.employee_id = #{employeeId}
           AND sa.is_latest = 1
-          AND sa.audit_status = 1 -- 只查审核通过的生效版本
+          AND sa.audit_status = 1
           AND sa.delete_flag = 0
     </select>
 
-
     <select id="listActiveEmployeeArchives" resultMap="SalaryArchiveVOResultMap">
         SELECT
-            sa.id,
-            sa.employee_id,
-            sa.version,
-            sa.is_latest,
-            sa.effective_date,
-            sa.base_salary,
-            sa.probation_base_salary,
-            sa.currency,
-            sa.change_reason,
-            sa.version,
-            sa.remark,
+            sa.*,
             se.employee_name,
             se.employee_code,
             sai.type_id,
@@ -186,25 +138,16 @@
             sai.base_amount,
             sai.amount,
             sai.ratio,
-            CASE
-                WHEN sai.item_type = 1 THEN sit.type_name
-                WHEN sai.item_type = 2 THEN sdt.type_name
-                END AS type_name,
-            CASE
-                WHEN sai.item_type = 1 THEN sit.type_code
-                WHEN sai.item_type = 2 THEN sdt.type_code
-                END AS type_code
+            -- 🌟 调整：核算时直接用快照名，避免核算过程中再去关联字典表，极大提升批处理性能
+            sai.type_name,
+            sai.category_name
         FROM salary_employee se
-                 -- 必须有生效档案的员工才参与核算
                  INNER JOIN salary_archive sa ON se.id = sa.employee_id
             AND sa.is_latest = 1
             AND sa.audit_status = 1
             AND sa.delete_flag = 0
-            -- 关联明细项
                  LEFT JOIN salary_archive_item sai ON sa.id = sai.archive_id AND sai.delete_flag = 0
-                 LEFT JOIN salary_income_type sit ON sai.item_type = 1 AND sai.type_id = sit.id AND sit.delete_flag = 0
-                 LEFT JOIN salary_deduction_type sdt ON sai.item_type = 2 AND sai.type_id = sdt.id AND sdt.delete_flag = 0
-        WHERE se.employment_status = 1 -- 只要在职的
+        WHERE se.employment_status = 1
           AND se.delete_flag = 0
     </select>
 </mapper>

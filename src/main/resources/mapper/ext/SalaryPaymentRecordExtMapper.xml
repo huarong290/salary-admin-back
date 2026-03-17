@@ -32,16 +32,24 @@
         SELECT
         r.*,
         e.employee_name,
-        e.employee_code
-        FROM salary_payment_record r
+        e.employee_code,
+        p.settlement_month  FROM salary_payment_record r
         INNER JOIN salary_employee e ON r.employee_id = e.id
-        WHERE r.delete_flag = 0
-        <if test="req.summaryId != null">
-            AND r.summary_id = #{req.summaryId}
-        </if>
-        <if test="req.keyword != null and req.keyword != ''">
-            AND (e.employee_name LIKE CONCAT('%', #{req.keyword}, '%')
-            OR e.employee_code LIKE CONCAT('%', #{req.keyword}, '%'))
-        </if>
+        INNER JOIN salary_summary s ON r.summary_id = s.id
+        INNER JOIN salary_period p ON s.period_id = p.id
+        <where>
+            r.delete_flag = 0
+            <if test="req.summaryId != null">
+                AND r.summary_id = #{req.summaryId}
+            </if>
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (e.employee_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR e.employee_code LIKE CONCAT('%', #{req.keyword}, '%'))
+            </if>
+            <if test="req.settlementMonth != null and req.settlementMonth != ''">
+                AND p.settlement_month = #{req.settlementMonth}
+            </if>
+        </where>
+        ORDER BY p.settlement_month DESC
     </select>
 </mapper>

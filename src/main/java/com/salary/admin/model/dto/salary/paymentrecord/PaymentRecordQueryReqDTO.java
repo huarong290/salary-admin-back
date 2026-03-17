@@ -39,4 +39,10 @@ public class PaymentRecordQueryReqDTO extends PageQueryDTO implements Serializab
      */
     @Schema(description = "是否手动录入总额: 0-系统计算, 1-手动录入")
     private Integer isManual;
+
+    /**
+     * 结算月份
+     */
+    @Schema(description = "结算月份(YYYY-MM)")
+    private String settlementMonth;
 }

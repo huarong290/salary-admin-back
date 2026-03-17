@@ -1,14 +1,13 @@
 package com.salary.admin.model.vo.salary.paymentrecord;
 
 
+import com.salary.admin.model.dto.salary.snapshot.SalarySnapshotDTO;
 import com.salary.admin.model.entity.salary.SalaryPaymentRecord;
-import com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * 薪资结算明细记录返回对象 VO
@@ -37,8 +36,13 @@ public class SalaryPaymentRecordVO extends SalaryPaymentRecord implements Serial
     private String employeeCode;
 
     /**
-     * 解析后的明细列表
+     * 结算月份
      */
-    @Schema(description = "解析后的计算详情明细 (由 detail_json 反序列化而来)")
-    private List<SalaryArchiveItemVO> itemDetails;
+    @Schema(description = "结算月份")
+    private String settlementMonth;
+
+    // 🌟 核心修正：使用快照 DTO 来接收解析后的 JSON
+    // 我们将字段名设为 parsedSnapshot，以区分原生的字符串 detailJson
+    @Schema(description = "解析后的快照详情对象 (包含出勤天数、底薪及明细列表)")
+    private SalarySnapshotDTO parsedSnapshot;
 }

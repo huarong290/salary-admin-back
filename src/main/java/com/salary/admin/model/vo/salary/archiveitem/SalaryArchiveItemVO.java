@@ -36,6 +36,11 @@ public class SalaryArchiveItemVO implements Serializable {
     private String typeName;
 
     /**
+     * 项目编码
+     */
+    @Schema(description = "项目编码")
+    private String typeCode;
+    /**
      * 业务分类名称 (如：津贴补贴、五险一金)
      */
     @Schema(description = "业务分类名称")

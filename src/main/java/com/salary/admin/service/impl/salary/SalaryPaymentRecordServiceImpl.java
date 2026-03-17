@@ -38,7 +38,6 @@ public class SalaryPaymentRecordServiceImpl extends ServiceImpl<SalaryPaymentRec
     @Resource
     @Lazy // 防止循环依赖
     private ISalarySummaryService salarySummaryService;
-
     @Override
     public PageResult<SalaryPaymentRecordVO> selectRecordPage(PaymentRecordQueryReqDTO queryReq) {
         Page<SalaryPaymentRecordVO> page = new Page<>(queryReq.getPageNum(), queryReq.getPageSize());
@@ -46,18 +45,29 @@ public class SalaryPaymentRecordServiceImpl extends ServiceImpl<SalaryPaymentRec
 
         // 处理 JSON 明细转换
         resultPage.getRecords().forEach(vo -> {
-            if (vo.getDetailJson() != null) {
+            if (cn.hutool.core.util.StrUtil.isNotBlank(vo.getDetailJson())) {
                 try {
-                    List<SalaryArchiveItemVO> details = JSONUtil.toList(vo.getDetailJson(), SalaryArchiveItemVO.class);
-                    vo.setItemDetails(details);
+                    // 🌟 企业级反序列化：直接解析为完美的 SalarySnapshotDTO 对象
+                    com.salary.admin.model.dto.salary.snapshot.SalarySnapshotDTO snapshot =
+                            com.alibaba.fastjson2.JSON.parseObject(
+                                    vo.getDetailJson(),
+                                    com.salary.admin.model.dto.salary.snapshot.SalarySnapshotDTO.class
+                            );
+
+                    // 将解析好的结构化对象赋给 VO
+                    vo.setParsedSnapshot(snapshot);
+
+                    // 💡 可选小优化：为了节省网络带宽，既然对象已经解析好了，我们可以把原生的臃肿字符串置空
+                    // vo.setDetailJson(null);
                 } catch (Exception e) {
-                    log.error("解析薪资明细JSON失败, recordId: {}", vo.getId(), e);
+                    log.error("解析薪资明细JSON快照失败, recordId: {}", vo.getId(), e);
                 }
             }
         });
 
         return PageResult.of(resultPage);
     }
+
     /**
      * 根据档案核算单条薪资明细
      * @param summaryId 汇总ID

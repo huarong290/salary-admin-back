@@ -17,6 +17,7 @@ import com.salary.admin.model.entity.salary.SalaryArchive;
 import com.salary.admin.model.entity.salary.SalaryArchiveItem;
 import com.salary.admin.model.entity.salary.SalaryPaymentRecord;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
+import com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO;
 import com.salary.admin.service.salary.*;
 import com.salary.admin.utils.UserContextUtil;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
  * <p>
  * 员工薪资标准配置表(含版本历史) 服务实现类
  * </p>
- *
+ * 采用【拉链表】逻辑：记录薪资变更的历史轨迹，支持审核流、版本回滚与快照存证。
  * @author system
  * @since 2026-03-13
  */
@@ -121,12 +122,20 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
                 // 【修正】比例计算逻辑：解决基数为0导致的 KPI 失效问题
                 if (Integer.valueOf(2).equals(item.getCalcType())) {
                     // 判断优先级：明细设置的基数 > 主表底薪
+
                     BigDecimal base = item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0
                             ? item.getBaseAmount() : newArchive.getBaseSalary();
 
                     if (base != null && item.getRatio() != null) {
+                        // 计算并设置最终金额
                         item.setAmount(base.multiply(item.getRatio()).setScale(2, RoundingMode.HALF_UP));
+                        // 🌟 重要：反向同步基数，确保数据库里存的是计算时实际使用的那个数，方便以后对账
+                        item.setBaseAmount(base);
                     }
+                }else{
+                    // 如果是固定金额项，确保 ratio 和 baseAmount 在库里是 clean 的
+                    item.setRatio(BigDecimal.ZERO);
+                    item.setBaseAmount(BigDecimal.ZERO);
                 }
                 // 【新增】企业级冗余：填充项目名称和分类（快照存入）
                 this.fillItemSnapshotInfo(item);
@@ -146,7 +155,9 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
 
     @Override
     public SalaryArchiveVO getArchiveDetail(Long archiveId) {
-        return salaryArchiveExtMapper.getArchiveDetailById(archiveId);
+        SalaryArchiveVO vo =salaryArchiveExtMapper.getArchiveDetailById(archiveId);
+        this.enhanceVO(vo); // 🌟 增强展示效果
+        return vo;
     }
 
     @Override
@@ -174,7 +185,7 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         iSalaryArchiveItemService.remove(Wrappers.<SalaryArchiveItem>lambdaQuery()
                 .eq(SalaryArchiveItem::getArchiveId, latestArchive.getId()));
 
-        // 4. 时光倒流：将上一个版本重新激活为 "最新状态"
+        // 4. 时光倒流版本回滚：将上一个版本重新激活为 "最新状态"
         if (latestArchive.getVersion() > 1) {
             SalaryArchive previousArchive = this.getOne(Wrappers.<SalaryArchive>lambdaQuery()
                     .eq(SalaryArchive::getEmployeeId, employeeId)
@@ -281,6 +292,24 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
                  item.setTypeName(deductionType.getTypeName());
                  item.setCategoryName(deductionType.getCategoryName());
                 log.debug("冗余填充-扣款项: {}, 分类: {}", deductionType.getTypeName(), deductionType.getCategoryName());
+            }
+        }
+    }
+
+    /**
+     * 内部辅助：增强 VO 展示（计算比例标签和公式文字）
+     */
+    private void enhanceVO(SalaryArchiveVO vo) {
+        if (vo == null || CollUtil.isEmpty(vo.getItems())) return;
+        for (SalaryArchiveItemVO item : vo.getItems()) {
+            if (Integer.valueOf(2).equals(item.getCalcType()) && item.getRatio() != null) {
+                // 生成如 "8.00%" 的标签
+                String percent = item.getRatio().multiply(new BigDecimal("100")).stripTrailingZeros().toPlainString() + "%";
+                item.setRatioLabel(percent);
+                // 生成如 "基数(6000.00) × 8%" 的公式
+                item.setFormulaLabel(String.format("基数(%s) × %s", item.getBaseAmount(), percent));
+            } else {
+                item.setFormulaLabel("固定金额");
             }
         }
     }
