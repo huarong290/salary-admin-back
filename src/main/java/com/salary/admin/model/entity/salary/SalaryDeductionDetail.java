@@ -65,9 +65,27 @@ public class SalaryDeductionDetail extends BaseEntity<SalaryDeductionDetail> {
     @TableField("category_name")
     private String categoryName;
     /**
-     * 扣款金额
+     * 原币种 (如 CNY, PHP, USDT)
      */
-    @Schema(description = "扣款金额")
+    @Schema(description = "原币种 (如 CNY, PHP, USDT)")
+    @TableField("currency")
+    private String currency;
+    /**
+     * 原币金额
+     */
+    @Schema(description = "原币金额")
+    @TableField("original_amount")
+    private BigDecimal originalAmount;
+    /**
+     * 录入时汇率(原币兑本币
+     */
+    @Schema(description = "录入时汇率(原币兑本币)")
+    @TableField("exchange_rate")
+    private BigDecimal exchangeRate;
+    /**
+     * 扣款金额：折合本位币金额 (参与最终核算)
+     */
+    @Schema(description = "扣款金额：折合本位币金额 (参与最终核算)")
     @TableField("amount")
     private BigDecimal amount;
     /**

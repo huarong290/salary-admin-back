@@ -10,6 +10,9 @@
         <result column="income_type_id" property="incomeTypeId" />
         <result column="income_type_name" property="incomeTypeName" />
         <result column="category_name" property="categoryName" />
+        <result column="currency" property="currency" />
+        <result column="original_amount" property="originalAmount" />
+        <result column="exchange_rate" property="exchangeRate" />
         <result column="amount" property="amount" />
         <result column="remark" property="remark" />
         <result column="delete_flag" property="deleteFlag" />
@@ -21,7 +24,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, period_id, employee_id,income_type_id, income_type_name,category_name,amount, remark, delete_flag, create_by, create_time, update_by, update_time
+        id, period_id, employee_id,income_type_id, income_type_name,category_name,currency,original_amount,exchange_rate,amount, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 </mapper>

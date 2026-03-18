@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -96,6 +97,16 @@ public class SalaryIncomeDetailServiceImpl
         entity.setEmployeeId(period.getEmployeeId()); // 🌟 核心：自动补齐员工ID
         entity.setIncomeTypeName(type.getTypeName()); // 🌟 核心：烙印项目名称
         entity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+
+        // 🌟 多币种核心换算逻辑：折合本币金额 = 原币金额 * 汇率
+        BigDecimal calculatedAmount = reqDTO.getOriginalAmount()
+                .multiply(reqDTO.getExchangeRate())
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+
+        entity.setAmount(calculatedAmount); // 引擎核算时只认这个本币金额！
+        entity.setOriginalAmount(reqDTO.getOriginalAmount());
+        entity.setCurrency(reqDTO.getCurrency());
+        entity.setExchangeRate(reqDTO.getExchangeRate());
 
         this.save(entity);
         return entity.getId();

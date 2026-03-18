@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -89,6 +90,16 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
         entity.setEmployeeId(period.getEmployeeId()); // 🌟 烙印员工ID
         entity.setDeductionTypeName(type.getTypeName()); // 🌟 烙印名称
         entity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+
+        // 🌟 多币种核心换算逻辑：折合本币金额 = 原币金额 * 汇率
+        BigDecimal calculatedAmount = reqDTO.getOriginalAmount()
+                .multiply(reqDTO.getExchangeRate())
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+
+        entity.setAmount(calculatedAmount); // 引擎核算时只认这个本币金额！
+        entity.setOriginalAmount(reqDTO.getOriginalAmount());
+        entity.setCurrency(reqDTO.getCurrency());
+        entity.setExchangeRate(reqDTO.getExchangeRate());
 
         this.save(entity);
         return entity.getId();
