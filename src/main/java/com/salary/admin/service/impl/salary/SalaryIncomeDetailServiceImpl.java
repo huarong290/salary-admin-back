@@ -11,6 +11,7 @@ import com.salary.admin.exception.BusinessException;
 import com.salary.admin.mapper.ext.salary.SalaryIncomeDetailExtMapper;
 import com.salary.admin.model.dto.salary.imcomedetail.IncomeDetailAddReqDTO;
 import com.salary.admin.model.dto.salary.imcomedetail.IncomeDetailQueryReqDTO;
+import com.salary.admin.model.dto.salary.imcomedetail.IncomeDetailUpdateReqDTO;
 import com.salary.admin.model.entity.salary.SalaryEmployee;
 import com.salary.admin.model.entity.salary.SalaryIncomeDetail;
 import com.salary.admin.model.entity.salary.SalaryIncomeType;
@@ -68,7 +69,7 @@ public class SalaryIncomeDetailServiceImpl
     @Resource
     private SalaryIncomeDetailExtMapper salaryIncomeDetailExtMapper;
     /**
-     * 新增收入明细
+     * 新增收入明细 (包含完整的快照烙印逻辑)
      * 1. 校验薪资周期是否存在
      * 2. 校验收入类型是否存在
      * 3. DTO 转换为实体并保存
@@ -78,17 +79,53 @@ public class SalaryIncomeDetailServiceImpl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long addIncomeDetail(IncomeDetailAddReqDTO reqDTO) {
-        if (!periodService.exists(new LambdaQueryWrapper<SalaryPeriod>()
-                .eq(SalaryPeriod::getId, reqDTO.getPeriodId()))) {
+        // 1. 查周期，获取归属的员工ID
+        SalaryPeriod period = periodService.getById(reqDTO.getPeriodId());
+        if (period == null) {
             throw new BusinessException("关联的薪资周期不存在");
         }
-        if (incomeTypeService.getById(reqDTO.getIncomeTypeId()) == null) {
+
+        // 2. 查字典，获取名称和分类快照
+        SalaryIncomeType type = incomeTypeService.getById(reqDTO.getIncomeTypeId());
+        if (type == null) {
             throw new BusinessException("关联的收入类型不存在");
         }
 
+        // 3. 组装实体并烙印数据
         SalaryIncomeDetail entity = incomeDetailConvert.toEntity(reqDTO);
+        entity.setEmployeeId(period.getEmployeeId()); // 🌟 核心：自动补齐员工ID
+        entity.setIncomeTypeName(type.getTypeName()); // 🌟 核心：烙印项目名称
+        entity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+
         this.save(entity);
         return entity.getId();
+    }
+    /**
+     * 修改收入明细
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateIncomeDetail(IncomeDetailUpdateReqDTO reqDTO) {
+        // 1. 确保记录存在
+        SalaryIncomeDetail existing = this.getById(reqDTO.getId());
+        if (existing == null) {
+            throw new BusinessException("待修改的收入明细不存在");
+        }
+
+        SalaryPeriod period = periodService.getById(reqDTO.getPeriodId());
+        if (period == null) throw new BusinessException("关联的薪资周期不存在");
+
+        SalaryIncomeType type = incomeTypeService.getById(reqDTO.getIncomeTypeId());
+        if (type == null) throw new BusinessException("关联的收入类型不存在");
+
+        // 2. 拷贝新值并重新烙印
+        SalaryIncomeDetail updateEntity = incomeDetailConvert.toEntity(reqDTO);
+        updateEntity.setId(reqDTO.getId()); // 确保 ID 不丢失
+        updateEntity.setEmployeeId(period.getEmployeeId());
+        updateEntity.setIncomeTypeName(type.getTypeName());
+        updateEntity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+
+        return this.updateById(updateEntity);
     }
 
     /**
@@ -152,6 +189,33 @@ public class SalaryIncomeDetailServiceImpl
             throw new BusinessException("权限不足或环境受限：禁止物理删除薪资流水明细");
         }
         return salaryIncomeDetailExtMapper.physicalDeleteById(id) > 0;
+    }
+
+    /**
+     * 批量删除收入明细
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteByIds(List<Long> ids, boolean logicalDelete) {
+        if (CollUtil.isEmpty(ids)) {
+            return false;
+        }
+
+        if (logicalDelete) {
+            // MyBatis-Plus 自带的逻辑批量删除
+            return this.removeByIds(ids);
+        }
+
+        // 物理批量删除
+        if (!allowPhysicalDelete || !UserContextUtil.isAdmin()) {
+            throw new BusinessException("权限不足或环境受限：禁止物理删除薪资流水明细");
+        }
+
+        // 循环调用自定义的物理删除 mapper，或者在 Mapper 层写一个 foreach 批量物理删除
+        for (Long id : ids) {
+            salaryIncomeDetailExtMapper.physicalDeleteById(id);
+        }
+        return true;
     }
 }
 

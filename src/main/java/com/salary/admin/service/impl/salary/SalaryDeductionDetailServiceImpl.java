@@ -76,17 +76,52 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long addDeductionDetail(DeductionDetailAddReqDTO reqDTO) {
-        if (!periodService.exists(new LambdaQueryWrapper<SalaryPeriod>()
-                .eq(SalaryPeriod::getId, reqDTO.getPeriodId()))) {
+        SalaryPeriod period = periodService.getById(reqDTO.getPeriodId());
+        if (period == null){
             throw new BusinessException("关联的薪资周期不存在");
         }
-        if (deductionTypeService.getById(reqDTO.getDeductionTypeId()) == null) {
+        SalaryDeductionType type = deductionTypeService.getById(reqDTO.getDeductionTypeId());
+        if (type == null){
             throw new BusinessException("关联的扣款类型不存在");
         }
 
         SalaryDeductionDetail entity = deductionDetailConvert.toEntity(reqDTO);
+        entity.setEmployeeId(period.getEmployeeId()); // 🌟 烙印员工ID
+        entity.setDeductionTypeName(type.getTypeName()); // 🌟 烙印名称
+        entity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+
         this.save(entity);
         return entity.getId();
+    }
+
+    /**
+     * 修改扣款明细
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateDeductionDetail(com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailUpdateReqDTO reqDTO) {
+        SalaryDeductionDetail existing = this.getById(reqDTO.getId());
+        if (existing == null){
+            throw new BusinessException("待修改的扣款明细不存在");
+        }
+
+        SalaryPeriod period = periodService.getById(reqDTO.getPeriodId());
+        if (period == null) {
+            throw new BusinessException("关联的薪资周期不存在");
+        }
+
+        SalaryDeductionType type = deductionTypeService.getById(reqDTO.getDeductionTypeId());
+        if (type == null) {
+            throw new BusinessException("关联的扣款类型不存在");
+        }
+
+        SalaryDeductionDetail updateEntity = deductionDetailConvert.toEntity(reqDTO);
+        updateEntity.setId(reqDTO.getId());
+        updateEntity.setEmployeeId(period.getEmployeeId());
+        updateEntity.setDeductionTypeName(type.getTypeName());
+        updateEntity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+
+        return this.updateById(updateEntity);
     }
 
     /**
@@ -150,6 +185,28 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
             throw new BusinessException("权限不足或环境受限：禁止物理删除扣款流水明细");
         }
         return salaryDeductionDetailExtMapper.physicalDeleteById(id) > 0;
+    }
+
+    /**
+     * 批量删除扣款明细
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteByIds(List<Long> ids, boolean logicalDelete) {
+        if (CollUtil.isEmpty(ids)) return false;
+
+        if (logicalDelete) {
+            return this.removeByIds(ids);
+        }
+
+        if (!allowPhysicalDelete || !UserContextUtil.isAdmin()) {
+            throw new BusinessException("权限不足或环境受限：禁止物理删除扣款流水明细");
+        }
+
+        for (Long id : ids) {
+            salaryDeductionDetailExtMapper.physicalDeleteById(id);
+        }
+        return true;
     }
 }
 
