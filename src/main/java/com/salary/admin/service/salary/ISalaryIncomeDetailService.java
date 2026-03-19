@@ -39,7 +39,7 @@ public interface ISalaryIncomeDetailService extends IService<SalaryIncomeDetail>
      * @param reqDTO 查询参数（包含页码、页大小、周期 ID 等）
      * @return 分页结果（VO 列表）
      */
-    PageResult<IncomeDetailVO> selectIncomeDetailPage(IncomeDetailQueryReqDTO reqDTO);
+    PageResult<IncomeDetailVO> selectIncomeDetailByPage(IncomeDetailQueryReqDTO reqDTO);
 
     /**
      * 删除收入明细

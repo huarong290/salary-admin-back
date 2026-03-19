@@ -40,4 +40,33 @@
             #{id}
         </foreach>
     </delete>
+    <select id="selectIncomeDetailByPage"
+            resultType="com.salary.admin.model.vo.salary.incomedetail.IncomeDetailVO">
+        SELECT
+        i.*,
+        e.employee_name,
+        e.employee_code,
+        p.settlement_month
+        FROM salary_income_detail i
+        LEFT JOIN salary_employee e ON i.employee_id = e.id
+        LEFT JOIN salary_period p ON i.period_id = p.id
+        <where>
+            i.delete_flag = 0
+
+            <if test="req.periodId != null">
+                AND i.period_id = #{req.periodId}
+            </if>
+            <if test="req.employeeId != null">
+                AND i.employee_id = #{req.employeeId}
+            </if>
+            <if test="req.incomeTypeId != null">
+                AND i.income_type_id = #{req.incomeTypeId}
+            </if>
+
+            <if test="req.settlementMonth != null and req.settlementMonth != ''">
+                AND p.settlement_month = #{req.settlementMonth}
+            </if>
+        </where>
+        ORDER BY i.create_time DESC
+    </select>
 </mapper>

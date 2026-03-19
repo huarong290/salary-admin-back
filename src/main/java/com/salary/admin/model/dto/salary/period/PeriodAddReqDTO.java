@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.salary.period;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
  */
 @Data
 @Schema(description = "新增薪资周期请求")
+@JsonIgnoreProperties(ignoreUnknown = true) // 🌟 企业级防御：自动忽略前端传来的多余字段
 public class PeriodAddReqDTO implements Serializable {
     /**
      * 员工ID
@@ -53,7 +55,7 @@ public class PeriodAddReqDTO implements Serializable {
      * 是否满勤 (1:是, 0:否)
      */
     @Schema(description = "是否满勤 (1:是, 0:否)")
-    private BigDecimal fullAttendanceFlag;
+    private Integer fullAttendanceFlag;
     /**
      * 在岗月份 (前端传来的字符串数字)
      * 🌟 必须确保字段名完全匹配 "workMonth"

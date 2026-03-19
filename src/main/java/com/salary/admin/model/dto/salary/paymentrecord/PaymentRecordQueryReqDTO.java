@@ -1,9 +1,11 @@
 package com.salary.admin.model.dto.salary.paymentrecord;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.salary.admin.model.dto.PageQueryDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
 import java.io.Serializable;
 
 
@@ -18,6 +20,8 @@ import java.io.Serializable;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "薪资结算明细记录查询请求对象")
+// 🌟 架构师标配：忽略前端传来的多余/未知字段，防止直接抛出 Json parse error 导致系统崩溃
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PaymentRecordQueryReqDTO extends PageQueryDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;

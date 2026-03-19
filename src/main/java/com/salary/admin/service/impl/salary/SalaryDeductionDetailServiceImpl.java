@@ -1,8 +1,6 @@
 package com.salary.admin.service.impl.salary;
 
 import cn.hutool.core.collection.CollUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.common.PageResult;
@@ -13,7 +11,6 @@ import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailAddReqDT
 import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryDeductionDetail;
 import com.salary.admin.model.entity.salary.SalaryDeductionType;
-import com.salary.admin.model.entity.salary.SalaryEmployee;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.deductiondetail.DeductionDetailVO;
 import com.salary.admin.service.salary.ISalaryDeductionDetailService;
@@ -29,8 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -135,66 +130,27 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
         return this.updateById(updateEntity);
     }
 
+
     /**
-     * 分页查询扣款明细
-     * 支持按周期过滤，并批量填充扣款类型名称和员工姓名
-     * @param reqDTO 查询参数
+     * 分页查询扣款明细 (企业级重构版)
+     * 所有的多表关联查询、字段回填（员工名、扣款类型、结算月份）以及条件过滤，
+     * 均已下推至底层 XML (selectDeductionDetailByPage) 交由数据库执行，极大降低了 JVM 内存消耗。
+     * * @param reqDTO 查询参数
      * @return 分页结果（VO 列表）
      */
-    /**
-     * 分页查询扣款明细
-     * 支持多条件过滤，并批量填充扣款类型名称和员工姓名
-     */
     @Override
-    public PageResult<DeductionDetailVO> selectDeductionDetailPage(DeductionDetailQueryReqDTO reqDTO) {
-        Page<SalaryDeductionDetail> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
-        LambdaQueryWrapper<SalaryDeductionDetail> wrapper = new LambdaQueryWrapper<>();
+    public PageResult<DeductionDetailVO> selectDeductionDetailByPage(DeductionDetailQueryReqDTO reqDTO) {
+        // 1. 构造 MyBatis-Plus 分页对象 (注意泛型直接用 VO)
+        Page<DeductionDetailVO> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
 
-        // 🌟 1. 补全所有的搜索过滤条件
-        if (reqDTO.getPeriodId() != null) {
-            wrapper.eq(SalaryDeductionDetail::getPeriodId, reqDTO.getPeriodId());
-        }
-        if (reqDTO.getEmployeeId() != null) {
-            wrapper.eq(SalaryDeductionDetail::getEmployeeId, reqDTO.getEmployeeId());
-        }
-        if (reqDTO.getDeductionTypeId() != null) {
-            wrapper.eq(SalaryDeductionDetail::getDeductionTypeId, reqDTO.getDeductionTypeId());
-        }
-        wrapper.orderByDesc(SalaryDeductionDetail::getCreateTime);
+        // 2. 直接调用我们在 ExtMapper 中定义好的 XML 关联查询方法
+        // 这里的 salaryDeductionDetailExtMapper 底层会拦截并自动加上 LIMIT 进行物理分页
+        Page<DeductionDetailVO> resultPage = salaryDeductionDetailExtMapper.selectDeductionDetailByPage(page, reqDTO);
 
-        IPage<SalaryDeductionDetail> resultPage = this.page(page, wrapper);
-        List<DeductionDetailVO> voList = deductionDetailConvert.toVOList(resultPage.getRecords());
-
-        // 🌟 2. 优化：直接使用本表的 employeeId 去查名字，省去查 Period 的步骤
-        if (CollUtil.isNotEmpty(voList)) {
-            // 获取所有的 typeId 和 employeeId periodId
-            List<Long> typeIds = voList.stream().map(DeductionDetailVO::getDeductionTypeId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
-            List<Long> empIds = voList.stream().map(DeductionDetailVO::getEmployeeId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
-            List<Long> periodIds = voList.stream().map(DeductionDetailVO::getPeriodId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
-            // 批量查类型名称
-            Map<Long, String> typeMap = typeIds.isEmpty() ? new java.util.HashMap<>() :
-                    deductionTypeService.listByIds(typeIds).stream()
-                            .collect(Collectors.toMap(SalaryDeductionType::getId, SalaryDeductionType::getTypeName));
-
-            // 批量查员工名称
-            Map<Long, String> empNameMap = empIds.isEmpty() ? new java.util.HashMap<>() :
-                    employeeService.listByIds(empIds).stream()
-                            .collect(Collectors.toMap(SalaryEmployee::getId, SalaryEmployee::getEmployeeName));
-            // 🌟 批量查询薪资周期表，获取结算月份
-            Map<Long, String> periodMap = periodIds.isEmpty() ? new java.util.HashMap<>() :
-                    periodService.listByIds(periodIds).stream()
-                            .collect(Collectors.toMap(SalaryPeriod::getId, SalaryPeriod::getSettlementMonth));
-            // 赋值回显
-            voList.forEach(vo -> {
-                vo.setDeductionTypeName(typeMap.get(vo.getDeductionTypeId()));
-                vo.setEmployeeName(empNameMap.get(vo.getEmployeeId()));
-                // 🌟 给前端 VO 填充结算月份
-                vo.setSettlementMonth(periodMap.get(vo.getPeriodId()));
-            });
-        }
-
-        return PageResult.of(resultPage, voList);
+        // 3. 直接包装返回，告别手动 for 循环拼装！
+        return PageResult.of(resultPage);
     }
+
 
     /**
      * 删除扣款明细

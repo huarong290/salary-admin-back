@@ -39,7 +39,7 @@ public interface ISalaryDeductionDetailService extends IService<SalaryDeductionD
      * @param reqDTO 查询参数（包含页码、页大小、过滤条件等）
      * @return 分页结果（VO 列表）
      */
-    PageResult<DeductionDetailVO> selectDeductionDetailPage(DeductionDetailQueryReqDTO reqDTO);
+    PageResult<DeductionDetailVO> selectDeductionDetailByPage(DeductionDetailQueryReqDTO reqDTO);
 
     /**
      * 删除扣款明细

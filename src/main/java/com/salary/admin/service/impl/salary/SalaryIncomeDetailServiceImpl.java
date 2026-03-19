@@ -1,8 +1,6 @@
 package com.salary.admin.service.impl.salary;
 
 import cn.hutool.core.collection.CollUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.common.PageResult;
@@ -12,7 +10,6 @@ import com.salary.admin.mapper.ext.salary.SalaryIncomeDetailExtMapper;
 import com.salary.admin.model.dto.salary.imcomedetail.IncomeDetailAddReqDTO;
 import com.salary.admin.model.dto.salary.imcomedetail.IncomeDetailQueryReqDTO;
 import com.salary.admin.model.dto.salary.imcomedetail.IncomeDetailUpdateReqDTO;
-import com.salary.admin.model.entity.salary.SalaryEmployee;
 import com.salary.admin.model.entity.salary.SalaryIncomeDetail;
 import com.salary.admin.model.entity.salary.SalaryIncomeType;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
@@ -30,8 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -146,54 +141,15 @@ public class SalaryIncomeDetailServiceImpl
      * @return 分页结果（VO 列表）
      */
     @Override
-    public PageResult<IncomeDetailVO> selectIncomeDetailPage(IncomeDetailQueryReqDTO reqDTO) {
-        Page<SalaryIncomeDetail> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
-        LambdaQueryWrapper<SalaryIncomeDetail> wrapper = new LambdaQueryWrapper<>();
+    public PageResult<IncomeDetailVO> selectIncomeDetailByPage(IncomeDetailQueryReqDTO reqDTO) {
+        // 1. 构造分页对象
+        Page<IncomeDetailVO> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
 
-        // 🌟 1. 补全所有的搜索过滤条件
-        if (reqDTO.getPeriodId() != null) {
-            wrapper.eq(SalaryIncomeDetail::getPeriodId, reqDTO.getPeriodId());
-        }
-        if (reqDTO.getEmployeeId() != null) {
-            wrapper.eq(SalaryIncomeDetail::getEmployeeId, reqDTO.getEmployeeId());
-        }
-        if (reqDTO.getIncomeTypeId() != null) {
-            wrapper.eq(SalaryIncomeDetail::getIncomeTypeId, reqDTO.getIncomeTypeId());
-        }
-        wrapper.orderByDesc(SalaryIncomeDetail::getCreateTime);
+        // 2. 交给 XML 执行关联查询与过滤
+        Page<IncomeDetailVO> resultPage = salaryIncomeDetailExtMapper.selectIncomeDetailByPage(page, reqDTO);
 
-        IPage<SalaryIncomeDetail> resultPage = this.page(page, wrapper);
-        List<IncomeDetailVO> voList = incomeDetailConvert.toVOList(resultPage.getRecords());
-
-        // 🌟 2. 优化：直接使用本表的 employeeId 去查名字，省去查 Period 的步骤
-        if (CollUtil.isNotEmpty(voList)) {
-            // 获取所有的 typeId 和 employeeId periodId
-            List<Long> typeIds = voList.stream().map(IncomeDetailVO::getIncomeTypeId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
-            List<Long> empIds = voList.stream().map(IncomeDetailVO::getEmployeeId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
-            List<Long> periodIds = voList.stream().map(IncomeDetailVO::getPeriodId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
-            // 批量查类型名称
-            Map<Long, String> typeMap = typeIds.isEmpty() ? new java.util.HashMap<>() :
-                    incomeTypeService.listByIds(typeIds).stream()
-                            .collect(Collectors.toMap(SalaryIncomeType::getId, SalaryIncomeType::getTypeName));
-
-            // 批量查员工名称
-            Map<Long, String> empNameMap = empIds.isEmpty() ? new java.util.HashMap<>() :
-                    employeeService.listByIds(empIds).stream()
-                            .collect(Collectors.toMap(SalaryEmployee::getId, SalaryEmployee::getEmployeeName));
-            // 🌟 批量查询薪资周期表，获取结算月份
-            Map<Long, String> periodMap = periodIds.isEmpty() ? new java.util.HashMap<>() :
-                    periodService.listByIds(periodIds).stream()
-                            .collect(Collectors.toMap(SalaryPeriod::getId, SalaryPeriod::getSettlementMonth));
-            // 赋值回显
-            voList.forEach(vo -> {
-                vo.setIncomeTypeName(typeMap.get(vo.getIncomeTypeId()));
-                vo.setEmployeeName(empNameMap.get(vo.getEmployeeId()));
-                // 🌟 给前端 VO 填充结算月份
-                vo.setSettlementMonth(periodMap.get(vo.getPeriodId()));
-            });
-        }
-
-        return PageResult.of(resultPage, voList);
+        // 3. 返回结果
+        return PageResult.of(resultPage);
     }
     /**
      * 删除收入明细

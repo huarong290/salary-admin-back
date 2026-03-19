@@ -50,7 +50,7 @@ public class SalaryIncomeDetailController {
     @PostMapping("/page")
     @Operation(summary = "分页查询收入流水")
     public ApiResult<PageResult<IncomeDetailVO>> page(@RequestBody IncomeDetailQueryReqDTO reqDTO) {
-        return ApiResult.successResult(iSalaryIncomeDetailService.selectIncomeDetailPage(reqDTO));
+        return ApiResult.successResult(iSalaryIncomeDetailService.selectIncomeDetailByPage(reqDTO));
     }
 
     @DeleteMapping("/delete/{id}")
