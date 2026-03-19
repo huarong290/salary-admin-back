@@ -150,40 +150,51 @@ public class SalaryIncomeDetailServiceImpl
         Page<SalaryIncomeDetail> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
         LambdaQueryWrapper<SalaryIncomeDetail> wrapper = new LambdaQueryWrapper<>();
 
+        // 🌟 1. 补全所有的搜索过滤条件
         if (reqDTO.getPeriodId() != null) {
             wrapper.eq(SalaryIncomeDetail::getPeriodId, reqDTO.getPeriodId());
+        }
+        if (reqDTO.getEmployeeId() != null) {
+            wrapper.eq(SalaryIncomeDetail::getEmployeeId, reqDTO.getEmployeeId());
+        }
+        if (reqDTO.getIncomeTypeId() != null) {
+            wrapper.eq(SalaryIncomeDetail::getIncomeTypeId, reqDTO.getIncomeTypeId());
         }
         wrapper.orderByDesc(SalaryIncomeDetail::getCreateTime);
 
         IPage<SalaryIncomeDetail> resultPage = this.page(page, wrapper);
         List<IncomeDetailVO> voList = incomeDetailConvert.toVOList(resultPage.getRecords());
 
-        // 批量填充扩展字段（收入类型名称、员工姓名）
+        // 🌟 2. 优化：直接使用本表的 employeeId 去查名字，省去查 Period 的步骤
         if (CollUtil.isNotEmpty(voList)) {
-            List<Long> periodIds = voList.stream().map(IncomeDetailVO::getPeriodId).distinct().collect(Collectors.toList());
-            List<Long> typeIds = voList.stream().map(IncomeDetailVO::getIncomeTypeId).distinct().collect(Collectors.toList());
+            // 获取所有的 typeId 和 employeeId periodId
+            List<Long> typeIds = voList.stream().map(IncomeDetailVO::getIncomeTypeId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
+            List<Long> empIds = voList.stream().map(IncomeDetailVO::getEmployeeId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
+            List<Long> periodIds = voList.stream().map(IncomeDetailVO::getPeriodId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
+            // 批量查类型名称
+            Map<Long, String> typeMap = typeIds.isEmpty() ? new java.util.HashMap<>() :
+                    incomeTypeService.listByIds(typeIds).stream()
+                            .collect(Collectors.toMap(SalaryIncomeType::getId, SalaryIncomeType::getTypeName));
 
-            Map<Long, SalaryPeriod> periodMap = periodService.listByIds(periodIds).stream()
-                    .collect(Collectors.toMap(SalaryPeriod::getId, p -> p));
-            Map<Long, String> typeMap = incomeTypeService.listByIds(typeIds).stream()
-                    .collect(Collectors.toMap(SalaryIncomeType::getId, SalaryIncomeType::getTypeName));
-
-            List<Long> empIds = periodMap.values().stream().map(SalaryPeriod::getEmployeeId).distinct().collect(Collectors.toList());
-            Map<Long, String> empNameMap = employeeService.listByIds(empIds).stream()
-                    .collect(Collectors.toMap(SalaryEmployee::getId, SalaryEmployee::getEmployeeName));
-
+            // 批量查员工名称
+            Map<Long, String> empNameMap = empIds.isEmpty() ? new java.util.HashMap<>() :
+                    employeeService.listByIds(empIds).stream()
+                            .collect(Collectors.toMap(SalaryEmployee::getId, SalaryEmployee::getEmployeeName));
+            // 🌟 批量查询薪资周期表，获取结算月份
+            Map<Long, String> periodMap = periodIds.isEmpty() ? new java.util.HashMap<>() :
+                    periodService.listByIds(periodIds).stream()
+                            .collect(Collectors.toMap(SalaryPeriod::getId, SalaryPeriod::getSettlementMonth));
+            // 赋值回显
             voList.forEach(vo -> {
                 vo.setIncomeTypeName(typeMap.get(vo.getIncomeTypeId()));
-                SalaryPeriod p = periodMap.get(vo.getPeriodId());
-                if (p != null) {
-                    vo.setEmployeeName(empNameMap.get(p.getEmployeeId()));
-                }
+                vo.setEmployeeName(empNameMap.get(vo.getEmployeeId()));
+                // 🌟 给前端 VO 填充结算月份
+                vo.setSettlementMonth(periodMap.get(vo.getPeriodId()));
             });
         }
 
         return PageResult.of(resultPage, voList);
     }
-
     /**
      * 删除收入明细
      * 支持逻辑删除和物理删除，物理删除需管理员权限且配置允许

@@ -50,6 +50,11 @@ public class PeriodAddReqDTO implements Serializable {
     private BigDecimal attendanceDays;
 
     /**
+     * 是否满勤 (1:是, 0:否)
+     */
+    @Schema(description = "是否满勤 (1:是, 0:否)")
+    private BigDecimal fullAttendanceFlag;
+    /**
      * 在岗月份 (前端传来的字符串数字)
      * 🌟 必须确保字段名完全匹配 "workMonth"
      */

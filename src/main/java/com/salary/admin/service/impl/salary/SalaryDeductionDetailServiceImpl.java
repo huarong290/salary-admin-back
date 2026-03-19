@@ -15,7 +15,7 @@ import com.salary.admin.model.entity.salary.SalaryDeductionDetail;
 import com.salary.admin.model.entity.salary.SalaryDeductionType;
 import com.salary.admin.model.entity.salary.SalaryEmployee;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
-import com.salary.admin.model.vo.deductiondetail.DeductionDetailVO;
+import com.salary.admin.model.vo.salary.deductiondetail.DeductionDetailVO;
 import com.salary.admin.service.salary.ISalaryDeductionDetailService;
 import com.salary.admin.service.salary.ISalaryDeductionTypeService;
 import com.salary.admin.service.salary.ISalaryEmployeeService;
@@ -141,39 +141,55 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
      * @param reqDTO 查询参数
      * @return 分页结果（VO 列表）
      */
+    /**
+     * 分页查询扣款明细
+     * 支持多条件过滤，并批量填充扣款类型名称和员工姓名
+     */
     @Override
     public PageResult<DeductionDetailVO> selectDeductionDetailPage(DeductionDetailQueryReqDTO reqDTO) {
         Page<SalaryDeductionDetail> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
         LambdaQueryWrapper<SalaryDeductionDetail> wrapper = new LambdaQueryWrapper<>();
 
+        // 🌟 1. 补全所有的搜索过滤条件
         if (reqDTO.getPeriodId() != null) {
             wrapper.eq(SalaryDeductionDetail::getPeriodId, reqDTO.getPeriodId());
+        }
+        if (reqDTO.getEmployeeId() != null) {
+            wrapper.eq(SalaryDeductionDetail::getEmployeeId, reqDTO.getEmployeeId());
+        }
+        if (reqDTO.getDeductionTypeId() != null) {
+            wrapper.eq(SalaryDeductionDetail::getDeductionTypeId, reqDTO.getDeductionTypeId());
         }
         wrapper.orderByDesc(SalaryDeductionDetail::getCreateTime);
 
         IPage<SalaryDeductionDetail> resultPage = this.page(page, wrapper);
         List<DeductionDetailVO> voList = deductionDetailConvert.toVOList(resultPage.getRecords());
 
-        // 批量填充扩展字段（扣款类型名称、员工姓名）
+        // 🌟 2. 优化：直接使用本表的 employeeId 去查名字，省去查 Period 的步骤
         if (CollUtil.isNotEmpty(voList)) {
-            List<Long> periodIds = voList.stream().map(DeductionDetailVO::getPeriodId).distinct().collect(Collectors.toList());
-            List<Long> typeIds = voList.stream().map(DeductionDetailVO::getDeductionTypeId).distinct().collect(Collectors.toList());
+            // 获取所有的 typeId 和 employeeId periodId
+            List<Long> typeIds = voList.stream().map(DeductionDetailVO::getDeductionTypeId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
+            List<Long> empIds = voList.stream().map(DeductionDetailVO::getEmployeeId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
+            List<Long> periodIds = voList.stream().map(DeductionDetailVO::getPeriodId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
+            // 批量查类型名称
+            Map<Long, String> typeMap = typeIds.isEmpty() ? new java.util.HashMap<>() :
+                    deductionTypeService.listByIds(typeIds).stream()
+                            .collect(Collectors.toMap(SalaryDeductionType::getId, SalaryDeductionType::getTypeName));
 
-            Map<Long, SalaryPeriod> periodMap = periodService.listByIds(periodIds).stream()
-                    .collect(Collectors.toMap(SalaryPeriod::getId, p -> p));
-            Map<Long, String> typeMap = deductionTypeService.listByIds(typeIds).stream()
-                    .collect(Collectors.toMap(SalaryDeductionType::getId, SalaryDeductionType::getTypeName));
-
-            List<Long> empIds = periodMap.values().stream().map(SalaryPeriod::getEmployeeId).distinct().collect(Collectors.toList());
-            Map<Long, String> empNameMap = employeeService.listByIds(empIds).stream()
-                    .collect(Collectors.toMap(SalaryEmployee::getId, SalaryEmployee::getEmployeeName));
-
+            // 批量查员工名称
+            Map<Long, String> empNameMap = empIds.isEmpty() ? new java.util.HashMap<>() :
+                    employeeService.listByIds(empIds).stream()
+                            .collect(Collectors.toMap(SalaryEmployee::getId, SalaryEmployee::getEmployeeName));
+            // 🌟 批量查询薪资周期表，获取结算月份
+            Map<Long, String> periodMap = periodIds.isEmpty() ? new java.util.HashMap<>() :
+                    periodService.listByIds(periodIds).stream()
+                            .collect(Collectors.toMap(SalaryPeriod::getId, SalaryPeriod::getSettlementMonth));
+            // 赋值回显
             voList.forEach(vo -> {
                 vo.setDeductionTypeName(typeMap.get(vo.getDeductionTypeId()));
-                SalaryPeriod p = periodMap.get(vo.getPeriodId());
-                if (p != null) {
-                    vo.setEmployeeName(empNameMap.get(p.getEmployeeId()));
-                }
+                vo.setEmployeeName(empNameMap.get(vo.getEmployeeId()));
+                // 🌟 给前端 VO 填充结算月份
+                vo.setSettlementMonth(periodMap.get(vo.getPeriodId()));
             });
         }
 

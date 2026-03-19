@@ -78,6 +78,12 @@ public class SalaryPeriod extends BaseEntity<SalaryPeriod> {
     @TableField("attendance_days")
     private BigDecimal attendanceDays;
 
+    /**
+     * 是否满勤 (1:是, 0:否)
+     */
+    @Schema(description = "是否满勤 (1:是, 0:否)")
+    @TableField("full_attendance_flag")
+    private Integer fullAttendanceFlag;
 
     @Override
     public Serializable pkVal() {

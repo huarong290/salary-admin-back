@@ -2,7 +2,7 @@ package com.salary.admin.convert.salary.deductiondetail;
 
 import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailAddReqDTO;
 import com.salary.admin.model.entity.salary.SalaryDeductionDetail;
-import com.salary.admin.model.vo.deductiondetail.DeductionDetailVO;
+import com.salary.admin.model.vo.salary.deductiondetail.DeductionDetailVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 

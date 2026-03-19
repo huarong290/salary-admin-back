@@ -12,6 +12,7 @@
         <result column="expiry_date" property="expiryDate" />
         <result column="audit_status" property="auditStatus" />
         <result column="base_salary" property="baseSalary" />
+        <result column="full_attendance_bonus" property="fullAttendanceBonus" />
         <result column="probation_base_salary" property="probationBaseSalary" />
         <result column="currency" property="currency" />
         <result column="change_reason" property="changeReason" />
@@ -25,35 +26,38 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, employee_id, version, is_latest, effective_date, expiry_date, audit_status, base_salary, probation_base_salary, currency, change_reason, remark, delete_flag, create_by, create_time, update_by, update_time
+        id, employee_id, version, is_latest, effective_date, expiry_date, audit_status, base_salary, full_attendance_bonus,probation_base_salary, currency, change_reason, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 
     <resultMap id="SalaryArchiveVOResultMap" type="com.salary.admin.model.vo.salary.archive.SalaryArchiveVO">
-        <id property="id" column="id"/>
-        <result property="employeeId" column="employee_id"/>
-        <result property="employeeName" column="employee_name"/>
-        <result property="employeeCode" column="employee_code"/>
-        <result property="version" column="version"/>
-        <result property="isLatest" column="is_latest"/>
-        <result property="effectiveDate" column="effective_date"/>
-        <result column="expiry_date" property="expiryDate" />
-        <result column="audit_status" property="auditStatus" />
-        <result property="baseSalary" column="base_salary"/>
-        <result property="probationBaseSalary" column="probation_base_salary"/>
-        <result property="currency" column="currency"/>
-        <result property="changeReason" column="change_reason"/>
-        <result column="remark" property="remark" />
+        <id column="id" property="id"/>
+
+        <result column="employee_id" property="employeeId"/>
+        <result column="employee_name" property="employeeName"/>
+        <result column="employee_code" property="employeeCode"/>
+        <result column="version" property="version"/>
+        <result column="is_latest" property="isLatest"/>
+        <result column="effective_date" property="effectiveDate"/>
+        <result column="expiry_date" property="expiryDate"/>
+        <result column="audit_status" property="auditStatus"/>
+        <result column="base_salary" property="baseSalary"/>
+        <result column="full_attendance_bonus" property="fullAttendanceBonus"/>
+        <result column="probation_base_salary" property="probationBaseSalary"/>
+        <result column="currency" property="currency"/>
+        <result column="change_reason" property="changeReason"/>
+        <result column="remark" property="remark"/>
+
         <collection property="items" ofType="com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO">
-            <result property="typeId" column="type_id"/>
-            <result property="itemType" column="item_type"/>
-            <result property="calcType" column="calc_type"/>
-            <result property="baseAmount" column="base_amount"/>
-            <result property="amount" column="amount"/>
-            <result property="ratio" column="ratio"/>
-            <result property="typeName" column="type_name"/>
-            <result property="typeCode" column="type_code"/>
-            <result property="categoryName" column="category_name"/>
+            <result column="type_id" property="typeId"/>
+            <result column="item_type" property="itemType"/>
+            <result column="calc_type" property="calcType"/>
+            <result column="base_amount" property="baseAmount"/>
+            <result column="amount" property="amount"/>
+            <result column="ratio" property="ratio"/>
+            <result column="type_name" property="typeName"/>
+            <result column="type_code" property="typeCode"/>
+            <result column="category_name" property="categoryName"/>
         </collection>
     </resultMap>
 
@@ -68,6 +72,7 @@
         sa.expiry_date,
         sa.audit_status,
         sa.base_salary,
+        sa.full_attendance_bonus,
         sa.probation_base_salary,
         sa.currency,
         sa.change_reason,

@@ -6,7 +6,7 @@ import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailAddReqDT
 import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailQueryReqDTO;
 import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailUpdateReqDTO;
 import com.salary.admin.model.entity.salary.SalaryDeductionDetail;
-import com.salary.admin.model.vo.deductiondetail.DeductionDetailVO;
+import com.salary.admin.model.vo.salary.deductiondetail.DeductionDetailVO;
 
 import java.util.List;
 

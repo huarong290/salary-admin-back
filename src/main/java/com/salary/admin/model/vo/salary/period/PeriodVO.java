@@ -68,6 +68,11 @@ public class PeriodVO implements Serializable {
      */
     @Schema(description = "实际出勤天数")
     private BigDecimal attendanceDays;
+    /**
+     * 是否满勤 (1:是, 0:否)
+     */
+    @Schema(description = "是否满勤 (1:是, 0:否)")
+    private BigDecimal fullAttendanceFlag;
 
     /**
      * 创建时间

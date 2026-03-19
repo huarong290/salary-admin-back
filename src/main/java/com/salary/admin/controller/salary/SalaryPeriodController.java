@@ -62,12 +62,14 @@ public class SalaryPeriodController {
 
     @PostMapping("/page")
     @Operation(summary = "分页查询周期列表")
+    @Loggable(title = "薪资周期-分页查询周期列表")
     public ApiResult<PageResult<PeriodVO>> page(@RequestBody PeriodQueryReqDTO reqDTO) {
         return ApiResult.successResult(iSalaryPeriodService.selectPeriodPage(reqDTO));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "获取周期详情")
+    @Loggable(title = "薪资周期-获取周期详情")
     public ApiResult<PeriodVO> detail(@PathVariable("id") Long id) {
         return ApiResult.successResult(iSalaryPeriodService.getPeriodDetail(id));
     }
@@ -92,9 +94,17 @@ public class SalaryPeriodController {
 
     @GetMapping("/listOption")
     @Operation(summary = "获取可选的结算月份列表")
+    @Loggable(title = "薪资周期-获取可选的结算月份列表")
     public ApiResult<List<PeriodOptionVO>> listOption() {
         // 逻辑：查询数据库中已存在的 settlementMonth，并进行去重排序
         // SELECT DISTINCT settlementMonth FROM salary_period ORDER BY settlementMonth DESC
         return ApiResult.successResult(iSalaryPeriodService.listOption());
+    }
+
+    @GetMapping("/listOptionByEmployee")
+    @Operation(summary = "获取指定员工的结算月份列表 (无分页)")
+    @Loggable(title = "薪资周期-获取指定员工月份列表")
+    public ApiResult<List<PeriodOptionVO>> listOptionByEmployee(@RequestParam("employeeId") Long employeeId) {
+        return ApiResult.successResult(iSalaryPeriodService.listOptionByEmployee(employeeId));
     }
 }

@@ -72,6 +72,12 @@ public class SalaryArchive extends BaseEntity<SalaryArchive> {
     @TableField("base_salary")
     private BigDecimal baseSalary;
     /**
+     * 全勤奖标准 (🌟 新增：对应数据库字段 full_attendance_bonus)
+     */
+    @Schema(description = "全勤奖标准")
+    @TableField("full_attendance_bonus")
+    private BigDecimal fullAttendanceBonus;
+    /**
      * 试用期底薪(选填)
      */
     @Schema(description = "试用期底薪(选填)")

@@ -2,27 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.salary.admin.mapper.auto.salary.SalaryDeductionTypeMapper">
 
-    <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.salary.SalaryDeductionType">
-        <id column="id" property="id" />
-        <result column="type_code" property="typeCode" />
-        <result column="type_name" property="typeName" />
-        <result column="pinyin_code" property="pinyinCode" />
-        <result column="category_name" property="categoryName" />
-        <result column="description" property="description" />
-        <result column="is_fixed" property="isFixed" />
-        <result column="sort_value" property="sortValue" />
-        <result column="delete_flag" property="deleteFlag" />
-        <result column="create_by" property="createBy" />
-        <result column="create_time" property="createTime" />
-        <result column="update_by" property="updateBy" />
-        <result column="update_time" property="updateTime" />
-    </resultMap>
-
-    <!-- 通用查询结果列 -->
-    <sql id="Base_Column_List">
-        id, type_code, type_name, pinyin_code, category_name, description, is_fixed, sort_value,delete_flag, create_by, create_time, update_by, update_time
-    </sql>
 
 
 </mapper>

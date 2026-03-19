@@ -72,6 +72,10 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         // 2. 转换实体并补全在岗月份格式 (例如 202603 -> 2026-03)
         SalaryPeriod entity = periodConvert.toEntity(reqDTO);
         fillWorkMonth(entity);
+        // 🌟 兜底优化：如果前端没传满勤开关，默认给 0 (非满勤)
+        if (entity.getFullAttendanceFlag() == null) {
+            entity.setFullAttendanceFlag(0);
+        }
         this.save(entity);
         return entity.getId();
     }
@@ -139,7 +143,7 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
             // 🚀 使用高精度 BigDecimal 赋值，并且默认初始化为“满勤”
             p.setMonthDays(calcMonthDays);
             p.setAttendanceDays(calcMonthDays);
-
+            p.setFullAttendanceFlag(0);
             return p;
         }).collect(Collectors.toList());
 
@@ -230,13 +234,11 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
     public List<PeriodOptionVO> listOption() {
         // 1. 增加 startDate 和 endDate 的查询，确保转换器能拿到数据
         List<SalaryPeriod> list = this.list(new LambdaQueryWrapper<SalaryPeriod>()
-                .select(SalaryPeriod::getId,
-                        SalaryPeriod::getSettlementMonth,
+                .select(SalaryPeriod::getSettlementMonth,
                         SalaryPeriod::getWorkMonth,
                         SalaryPeriod::getStartDate,
                         SalaryPeriod::getEndDate)
-                .groupBy(SalaryPeriod::getId,
-                        SalaryPeriod::getSettlementMonth,
+                .groupBy(SalaryPeriod::getSettlementMonth,
                         SalaryPeriod::getWorkMonth,
                         SalaryPeriod::getStartDate,
                         SalaryPeriod::getEndDate)
@@ -245,6 +247,22 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         // 2. 转换类型
         return periodConvert.toOptionVOList(list);
     }
+
+    @Override
+    public List<PeriodOptionVO> listOptionByEmployee(Long employeeId) {
+        // 专门针对某一个员工查，不需要 groupBy，直接根据员工ID过滤并倒序排列
+        List<SalaryPeriod> list = this.list(new LambdaQueryWrapper<SalaryPeriod>()
+                .select(SalaryPeriod::getId,
+                        SalaryPeriod::getSettlementMonth,
+                        SalaryPeriod::getWorkMonth,
+                        SalaryPeriod::getStartDate,
+                        SalaryPeriod::getEndDate)
+                .eq(SalaryPeriod::getEmployeeId, employeeId) // 🌟 核心：精确锁定员工
+                .orderByDesc(SalaryPeriod::getSettlementMonth));
+
+        return periodConvert.toOptionVOList(list);
+    }
+
     // ============================ 私有辅助方法 ============================
 
     /**

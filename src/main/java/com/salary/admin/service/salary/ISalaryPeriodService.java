@@ -85,4 +85,11 @@ public interface ISalaryPeriodService extends IService<SalaryPeriod> {
      * @return 简易选项列表 (settlementMonth -> YYYYMM)
      */
     List<PeriodOptionVO> listOption();
+
+    /**
+     * 获取指定员工的所有结算月份列表 (无分页，用于录入弹窗的级联下拉框)
+     * @param employeeId 员工ID
+     * @return 简易选项列表
+     */
+    List<PeriodOptionVO> listOptionByEmployee(Long employeeId);
 }

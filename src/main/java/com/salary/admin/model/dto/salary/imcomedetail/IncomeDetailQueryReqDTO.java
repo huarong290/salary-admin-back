@@ -18,4 +18,10 @@ public class IncomeDetailQueryReqDTO extends PageQueryDTO {
 
     @Schema(description = "员工ID (用于查询某人的所有收入流水)")
     private Long employeeId;
+
+    /**
+     * 收入类型ID
+     */
+    @Schema(description = "收入类型ID (关联 salary_income_type)")
+    private Long incomeTypeId;
 }

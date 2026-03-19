@@ -19,6 +19,10 @@ public class DeductionDetailAddReqDTO implements Serializable {
     @Schema(description = "薪资周期ID")
     private Long periodId;
 
+    @NotNull(message = "员工Id不能为空")
+    @Schema(description = "员工Id")
+    private Long employeeId;
+
     @NotNull(message = "扣款类型不能为空")
     @Schema(description = "扣款类型ID")
     private Long deductionTypeId;
@@ -35,8 +39,6 @@ public class DeductionDetailAddReqDTO implements Serializable {
     @Schema(description = "汇率 (原币兑本币，如 PHP兑CNY 约为0.125)", defaultValue = "1.00")
     private BigDecimal exchangeRate = BigDecimal.ONE;
 
-    @NotNull(message = "金额不能为空")
-    @DecimalMin(value = "0.00", message = "金额不能为负数")
     @Schema(description = "金额")
     private BigDecimal amount;
 

@@ -6,7 +6,7 @@ import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailAddReqDTO;
 import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailQueryReqDTO;
 import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailUpdateReqDTO;
-import com.salary.admin.model.vo.deductiondetail.DeductionDetailVO;
+import com.salary.admin.model.vo.salary.deductiondetail.DeductionDetailVO;
 import com.salary.admin.service.salary.ISalaryDeductionDetailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

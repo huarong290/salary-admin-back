@@ -12,6 +12,7 @@
         <result column="end_date" property="endDate" />
         <result column="month_days" property="monthDays" />
         <result column="attendance_days" property="attendanceDays" />
+        <result column="full_attendance_flag" property="fullAttendanceFlag" />
         <result column="delete_flag" property="deleteFlag" />
         <result column="create_by" property="createBy" />
         <result column="create_time" property="createTime" />
@@ -21,7 +22,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, employee_id, work_month, settlement_month, start_date, end_date, month_days, attendance_days, delete_flag, create_by, create_time, update_by, update_time
+        id, employee_id, work_month, settlement_month, start_date, end_date, month_days, attendance_days,full_attendance_flag, delete_flag, create_by, create_time, update_by, update_time
     </sql>
     <!-- 物理删除：直接删除记录 -->
     <delete id="physicalDeleteById">

@@ -131,7 +131,38 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 .source("BASE")
                 .formula(String.format("底薪 %s ÷ %s天 × 出勤 %s天", baseSalary, monthDays, attendanceDays))
                 .build());
-
+        // ==========================================
+        // 🌟 1.5 核心注入：全勤奖自动核算 (零信任机制)
+        // ==========================================
+        // 前提：请确保你的 SalaryArchiveVO 里已经加上了 fullAttendanceBonus 字段
+        BigDecimal fullAttendanceBonus = archive.getFullAttendanceBonus() != null
+                ? archive.getFullAttendanceBonus() : BigDecimal.ZERO;
+// 只有当员工档案里配置了全勤奖标准（>0）时，系统才去判定
+        if (fullAttendanceBonus.compareTo(BigDecimal.ZERO) > 0) {
+            // 引擎只认底层周期表的裁决开关
+            if (Integer.valueOf(1).equals(period.getFullAttendanceFlag())) {
+                // 开关为 1 (满勤)：痛快发钱！
+                incomeTotal = incomeTotal.add(fullAttendanceBonus);
+                snapshotItems.add(SalaryDetailItemDTO.builder()
+                        .itemName("全勤奖")
+                        .amount(fullAttendanceBonus)
+                        .itemType(1) // 1: 收入
+                        .category("奖金福利")
+                        .source("SYSTEM_CALC") // 系统自动计算判定
+                        .formula("考勤系统/HR裁定为[满勤]，按档案标准全额发放")
+                        .build());
+            } else {
+                // 开关为 0 (非满勤)：一分不给，且白纸黑字写入快照，杜绝月末扯皮！
+                snapshotItems.add(SalaryDetailItemDTO.builder()
+                        .itemName("全勤奖")
+                        .amount(BigDecimal.ZERO)
+                        .itemType(1)
+                        .category("奖金福利")
+                        .source("SYSTEM_CALC")
+                        .formula("考勤系统/HR裁定为[非满勤]，未达标不予发放")
+                        .build());
+            }
+        }
         // ==========================================
         // 2. 提前拉取字典，用于翻译 FIXED 档案项
         // ==========================================

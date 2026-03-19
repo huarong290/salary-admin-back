@@ -82,6 +82,12 @@ public class SalaryArchiveVO implements Serializable {
     private BigDecimal baseSalary;
 
     /**
+     * 全勤奖标准 (🌟 新增：由核算引擎联动薪资周期的满勤开关进行发放判定)
+     */
+    @Schema(description = "全勤奖标准金额")
+    private BigDecimal fullAttendanceBonus;
+
+    /**
      * 试用期底薪(选填)
      */
     @Schema(description = "试用期底薪(选填)")
