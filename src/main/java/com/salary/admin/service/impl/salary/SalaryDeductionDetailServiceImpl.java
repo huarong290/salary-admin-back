@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 /**
@@ -85,16 +86,10 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
         entity.setEmployeeId(period.getEmployeeId()); // 🌟 烙印员工ID
         entity.setDeductionTypeName(type.getTypeName()); // 🌟 烙印名称
         entity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+        entity.setCurrency(reqDTO.getCurrency()); // 记录原币种
 
-        // 🌟 多币种核心换算逻辑：折合本币金额 = 原币金额 * 汇率
-        BigDecimal calculatedAmount = reqDTO.getOriginalAmount()
-                .multiply(reqDTO.getExchangeRate())
-                .setScale(2, java.math.RoundingMode.HALF_UP);
-
-        entity.setAmount(calculatedAmount); // 引擎核算时只认这个本币金额！
-        entity.setOriginalAmount(reqDTO.getOriginalAmount());
-        entity.setCurrency(reqDTO.getCurrency());
-        entity.setExchangeRate(reqDTO.getExchangeRate());
+        // 🌟 统一调用内部方法进行多币种核算
+        recalculateAmount(entity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
 
         this.save(entity);
         return entity.getId();
@@ -126,7 +121,10 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
         updateEntity.setEmployeeId(period.getEmployeeId());
         updateEntity.setDeductionTypeName(type.getTypeName());
         updateEntity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+        updateEntity.setCurrency(reqDTO.getCurrency()); // 允许修改币种
 
+        // 🌟 核心修复：修改时必须重新核算本币金额
+        recalculateAmount(updateEntity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
         return this.updateById(updateEntity);
     }
 
@@ -190,6 +188,20 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
             salaryDeductionDetailExtMapper.physicalDeleteById(id);
         }
         return true;
+    }
+
+    /**
+     * 核心：重新核算本币金额
+     * 逻辑：折合本币金额 = 原币金额 * 汇率，保留2位小数，四舍五入
+     */
+    private void recalculateAmount(SalaryDeductionDetail entity, BigDecimal originalAmount, BigDecimal exchangeRate) {
+        if (originalAmount != null && exchangeRate != null) {
+            BigDecimal calculatedAmount = originalAmount.multiply(exchangeRate)
+                    .setScale(2, RoundingMode.HALF_UP);
+            entity.setAmount(calculatedAmount); // 引擎最终认准的本币金额
+            entity.setOriginalAmount(originalAmount);
+            entity.setExchangeRate(exchangeRate);
+        }
     }
 }
 

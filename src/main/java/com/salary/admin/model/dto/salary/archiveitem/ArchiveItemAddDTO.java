@@ -12,6 +12,7 @@ import java.math.BigDecimal;
  */
 @Data
 @Schema(description = "薪资档案明细保存入参")
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ArchiveItemAddDTO {
 

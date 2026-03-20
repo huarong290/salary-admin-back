@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.salary.summary;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -11,6 +12,8 @@ import java.io.Serializable;
  */
 @Data
 @Schema(description = "修改薪资汇总记录请求")
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SummaryEditReqDTO implements Serializable {
     @NotNull(message = "汇总记录ID不能为空")
     @Schema(description = "汇总ID")

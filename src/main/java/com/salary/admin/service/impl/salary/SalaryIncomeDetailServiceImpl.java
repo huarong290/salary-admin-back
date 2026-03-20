@@ -14,10 +14,7 @@ import com.salary.admin.model.entity.salary.SalaryIncomeDetail;
 import com.salary.admin.model.entity.salary.SalaryIncomeType;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.incomedetail.IncomeDetailVO;
-import com.salary.admin.service.salary.ISalaryEmployeeService;
-import com.salary.admin.service.salary.ISalaryIncomeDetailService;
-import com.salary.admin.service.salary.ISalaryIncomeTypeService;
-import com.salary.admin.service.salary.ISalaryPeriodService;
+import com.salary.admin.service.salary.*;
 import com.salary.admin.utils.UserContextUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +59,9 @@ public class SalaryIncomeDetailServiceImpl
 
     @Value("${salary.delete.allow-physical:false}")
     private boolean allowPhysicalDelete; // 是否允许物理删除（配置项）
+
+    @Resource
+    private ISalaryConfigService salaryConfigService;
     @Resource
     private SalaryIncomeDetailExtMapper salaryIncomeDetailExtMapper;
     /**
@@ -92,16 +92,10 @@ public class SalaryIncomeDetailServiceImpl
         entity.setEmployeeId(period.getEmployeeId()); // 🌟 核心：自动补齐员工ID
         entity.setIncomeTypeName(type.getTypeName()); // 🌟 核心：烙印项目名称
         entity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+        entity.setCurrency(reqDTO.getCurrency()); // 记录原币种
+        // 🌟 统一调用内部方法进行多币种核算
+        recalculateAmount(entity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
 
-        // 🌟 多币种核心换算逻辑：折合本币金额 = 原币金额 * 汇率
-        BigDecimal calculatedAmount = reqDTO.getOriginalAmount()
-                .multiply(reqDTO.getExchangeRate())
-                .setScale(2, java.math.RoundingMode.HALF_UP);
-
-        entity.setAmount(calculatedAmount); // 引擎核算时只认这个本币金额！
-        entity.setOriginalAmount(reqDTO.getOriginalAmount());
-        entity.setCurrency(reqDTO.getCurrency());
-        entity.setExchangeRate(reqDTO.getExchangeRate());
 
         this.save(entity);
         return entity.getId();
@@ -126,11 +120,15 @@ public class SalaryIncomeDetailServiceImpl
 
         // 2. 拷贝新值并重新烙印
         SalaryIncomeDetail updateEntity = incomeDetailConvert.toEntity(reqDTO);
+        recalculateAmount(updateEntity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
         updateEntity.setId(reqDTO.getId()); // 确保 ID 不丢失
         updateEntity.setEmployeeId(period.getEmployeeId());
         updateEntity.setIncomeTypeName(type.getTypeName());
         updateEntity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+        updateEntity.setCurrency(reqDTO.getCurrency()); // 允许修改币种
 
+        // 🌟 核心修复：修改时必须重新核算本币金额
+        recalculateAmount(updateEntity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
         return this.updateById(updateEntity);
     }
 
@@ -195,5 +193,20 @@ public class SalaryIncomeDetailServiceImpl
         }
         return true;
     }
+
+    /**
+     * 核心：重新核算本币金额
+     * 逻辑：折合本币金额 = 原币金额 * 汇率，保留2位小数，四舍五入
+     */
+    private void recalculateAmount(SalaryIncomeDetail entity, BigDecimal originalAmount, BigDecimal exchangeRate) {
+        if (originalAmount != null && exchangeRate != null) {
+            BigDecimal calculatedAmount = originalAmount.multiply(exchangeRate)
+                    .setScale(2, java.math.RoundingMode.HALF_UP);
+            entity.setAmount(calculatedAmount);
+            entity.setOriginalAmount(originalAmount);// 引擎最终认准的本币金额
+            entity.setExchangeRate(exchangeRate);
+        }
+    }
+// 同理，在 Deduction 类中也加一个类似的私有方法
 }
 

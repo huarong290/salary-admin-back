@@ -14,9 +14,8 @@ public class MybatisPlusCodeGenerator {
 
     public static void main(String[] args) {
         List<String> tableList = List.of(
-
-                "salary_payment_record"
-
+                "sys_dict_item",
+                "sys_dict_type"
         );
 
         FastAutoGenerator.create(
@@ -35,10 +34,10 @@ public class MybatisPlusCodeGenerator {
                 .packageConfig(builder -> builder
                         .parent("com.salary.admin")
                         .entity("model.entity.sys")
-                        .mapper("mapper.auto.salary")
-                        .service("service.salary")
-                        .serviceImpl("service.impl.salary")
-                        .controller("controller.salary")
+                        .mapper("mapper.auto")
+                        .service("service")
+                        .serviceImpl("service.impl")
+                        .controller("controller.")
                         .xml("mapper.xml")
                         .pathInfo(Collections.singletonMap(OutputFile.xml,
                                 Paths.get(System.getProperty("user.dir"), "src/main/resources/mapper/auto").toString()))

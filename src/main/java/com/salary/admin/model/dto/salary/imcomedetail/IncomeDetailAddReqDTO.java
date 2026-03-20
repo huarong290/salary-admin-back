@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.salary.imcomedetail;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +14,8 @@ import java.math.BigDecimal;
  */
 @Data
 @Schema(description = "新增收入明细请求")
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class IncomeDetailAddReqDTO implements Serializable {
     @NotNull(message = "薪资周期ID不能为空")
     @Schema(description = "薪资周期ID")

@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.salary.admin.model.vo.menu.MenuTreeVO;
 import com.salary.admin.model.vo.user.SysUserVO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,6 +22,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "用户信息聚合结果")
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserInfoDTO {
     /**
      * 基础信息

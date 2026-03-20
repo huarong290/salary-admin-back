@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.captcha;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "验证码响应实体")
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CaptchaResDTO {
     /**
      * 一个唯一的 captchaId（方便后端存储和校验）

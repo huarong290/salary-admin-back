@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.salary.summary;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
@@ -13,6 +14,8 @@ import java.util.List;
  */
 @Data
 @Schema(description = "指定周期触发薪资计算请求")
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SummaryCalcByPeriodReqDTO implements Serializable {
 
     @NotEmpty(message = "请至少指定一个需要核算的薪资周期")

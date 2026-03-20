@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.clientinfo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -8,6 +9,8 @@ import lombok.Data;
 
 @Data
 @Schema(description = "客户端指纹信息")
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ClientInfoDTO {
 
     // ============================

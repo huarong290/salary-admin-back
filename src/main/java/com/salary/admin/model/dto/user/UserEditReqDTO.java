@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -7,6 +8,8 @@ import lombok.Data;
 
 @Data
 @Schema(description = "修改用户请求参数")
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserEditReqDTO {
 
     @NotNull(message = "用户ID不能为空")

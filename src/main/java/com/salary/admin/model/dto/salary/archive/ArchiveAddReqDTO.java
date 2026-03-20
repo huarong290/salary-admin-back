@@ -15,7 +15,8 @@ import java.util.List;
 
 @Data
 @Schema(description = "薪资档案保存请求(含明细)")
-@JsonIgnoreProperties(ignoreUnknown = true) // 🌟 企业级防御：自动忽略前端传来的多余字段
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ArchiveAddReqDTO {
 
     @Schema(description = "员工ID", requiredMode = Schema.RequiredMode.REQUIRED)

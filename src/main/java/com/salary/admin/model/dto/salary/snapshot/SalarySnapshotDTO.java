@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.salary.snapshot;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -11,6 +12,8 @@ import java.util.List;
  * 用于序列化为 JSON 存储在 salary_payment_record 的 detail_json 字段中
  */
 @Data
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SalarySnapshotDTO {
 
     /**

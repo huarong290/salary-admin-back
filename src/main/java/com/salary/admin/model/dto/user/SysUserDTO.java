@@ -1,14 +1,13 @@
 package com.salary.admin.model.dto.user;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * 用户 DTO（Data Transfer Object）
@@ -19,6 +18,8 @@ import java.util.List;
  */
 @Data
 @Schema(description = "用户新增/修改表单对象")
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SysUserDTO {
 
     @Schema(description = "用户ID (新增时为空，修改时必填)", example = "1")
