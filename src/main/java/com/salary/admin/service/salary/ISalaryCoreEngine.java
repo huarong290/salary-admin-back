@@ -4,6 +4,7 @@ import com.salary.admin.model.dto.salary.period.PeriodAddReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
+import com.salary.admin.model.vo.salary.summary.SummaryVO;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -40,11 +41,17 @@ public interface ISalaryCoreEngine {
     Long createRecordByManual(Long summaryId, Long employeeId, BigDecimal finalAmount, String remark);
 
     /**
-     * 5. 全局核算任务：一键生成指定月份所有在职员工的薪资结算明细
+     * 5.  全员核算 (按月份地毯式扫描)
+     * 全局核算任务：一键生成指定月份所有在职员工的薪资结算明细
      * 逻辑：抓取档案 -> 清理旧账 -> 生成明细(快照) -> 更新汇总总额
      */
     void executeGlobalSettlement(String settlementMonth);
 
+    /**
+     * 场景 B：指定核算 (精准核算某一个或多个周期)
+     * @param periodIds 周期ID列表
+     */
+    void executeSettlementByPeriods(List<Long> periodIds);
     /**
      * 6. 重新计算并同步单条周期的汇总金额 (兼容通过 summaryId 或 periodId 刷新)
      * 逻辑：实发 = 应发(收入合计) - 扣款(扣款合计)
@@ -64,6 +71,15 @@ public interface ISalaryCoreEngine {
      * @return 新生成的薪资周期ID
      */
     Long addPeriodAndSummary(PeriodAddReqDTO reqDTO);
+
+    /**
+     * 9.单人核算预览 (无副作用/不落库)
+     * 用于前端点击"重新核算"时，提前返回计算后的应发、应扣、实发金额
+     *
+     * @param periodId 薪资周期ID
+     * @return 包含预览结果的 SummaryVO
+     */
+    SummaryVO previewCalculateByPeriod(Long periodId);
 }
 
 

@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.salary.admin.annotation.Loggable;
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.common.PageResult;
+import com.salary.admin.model.dto.salary.summary.SummaryCalcByPeriodReqDTO;
 import com.salary.admin.model.dto.salary.summary.SummaryCalcReqDTO;
 import com.salary.admin.model.dto.salary.summary.SummaryQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
@@ -97,5 +98,50 @@ public class SalarySummaryController {
         iSalaryCoreEngine.executeGlobalSettlement(targetMonth);
 
         return ApiResult.defaultSuccessResult();
+    }
+
+    @PostMapping("/calculate/periods")
+    @Operation(summary = "触发指定周期薪资核算 (单人/局部核算)")
+    @Loggable(title = "薪资引擎-指定周期核算")
+    public ApiResult<Void> executeSettlementByPeriods(
+            @org.springframework.validation.annotation.Validated @RequestBody SummaryCalcByPeriodReqDTO reqDTO) {
+
+        // 核心引擎调度：直接把校验过绝对不为空的 periodIds 传进去
+        // 💡 如果底层业务需要记录 remark，你也可以把整个 reqDTO 传进去
+        iSalaryCoreEngine.executeSettlementByPeriods(reqDTO.getPeriodIds());
+
+        return ApiResult.defaultSuccessResult();
+    }
+
+    @PostMapping("/sync/amount/{periodId}")
+    @Operation(summary = "同步/刷新汇总单总金额 (平账干预后触发)")
+    @Loggable(title = "薪资引擎-同步汇总金额")
+    public ApiResult<Void> syncSummaryAmount(
+            @Parameter(description = "薪资周期ID") @PathVariable("periodId") Long periodId) {
+
+        if (periodId == null) {
+            return ApiResult.failResult("指定的薪资周期ID不能为空");
+        }
+
+        // 调用引擎：仅做底层明细金额的向上汇总求和，绝对不触发公式重算 (非破坏性)
+        iSalaryCoreEngine.syncSummaryAmountByPeriodId(periodId);
+
+        return ApiResult.defaultSuccessResult();
+    }
+
+    @GetMapping("/preview/{periodId}")
+    @Operation(summary = "单人薪资核算结果预览 (不入库)")
+    @Loggable(title = "薪资引擎-单人核算预览")
+    public ApiResult<SummaryVO> previewCalculate(
+            @Parameter(description = "薪资周期ID") @PathVariable("periodId") Long periodId) {
+
+        if (periodId == null) {
+            return ApiResult.failResult("指定的薪资周期ID不能为空");
+        }
+
+        // 核心引擎调用：执行无副作用的纯计算
+        SummaryVO previewResult = iSalaryCoreEngine.previewCalculateByPeriod(periodId);
+
+        return ApiResult.successResult(previewResult);
     }
 }

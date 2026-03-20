@@ -9,6 +9,7 @@ import com.salary.admin.model.dto.salary.snapshot.SalaryDetailItemDTO;
 import com.salary.admin.model.dto.salary.snapshot.SalarySnapshotDTO;
 import com.salary.admin.model.entity.salary.*;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
+import com.salary.admin.model.vo.salary.summary.SummaryVO;
 import com.salary.admin.service.salary.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,8 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     private final ISalaryIncomeTypeService iSalaryIncomeTypeService;
 
     private final ISalaryDeductionTypeService iSalaryDeductionTypeService;
+
+    private final ISalaryEmployeeService iSalaryEmployeeService;
 
     // 接管批量初始化
     @Override
@@ -379,6 +382,70 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 settlementMonth, periods.size(), successCount, failCount);
     }
 
+    /**
+     * 场景 B：指定核算 (精准核算某一个或多个周期) =重新考试（重新计算成绩单）
+     * 主要用于前端点击“重新核算”时的单人即时核算
+     * @param periodIds 周期ID列表
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void executeSettlementByPeriods(List<Long> periodIds) {
+        if (CollUtil.isEmpty(periodIds)) {
+            return;
+        }
+
+        log.info("🚀 [薪资引擎] 开始执行精准指定核算任务，目标周期数: {}", periodIds.size());
+
+        // 1. 获取指定的薪资周期
+        List<SalaryPeriod> periods = iSalaryPeriodService.listByIds(periodIds);
+
+        for (SalaryPeriod period : periods) {
+            try {
+                // 2. 获取对应的汇总单 ID
+                SalarySummary summary = iSalarySummaryService.getOne(
+                        Wrappers.<SalarySummary>lambdaQuery().eq(SalarySummary::getPeriodId, period.getId())
+                );
+                if (summary == null) {
+                    log.warn("周期ID {} 缺失汇总单，跳过", period.getId());
+                    continue;
+                }
+
+                // 3. 获取员工当前生效的薪资档案
+                SalaryArchiveVO archive = iSalaryArchiveService.getCurrentArchive(period.getEmployeeId());
+                if (archive == null) {
+                    log.warn("员工ID {} 缺失生效薪资档案，跳过核算", period.getEmployeeId());
+                    continue;
+                }
+
+                // 4. 清理旧账，保证幂等性 (核心风险点：此操作会覆写历史明细)
+                iSalaryPaymentRecordService.remove(
+                        Wrappers.<SalaryPaymentRecord>lambdaQuery().eq(SalaryPaymentRecord::getSummaryId, summary.getId())
+                );
+
+                // 5. 调用核心算薪公式，生成明细快照并持久化
+                this.createRecordByCalculation(summary.getId(), archive, period);
+
+                log.info("✅ 员工ID {} 核算成功", period.getEmployeeId());
+
+            } catch (Exception e) {
+                log.error("❌ 员工ID {} 核算异常: {}", period.getEmployeeId(), e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * 根据薪资周期 ID，同步/刷新对应汇总单的总金额 = 重新核分（把成绩单上的分数重新加一遍报给教务处）
+     * <p>
+     * 【业务场景与架构约束】：
+     * 该方法属于“轻量级且非破坏性”的数据同步操作。
+     * 通常用于底层发薪明细（SalaryPaymentRecord）发生人工强制干预（如：财务进行单据微调、强制平账）后，
+     * 系统需要将底层的各项实发、应发金额重新汇总求和，并将最新总额反写回顶层的汇总大盘（SalarySummary）中。
+     * <p>
+     * ⚠️ 注意：此过程【绝对不会】重新拉取员工档案，也【绝对不会】触发薪资引擎的公式重算。
+     *
+     *
+     * @param periodId 薪资周期 ID (关联 salary_period 表的主键)
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void syncSummaryAmountByPeriodId(Long periodId) {
@@ -392,7 +459,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
     @Override
     public void refreshSummaryAmountBySummaryId(Long summaryId) {
-// 1. 查询该汇总单下所有的 PaymentRecord 快照
+        // 1. 查询该汇总单下所有的 PaymentRecord 快照
         List<SalaryPaymentRecord> records = iSalaryPaymentRecordService.list(
                 Wrappers.<SalaryPaymentRecord>lambdaQuery().eq(SalaryPaymentRecord::getSummaryId, summaryId)
         );
@@ -430,5 +497,80 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         this.initSummaryForPeriods(Collections.singletonList(period));
 
         return periodId;
+    }
+
+    @Override
+    public SummaryVO previewCalculateByPeriod(Long periodId) {
+        // 1. 获取前置基础数据
+        SalaryPeriod period = iSalaryPeriodService.getById(periodId);
+        if (period == null) {
+            throw new RuntimeException("指定的薪资周期不存在");
+        }
+        SalaryArchiveVO archive = iSalaryArchiveService.getCurrentArchive(period.getEmployeeId());
+        if (archive == null) {
+            throw new RuntimeException("未找到该员工生效的薪资档案");
+        }
+        SalaryEmployee employee = iSalaryEmployeeService.getById(period.getEmployeeId());
+
+        // 2. 初始化金额累加器
+        BigDecimal incomeTotal = BigDecimal.ZERO;
+        BigDecimal deductionTotal = BigDecimal.ZERO;
+
+        // 3. 计算底薪与出勤折算
+        BigDecimal baseSalary = archive.getBaseSalary() != null ? archive.getBaseSalary() : BigDecimal.ZERO;
+        BigDecimal monthDays = (period.getMonthDays() != null && period.getMonthDays().compareTo(BigDecimal.ZERO) > 0)
+                ? period.getMonthDays() : new BigDecimal("21.75");
+        BigDecimal attendanceDays = period.getAttendanceDays() != null ? period.getAttendanceDays() : BigDecimal.ZERO;
+
+        BigDecimal proratedBaseSalary = baseSalary.divide(monthDays, 4, RoundingMode.HALF_UP)
+                .multiply(attendanceDays).setScale(2, RoundingMode.HALF_UP);
+        incomeTotal = incomeTotal.add(proratedBaseSalary);
+
+        // 4. 计算全勤奖
+        BigDecimal fullAttendanceBonus = archive.getFullAttendanceBonus() != null ? archive.getFullAttendanceBonus() : BigDecimal.ZERO;
+        if (fullAttendanceBonus.compareTo(BigDecimal.ZERO) > 0 && Integer.valueOf(1).equals(period.getFullAttendanceFlag())) {
+            incomeTotal = incomeTotal.add(fullAttendanceBonus);
+        }
+
+        // 5. 计算档案固定项 (FIXED)
+        List<SalaryArchiveItem> archiveItems = iSalaryArchiveItemService.list(
+                Wrappers.<SalaryArchiveItem>lambdaQuery().eq(SalaryArchiveItem::getArchiveId, archive.getId())
+        );
+        for (SalaryArchiveItem item : archiveItems) {
+            BigDecimal itemAmount = BigDecimal.ZERO;
+            if (item.getCalcType() == 1) { // 固定金额
+                itemAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
+            } else if (item.getCalcType() == 2) { // 比例基数
+                BigDecimal calcBase = (item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0) ? item.getBaseAmount() : baseSalary;
+                itemAmount = calcBase.multiply(item.getRatio() != null ? item.getRatio() : BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+            } else if (item.getCalcType() == 3) { // 出勤折算
+                BigDecimal standardAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
+                itemAmount = standardAmount.multiply(attendanceDays).divide(monthDays, 2, RoundingMode.HALF_UP);
+            }
+
+            if (item.getItemType() == 1) incomeTotal = incomeTotal.add(itemAmount);
+            else deductionTotal = deductionTotal.add(itemAmount);
+        }
+
+        // 6. 计算当月临时变动项 (VARIABLE)
+        List<SalaryIncomeDetail> periodIncomes = iSalaryIncomeDetailService.list(Wrappers.<SalaryIncomeDetail>lambdaQuery().eq(SalaryIncomeDetail::getPeriodId, period.getId()));
+        for (SalaryIncomeDetail pInc : periodIncomes) incomeTotal = incomeTotal.add(pInc.getAmount());
+
+        List<SalaryDeductionDetail> periodDeductions = iSalaryDeductionDetailService.list(Wrappers.<SalaryDeductionDetail>lambdaQuery().eq(SalaryDeductionDetail::getPeriodId, period.getId()));
+        for (SalaryDeductionDetail pDed : periodDeductions) deductionTotal = deductionTotal.add(pDed.getAmount());
+
+        // 7. 计算最终实发金额 (防呆处理不能为负数)
+        BigDecimal finalSalary = incomeTotal.subtract(deductionTotal);
+        if (finalSalary.compareTo(BigDecimal.ZERO) < 0) finalSalary = BigDecimal.ZERO;
+
+        // 🌟 8. 组装返回给前端的预览视图 (VO)
+        SummaryVO previewVO = new SummaryVO();
+        previewVO.setEmployeeName(employee != null ? employee.getEmployeeName() : "未知员工");
+        previewVO.setSettlementMonth(period.getSettlementMonth());
+        previewVO.setSalarySubtotal(incomeTotal);
+        previewVO.setSalaryDeductionTotal(deductionTotal);
+        previewVO.setSalaryTotal(finalSalary); // 最终核算结果
+
+        return previewVO;
     }
 }
