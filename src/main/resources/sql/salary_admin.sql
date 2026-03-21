@@ -127,39 +127,41 @@ CREATE TABLE `sys_role_menu`
 -- ==========================================================
 -- 6. 系统全局字典表
 -- ==========================================================
-CREATE TABLE `sys_dict_item` (
-                                 `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-                                 `dict_type_code` varchar(100) NOT NULL DEFAULT '' COMMENT '所属字典类型code',
-                                 `dict_item_label` varchar(100) NOT NULL DEFAULT '' COMMENT '字典项标签（如 男、女）',
-                                 `dict_item_value` varchar(100) NOT NULL DEFAULT '' COMMENT '字典项值（如 1、0）',
-                                 `sort` int NOT NULL DEFAULT '0' COMMENT '排序值，越小越靠前',
-                                 `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否启用，0表示启用',
-                                 `remark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注说明',
-                                 `delete_flag` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
-                                 `create_by` varchar(64) NOT NULL DEFAULT 'admin' COMMENT '创建者',
-                                 `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                 `update_by` varchar(64) NOT NULL DEFAULT 'admin' COMMENT '修改者',
-                                 `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-                                 PRIMARY KEY (`id`),
-                                 UNIQUE KEY `uk_dict_type_value` (`dict_type_code`,`dict_item_value`)
+CREATE TABLE `sys_dict_item`
+(
+    `id`              bigint       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `dict_type_code`  varchar(100) NOT NULL DEFAULT '' COMMENT '所属字典类型code',
+    `dict_item_label` varchar(100) NOT NULL DEFAULT '' COMMENT '字典项标签（如 男、女）',
+    `dict_item_value` varchar(100) NOT NULL DEFAULT '' COMMENT '字典项值（如 1、0）',
+    `sort`            int          NOT NULL DEFAULT '0' COMMENT '排序值，越小越靠前',
+    `status`          tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否启用，0表示启用',
+    `remark`          varchar(255) NOT NULL DEFAULT '' COMMENT '备注说明',
+    `delete_flag`     tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+    `create_by`       varchar(64)  NOT NULL DEFAULT 'admin' COMMENT '创建者',
+    `create_time`     datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`       varchar(64)  NOT NULL DEFAULT 'admin' COMMENT '修改者',
+    `update_time`     datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_dict_type_value` (`dict_type_code`,`dict_item_value`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4  COMMENT='系统字典项表';
 
 -- ==========================================================
 -- 7. 系统全局字典项表
 -- ==========================================================
-CREATE TABLE `sys_dict_type` (
-                                 `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-                                 `dict_type_code` varchar(50) NOT NULL DEFAULT '' COMMENT '字典类型编码（如 gender、status）',
-                                 `dict_type_name` varchar(100) NOT NULL DEFAULT '' COMMENT '字典类型名称（如 性别、状态）',
-                                 `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否启用,0 表示启用',
-                                 `remark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注说明',
-                                 `delete_flag` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
-                                 `create_by` varchar(64) NOT NULL DEFAULT 'admin' COMMENT '创建者',
-                                 `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                 `update_by` varchar(64) NOT NULL DEFAULT 'admin' COMMENT '修改者',
-                                 `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-                                 PRIMARY KEY (`id`),
-                                 UNIQUE KEY `uk_dict_code` (`dict_type_code`)
+CREATE TABLE `sys_dict_type`
+(
+    `id`             bigint       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `dict_type_code` varchar(50)  NOT NULL DEFAULT '' COMMENT '字典类型编码（如 gender、status）',
+    `dict_type_name` varchar(100) NOT NULL DEFAULT '' COMMENT '字典类型名称（如 性别、状态）',
+    `status`         tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否启用,0 表示启用',
+    `remark`         varchar(255) NOT NULL DEFAULT '' COMMENT '备注说明',
+    `delete_flag`    tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+    `create_by`      varchar(64)  NOT NULL DEFAULT 'admin' COMMENT '创建者',
+    `create_time`    datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`      varchar(64)  NOT NULL DEFAULT 'admin' COMMENT '修改者',
+    `update_time`    datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_dict_code` (`dict_type_code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4  COMMENT='系统字典类型表';
 -- ==========================================================
 -- 8. 员工基本信息表 salary_employee
@@ -173,9 +175,9 @@ CREATE TABLE `salary_employee`
     `department`           VARCHAR(128)         DEFAULT NULL COMMENT '部门',
     `employment_status`    TINYINT(1) NOT NULL DEFAULT 1 COMMENT '在职状态: 0-离职, 1-在职',
     `is_transferred`       TINYINT(1) DEFAULT '0' COMMENT '是否转岗',
-    `accommodation_status` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴';
-`delete_flag`
-TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+    `accommodation_status` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴',
+    `delete_flag`
+                           TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
     `create_by`            VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '创建者',
     `create_time`          DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_by`            VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '修改者',
@@ -183,7 +185,7 @@ TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
 UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE KEY `uk_employee_code` (`employee_code`) USING BTREE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工基本信息表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工基本信息表';
 -- ==========================================================
 -- 9. 薪资周期信息表 salary_period
 -- ==========================================================
@@ -271,8 +273,9 @@ CREATE TABLE `salary_income_type`
     `type_code`     VARCHAR(64) NOT NULL DEFAULT '' COMMENT '收入类型缩写简称',
     `type_name`     VARCHAR(64) NOT NULL DEFAULT '' COMMENT '收入类型名称',
     `pinyin_code`   VARCHAR(64) NOT NULL DEFAULT '' COMMENT '拼音缩写',
-    `category_name` VARCHAR(64)          DEFAULT NULL COMMENT '收入分类',
-    `description`   VARCHAR(255)         DEFAULT NULL COMMENT '收入项说明',
+    `category_name` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '收入分类',
+    `taxable_flag`  TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否纳入个税计税基数: 0-否, 1-是',
+    `description`   VARCHAR(255)   NOT NULL      DEFAULT '' COMMENT '收入项说明',
     `sort_value`    INT         NOT NULL DEFAULT '0' COMMENT '排序值 (数值越小越靠前)',
     `delete_flag`   TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
     `create_by`     VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '创建者',
@@ -320,7 +323,8 @@ CREATE TABLE `salary_deduction_type`
     `category_name` VARCHAR(64)          DEFAULT NULL COMMENT '扣款分类',
     `description`   VARCHAR(255)         DEFAULT NULL COMMENT '扣款项说明',
     `sort_value`    INT         NOT NULL DEFAULT '0' COMMENT '排序值 (数值越小越靠前)',
-    `is_fixed`      TINYINT(1) DEFAULT '0' COMMENT '是否固定扣款',
+    `fixed_flag`      TINYINT(1) DEFAULT '0' COMMENT '是否固定扣款',
+    `tax_deductible_flag` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否为税前合法扣除项(如五险一金): 0-否, 1-是',
     `delete_flag`   TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
     `create_by`     VARCHAR(64) NOT NULL DEFAULT 'admin' COMMENT '创建者',
     `create_time`   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -347,6 +351,7 @@ CREATE TABLE `salary_archive`
     `probation_base_salary` DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '试用期底薪(选填)',
     `currency`              VARCHAR(16)    NOT NULL DEFAULT 'CNY' COMMENT '默认结算币种',
     `change_reason`         VARCHAR(255)   NOT NULL DEFAULT '' COMMENT '调薪原因 (如: 年度普调、晋升)',
+    `tax_scheme` TINYINT(4) NOT NULL DEFAULT 1 COMMENT '计税方案: 0-不计税, 1-居民个人所得税, 2-劳务报酬税',
     `remark`                VARCHAR(255)   NOT NULL DEFAULT '' COMMENT '档案备注',
     `delete_flag`           TINYINT(1)     NOT NULL DEFAULT '0',
     `create_by`             VARCHAR(64)    NOT NULL DEFAULT 'admin',

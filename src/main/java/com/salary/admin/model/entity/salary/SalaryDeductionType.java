@@ -64,11 +64,17 @@ public class SalaryDeductionType extends BaseEntity<SalaryDeductionType> {
     @TableField("description")
     private String description;
     /**
-     * 是否固定扣款
+     * 是否固定扣款:0-否, 1-是
      */
-    @Schema(description = "是否固定扣款")
-    @TableField("is_fixed")
-    private Integer isFixed;
+    @Schema(description = "是否固定扣款:0-否, 1-是")
+    @TableField("fixed_flag")
+    private Integer fixedFlag;
+    /**
+     * 是否为税前合法扣除项(如五险一金): 0-否, 1-是
+     */
+    @Schema(description = "是否为税前合法扣除项(如五险一金): 0-否, 1-是")
+    @TableField("tax_deductible_flag")
+    private Integer taxDeductibleFlag;
     /**
      * 排序值 (数值越小越靠前)
      */

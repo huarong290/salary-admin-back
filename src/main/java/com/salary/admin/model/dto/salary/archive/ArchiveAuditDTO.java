@@ -19,6 +19,12 @@ public class ArchiveAuditDTO {
     @NotNull(message = "审核状态不能为空")
     private Integer auditStatus;
 
+    /**
+     * 计税方案: 0-不计税, 1-居民个人所得税, 2-劳务报酬税
+     */
+    @Schema(description = "计税方案: 0-不计税, 1-居民个人所得税, 2-劳务报酬税")
+    private Integer taxScheme;
+
     @Schema(description = "审核备注/驳回原因")
     private String remark;
 }

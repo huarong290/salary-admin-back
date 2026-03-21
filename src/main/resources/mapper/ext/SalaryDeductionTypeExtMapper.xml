@@ -10,7 +10,8 @@
         <result column="pinyin_code" property="pinyinCode" />
         <result column="category_name" property="categoryName" />
         <result column="description" property="description" />
-        <result column="is_fixed" property="isFixed" />
+        <result column="fixed_flag" property="fixedFlag" />
+        <result column="tax_deductible_flag" property="taxDeductibleFlag" />
         <result column="sort_value" property="sortValue" />
         <result column="delete_flag" property="deleteFlag" />
         <result column="create_by" property="createBy" />
@@ -21,7 +22,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, type_code, type_name, pinyin_code, category_name, description, is_fixed, sort_value,delete_flag, create_by, create_time, update_by, update_time
+        id, type_code, type_name, pinyin_code, category_name, description, fixed_flag,tax_deductible_flag, sort_value,delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
     <!-- 物理删除：直接删除记录 -->

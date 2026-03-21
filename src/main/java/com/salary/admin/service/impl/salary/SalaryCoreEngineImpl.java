@@ -182,6 +182,8 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 Wrappers.<SalaryArchiveItem>lambdaQuery().eq(SalaryArchiveItem::getArchiveId, archive.getId())
         );
 
+        // 🌟 新增：专门用于记录个税税前可扣除的“五险一金”总额
+        BigDecimal socialSecurityDeductionForTax = BigDecimal.ZERO;
         for (SalaryArchiveItem item : archiveItems) {
             BigDecimal itemAmount = BigDecimal.ZERO;
             String formulaStr = "";
@@ -194,24 +196,27 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             }
             // 2. 按基数比例 (如：公积金 8%)
             else if (item.getCalcType() == 2) {
-                BigDecimal calcBase = (item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0)
-                        ? item.getBaseAmount() : baseSalary;
+                // 🌟 优先级：item.base_amount > archive.base_salary
+                BigDecimal calcBase = (item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0)? item.getBaseAmount() : baseSalary;
+
                 BigDecimal ratio = item.getRatio() != null ? item.getRatio() : BigDecimal.ZERO;
                 itemAmount = calcBase.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
-                formulaStr = String.format("基数 %s × 比例 %s%%", calcBase, ratio.multiply(new BigDecimal("100")).setScale(2));
+//                formulaStr = String.format("基数 %s × 比例 %s%%", calcBase, ratio.multiply(new BigDecimal("100")).setScale(2));
+                formulaStr = String.format("基数 %s × 比例 %s%%", calcBase, ratio.multiply(new BigDecimal("100")).stripTrailingZeros().toPlainString());
             }// 🌟 3. 新增：按出勤天数折算的固定额度 (如：餐补、按比例发放的全勤奖等)
             else if (item.getCalcType() == 3) {
                 BigDecimal standardAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
                 // 丝滑计算：标准额 × (出勤天数 ÷ 计薪天数)
-                itemAmount = standardAmount.multiply(attendanceDays)
-                        .divide(monthDays, 2, RoundingMode.HALF_UP);
-                formulaStr = String.format("标准额 %s × (出勤 %s ÷ 计薪 %s)",
-                        standardAmount, attendanceDays, monthDays);
+                itemAmount = standardAmount.multiply(attendanceDays).divide(monthDays, 2, RoundingMode.HALF_UP);
+                formulaStr = String.format("标准额 %s × (出勤 %s ÷ 计薪 %s)",standardAmount, attendanceDays, monthDays);
+
             }
 
             // 翻译名称与分类，并累加总额
             String itemName = "未知项";
             String category = "未分类";
+
+            // 收入项
             if (item.getItemType() == 1) {
                 incomeTotal = incomeTotal.add(itemAmount);
                 SalaryIncomeType dict = incomeTypeMap.get(item.getTypeId());
@@ -225,6 +230,11 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 if (dict != null) {
                     itemName = dict.getTypeName();
                     category = dict.getCategoryName();
+                    // 🌟 关键判定：如果是社保或公积金，累加到税前扣除额中
+                    // 这里可以通过名称判定，或者给字典表增加一个标记位 `is_tax_deductible`
+                    if (itemName.contains("社保") || itemName.contains("保险") || itemName.contains("公积金")) {
+                        socialSecurityDeductionForTax = socialSecurityDeductionForTax.add(itemAmount);
+                    }
                 }
             }
 
@@ -271,9 +281,33 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                     .formula(pDed.getRemark() != null ? pDed.getRemark() : "当月临时导入")
                     .build());
         }
-
         // ==========================================
-        // 5. 最终实发计算与数据入库
+        // 🌟 5.0 个人所得税自动核算 (根据前面累加的结果计算)
+        // ==========================================
+        // 公式：(应发总额 - 税前可扣除五险一金 - 5000起征点)
+        BigDecimal taxableIncome = incomeTotal.subtract(socialSecurityDeductionForTax).subtract(new BigDecimal("5000"));
+        BigDecimal personalTax = BigDecimal.ZERO;
+
+        if (taxableIncome.compareTo(BigDecimal.ZERO) > 0) {
+            // 匹配简易税率表 (7级超额累进)
+            if (taxableIncome.compareTo(new BigDecimal("3000")) <= 0) {
+                personalTax = taxableIncome.multiply(new BigDecimal("0.03")).setScale(2, RoundingMode.HALF_UP);
+            } else if (taxableIncome.compareTo(new BigDecimal("12000")) <= 0) {
+                personalTax = taxableIncome.multiply(new BigDecimal("0.1")).subtract(new BigDecimal("210")).setScale(2, RoundingMode.HALF_UP);
+            } else {
+                personalTax = taxableIncome.multiply(new BigDecimal("0.2")).subtract(new BigDecimal("1410")).setScale(2, RoundingMode.HALF_UP);
+            }
+        }
+
+        if (personalTax.compareTo(BigDecimal.ZERO) > 0) {
+            deductionTotal = deductionTotal.add(personalTax);
+            snapshotItems.add(SalaryDetailItemDTO.builder()
+                    .itemName("个人所得税").amount(personalTax).itemType(2)
+                    .category("法定扣款").source("SYSTEM_CALC")
+                    .formula("应纳税所得额 × 适用税率 - 速算扣除数").build());
+        }
+        // ==========================================
+        // 6. 最终实发计算与数据入库
         // ==========================================
         BigDecimal finalSalary = incomeTotal.subtract(deductionTotal);
         // 兜底防御，防止扣成负数
@@ -323,13 +357,19 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         return record.getId();
     }
 
-
-
+    /**
+     * 生产环境建议：异步执行 (Async)
+     * 如果你的公司员工超过 1000 人，这个方法执行时间可能会超过 30 秒，导致前端接口超时（Timeout）
+     * @param settlementMonth
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void executeGlobalSettlement(String settlementMonth) {
         log.info("🚀 [薪资引擎] 开始执行 {} 月份全员核算任务", settlementMonth);
-
+        // 🌟 【新增：自动补偿机制】
+        // 在算钱之前，先确保本月所有在职员工的“坑位”（Period 和 Summary）已经占好了
+        // 如果已经初始化过了，这个方法内部有幂等检查，执行速度极快
+        this.initMonthlyBatchForAll(settlementMonth);
         // 1. 基于周期驱动：获取该月份所有的薪资周期
         List<SalaryPeriod> periods = iSalaryPeriodService.list(
                 Wrappers.<SalaryPeriod>lambdaQuery().eq(SalaryPeriod::getSettlementMonth, settlementMonth)
@@ -385,6 +425,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     /**
      * 场景 B：指定核算 (精准核算某一个或多个周期) =重新考试（重新计算成绩单）
      * 主要用于前端点击“重新核算”时的单人即时核算
+     *
      * @param periodIds 周期ID列表
      */
     @Override
@@ -442,7 +483,6 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
      * 系统需要将底层的各项实发、应发金额重新汇总求和，并将最新总额反写回顶层的汇总大盘（SalarySummary）中。
      * <p>
      * ⚠️ 注意：此过程【绝对不会】重新拉取员工档案，也【绝对不会】触发薪资引擎的公式重算。
-     *
      *
      * @param periodId 薪资周期 ID (关联 salary_period 表的主键)
      */
@@ -572,5 +612,75 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         previewVO.setSalaryTotal(finalSalary); // 最终核算结果
 
         return previewVO;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void initMonthlyBatchForAll(String settlementMonth) {
+        log.info("🚀 [薪资引擎] 开始执行 {} 月份全员月度建账...", settlementMonth);
+
+        // 1. 获取所有在职员工 (employment_status = 1)
+        List<SalaryEmployee> activeEmployees = iSalaryEmployeeService.list(
+                Wrappers.<SalaryEmployee>lambdaQuery()
+                        .eq(SalaryEmployee::getEmploymentStatus, 1)
+                        .eq(SalaryEmployee::getDeleteFlag, 0)
+        );
+
+        if (CollUtil.isEmpty(activeEmployees)) {
+            log.warn("⚠️ 未找到任何在职员工，建账终止");
+            return;
+        }
+
+        // 2. 构造日期范围 (基于 settlementMonth 自动计算该月第一天和最后一天)
+        // 假设 settlementMonth 格式为 "202405"
+        cn.hutool.core.date.DateTime monthDate = cn.hutool.core.date.DateUtil.parse(settlementMonth, "yyyyMM");
+        java.time.LocalDate start = cn.hutool.core.date.DateUtil.beginOfMonth(monthDate).toLocalDateTime().toLocalDate();
+        java.time.LocalDate end = cn.hutool.core.date.DateUtil.endOfMonth(monthDate).toLocalDateTime().toLocalDate();
+
+        // 3. 筛选出【当前月份还没有周期记录】的员工 ID
+        List<Long> allActiveIds = activeEmployees.stream().map(SalaryEmployee::getId).collect(Collectors.toList());
+
+        // 查出本月已存在周期的员工
+        List<Long> existPeriodEmpIds = iSalaryPeriodService.list(
+                Wrappers.<SalaryPeriod>lambdaQuery()
+                        .select(SalaryPeriod::getEmployeeId)
+                        .eq(SalaryPeriod::getSettlementMonth, settlementMonth)
+                        .in(SalaryPeriod::getEmployeeId, allActiveIds)
+        ).stream().map(SalaryPeriod::getEmployeeId).collect(Collectors.toList());
+
+        // 得到真正需要创建周期的员工 ID
+        List<Long> needCreateIds = allActiveIds.stream()
+                .filter(id -> !existPeriodEmpIds.contains(id))
+                .collect(Collectors.toList());
+
+        // 4. 如果有需要补全的周期，调用你现有的批量初始化 DTO
+        if (CollUtil.isNotEmpty(needCreateIds)) {
+            PeriodBatchInitReqDTO initReq = new PeriodBatchInitReqDTO();
+            initReq.setSettlementMonth(settlementMonth);
+            initReq.setEmployeeIds(needCreateIds);
+            initReq.setStartDate(start);
+            initReq.setEndDate(end);
+
+            // 🌟 关键点：直接调用你已有的逻辑
+            // batchInitPeriods 内部已经包含了保存 Period 和 initSummaryForPeriods(汇总表) 的逻辑
+            this.batchInitPeriods(initReq);
+            log.info("✅ 已为 {} 名新入职或缺失周期的员工补全了账套", needCreateIds.size());
+        }
+
+        // 5. 额外防御：检查是否有“有周期但没汇总单”的情况（针对手动删了汇总单的极端情况）
+        // 这一步能保证 Summary 页面数据的绝对完整
+        List<SalaryPeriod> allPeriods = iSalaryPeriodService.list(
+                Wrappers.<SalaryPeriod>lambdaQuery().eq(SalaryPeriod::getSettlementMonth, settlementMonth)
+        );
+
+        // 找出没有 Summary 记录的 Period
+        List<SalaryPeriod> periodsWithoutSummary = allPeriods.stream().filter(p ->
+                !iSalarySummaryService.exists(Wrappers.<SalarySummary>lambdaQuery().eq(SalarySummary::getPeriodId, p.getId()))
+        ).collect(Collectors.toList());
+
+        if (CollUtil.isNotEmpty(periodsWithoutSummary)) {
+            this.initSummaryForPeriods(periodsWithoutSummary);
+            log.info("✅ 补全了 {} 条缺失的汇总单记录", periodsWithoutSummary.size());
+        }
     }
 }

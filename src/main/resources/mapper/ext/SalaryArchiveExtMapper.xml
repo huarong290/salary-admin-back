@@ -16,6 +16,7 @@
         <result column="probation_base_salary" property="probationBaseSalary" />
         <result column="currency" property="currency" />
         <result column="change_reason" property="changeReason" />
+        <result column="tax_scheme" property="taxScheme" />
         <result column="remark" property="remark" />
         <result column="delete_flag" property="deleteFlag" />
         <result column="create_by" property="createBy" />
@@ -26,7 +27,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, employee_id, version, is_latest, effective_date, expiry_date, audit_status, base_salary, full_attendance_bonus,probation_base_salary, currency, change_reason, remark, delete_flag, create_by, create_time, update_by, update_time
+        id, employee_id, version, is_latest, effective_date, expiry_date, audit_status, base_salary, full_attendance_bonus,probation_base_salary, currency, change_reason,tax_scheme, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 
@@ -46,6 +47,7 @@
         <result column="probation_base_salary" property="probationBaseSalary"/>
         <result column="currency" property="currency"/>
         <result column="change_reason" property="changeReason"/>
+        <result column="tax_scheme" property="taxScheme" />
         <result column="remark" property="remark"/>
 
         <collection property="items" ofType="com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO">
@@ -76,6 +78,7 @@
         sa.probation_base_salary,
         sa.currency,
         sa.change_reason,
+        sa.tax_scheme,
         sa.version,
         sa.remark,
         se.employee_name,  se.employee_code   FROM salary_archive sa
@@ -102,7 +105,8 @@
             sai.amount,
             sai.ratio,
             sai.type_name,
-            sai.category_name
+            sai.category_name,
+            sa.tax_scheme
         FROM salary_archive sa
                  INNER JOIN salary_employee se ON sa.employee_id = se.id AND se.delete_flag = 0
                  LEFT JOIN salary_archive_item sai ON sa.id = sai.archive_id AND sai.delete_flag = 0
@@ -122,7 +126,9 @@
             sai.ratio,
             -- 🌟 调整：直接取冗余字段
             sai.type_name,
-            sai.category_name
+            sai.category_name,
+            sa.tax_scheme
+
         FROM salary_archive sa
                  INNER JOIN salary_employee se ON sa.employee_id = se.id AND se.delete_flag = 0
                  LEFT JOIN salary_archive_item sai ON sa.id = sai.archive_id AND sai.delete_flag = 0
@@ -145,7 +151,8 @@
             sai.ratio,
             -- 🌟 调整：核算时直接用快照名，避免核算过程中再去关联字典表，极大提升批处理性能
             sai.type_name,
-            sai.category_name
+            sai.category_name,
+            sa.tax_scheme
         FROM salary_employee se
                  INNER JOIN salary_archive sa ON se.id = sa.employee_id
             AND sa.is_latest = 1

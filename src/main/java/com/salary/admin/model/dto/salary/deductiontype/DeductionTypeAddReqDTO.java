@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.salary.deductiontype;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -45,10 +46,15 @@ public class DeductionTypeAddReqDTO implements Serializable {
     @Schema(description = "扣款项说明")
     private String description;
     /**
-     * 是否固定扣款
+     * 是否固定扣款:0-否, 1-是
      */
-    @Schema(description = "是否固定扣款")
-    private Integer isFixed;
+    @Schema(description = "是否固定扣款:0-否, 1-是")
+    private Integer FixedFlag;
+    /**
+     * 是否为税前合法扣除项(如五险一金): 0-否, 1-是
+     */
+    @Schema(description = "是否为税前合法扣除项(如五险一金): 0-否, 1-是")
+    private Integer taxDeductibleFlag;
     /**
      * 排序值 (数值越小越靠前
      */

@@ -1,5 +1,6 @@
 package com.salary.admin.model.vo.salary.archive;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -104,6 +105,11 @@ public class SalaryArchiveVO implements Serializable {
      */
     @Schema(description = "调薪原因 (如: 年度普调、晋升)")
     private String changeReason;
+    /**
+     * 计税方案: 0-不计税, 1-居民个人所得税, 2-劳务报酬税
+     */
+    @Schema(description = "计税方案: 0-不计税, 1-居民个人所得税, 2-劳务报酬税")
+    private Integer taxScheme;
     /**
      * 档案备注
      */

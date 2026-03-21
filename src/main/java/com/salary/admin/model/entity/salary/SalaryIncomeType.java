@@ -57,6 +57,14 @@ public class SalaryIncomeType extends BaseEntity<SalaryIncomeType> {
     @Schema(description = "收入分类")
     @TableField("category_name")
     private String categoryName;
+
+    /**
+     * 是否纳入个税计税基数: 0-否, 1-是
+     */
+    @Schema(description = "'是否纳入个税计税基数: 0-否, 1-是")
+    @TableField("taxable_flag")
+    private Integer taxableFlag;
+
     /**
      * 收入项说明
      */

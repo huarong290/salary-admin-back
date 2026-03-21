@@ -80,6 +80,15 @@ public interface ISalaryCoreEngine {
      * @return 包含预览结果的 SummaryVO
      */
     SummaryVO previewCalculateByPeriod(Long periodId);
+
+    /**
+     * 10. 全员月度一键建账 (汇总页面专用)
+     * 逻辑：自动识别在职员工 -> 检查并补全 SalaryPeriod -> 检查并补全 SalarySummary
+     * 这是一个幂等操作，多次点击不会产生重复数据。
+     *
+     * @param settlementMonth 结算月份 (格式：202405)
+     */
+    void initMonthlyBatchForAll(String settlementMonth);
 }
 
 

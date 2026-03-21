@@ -1,5 +1,6 @@
 package com.salary.admin.model.vo.salary.incometype;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -46,11 +47,13 @@ public class IncomeTypeVO implements Serializable {
      */
     @Schema(description = "分类 (如: 固定工资, 补贴, 奖金)")
     private String categoryName;
+
     /**
-     * 是否固定扣款
+     * 是否纳入个税计税基数: 0-否, 1-是
      */
-    @Schema(description = "是否固定扣款")
-    private Integer isFixed;
+    @Schema(description = "'是否纳入个税计税基数: 0-否, 1-是")
+    @TableField("taxable_flag")
+    private Integer taxableFlag;
     /**
      * 备注
      */

@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.salary.imcometype;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -39,6 +40,12 @@ public class IncomeTypeAddReqDTO implements Serializable {
      */
     @Schema(description = "分类 (如: 固定工资, 补贴, 奖金)")
     private String categoryName;
+    /**
+     * 是否纳入个税计税基数: 0-否, 1-是
+     */
+    @Schema(description = "'是否纳入个税计税基数: 0-否, 1-是")
+    @TableField("taxable_flag")
+    private Integer taxableFlag;
     /**
      * 收入项说明
      */

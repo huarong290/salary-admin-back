@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.salary.archive;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.salary.admin.model.dto.salary.archiveitem.ArchiveItemAddDTO;
@@ -46,6 +47,11 @@ public class ArchiveAddReqDTO {
      */
     @Schema(description = "版本号")
     private Integer version;
+    /**
+     * 计税方案: 0-不计税, 1-居民个人所得税, 2-劳务报酬税
+     */
+    @Schema(description = "计税方案: 0-不计税, 1-居民个人所得税, 2-劳务报酬税")
+    private Integer taxScheme;
 
     @Schema(description = "备注")
     private String remark;

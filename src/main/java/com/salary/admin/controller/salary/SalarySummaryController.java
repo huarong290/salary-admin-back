@@ -144,4 +144,18 @@ public class SalarySummaryController {
 
         return ApiResult.successResult(previewResult);
     }
+
+    @PostMapping("/init/{settlementMonth}")
+    @Operation(summary = "全员月度一键建账 (初始化周期与汇总单)")
+    @Loggable(title = "薪资引擎-月度建账")
+    public ApiResult<Void> initMonthlyBatch(@PathVariable("settlementMonth") String settlementMonth) {
+        if (StrUtil.isBlank(settlementMonth) || !settlementMonth.matches("^\\d{6}$")) {
+            return ApiResult.failResult("结算月份格式不正确，请输入YYYYMM");
+        }
+
+        // 调用引擎：自动补全在职员工的周期(Period)与汇总(Summary)
+        iSalaryCoreEngine.initMonthlyBatchForAll(settlementMonth);
+
+        return ApiResult.defaultSuccessResult();
+    }
 }

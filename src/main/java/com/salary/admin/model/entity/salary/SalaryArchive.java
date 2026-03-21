@@ -95,6 +95,13 @@ public class SalaryArchive extends BaseEntity<SalaryArchive> {
     @Schema(description = "调薪原因 (如: 年度普调、晋升)")
     @TableField("change_reason")
     private String changeReason;
+
+    /**
+     * 计税方案: 0-不计税, 1-居民个人所得税, 2-劳务报酬税
+     */
+    @Schema(description = "计税方案: 0-不计税, 1-居民个人所得税, 2-劳务报酬税")
+    @TableField("tax_scheme")
+    private Integer taxScheme;
     /**
      * 档案备注
      */
