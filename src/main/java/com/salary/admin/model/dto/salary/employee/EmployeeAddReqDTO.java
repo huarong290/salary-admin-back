@@ -1,11 +1,13 @@
 package com.salary.admin.model.dto.salary.employee;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 /**
  * 新增员工薪资档案 DTO
@@ -37,11 +39,17 @@ public class EmployeeAddReqDTO implements Serializable {
     /**
      * 是否转岗: 0-否, 1-是
      */
-    @Schema(description = "是否转岗")
-    private Integer isTransferred;
+    @Schema(description = "是否转岗: 0-否, 1-是")
+    private Integer transferFlag;
     /**
      * 住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴'
      */
     @Schema(description = "住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴'")
     private Integer accommodationStatus;
+
+    /**
+     * 入职日期
+     */
+    @Schema(description = "入职日期")
+    private LocalDate entryDate;
 }

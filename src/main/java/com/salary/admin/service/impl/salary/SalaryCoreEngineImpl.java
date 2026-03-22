@@ -9,6 +9,7 @@ import com.salary.admin.model.dto.salary.snapshot.SalaryDetailItemDTO;
 import com.salary.admin.model.dto.salary.snapshot.SalarySnapshotDTO;
 import com.salary.admin.model.entity.salary.*;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
+import com.salary.admin.model.vo.salary.period.PeriodBatchInitResultVO;
 import com.salary.admin.model.vo.salary.summary.SummaryVO;
 import com.salary.admin.service.salary.*;
 import lombok.RequiredArgsConstructor;
@@ -53,18 +54,34 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
     private final ISalaryEmployeeService iSalaryEmployeeService;
 
-    // 接管批量初始化
+
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean batchInitPeriods(PeriodBatchInitReqDTO reqDTO) {
-        // 1. 调用底层的纯净服务，拿到刚刚建好的周期列表
-        List<SalaryPeriod> newPeriods = iSalaryPeriodService.batchInitPeriodsOnly(reqDTO);
+    public PeriodBatchInitResultVO batchInitPeriods(PeriodBatchInitReqDTO reqDTO) {
+        log.info("🚀 [薪资引擎] 开始执行 {} 月份批量初始化账套...", reqDTO.getSettlementMonth());
 
-        if (CollUtil.isNotEmpty(newPeriods)) {
-            // 2. 拿着这个列表，去联动生成汇总表
+        // 1. 调用底层 Service 完成周期初始化
+        PeriodBatchInitResultVO resultVO = iSalaryPeriodService.batchInitPeriodsOnly(reqDTO);
+
+        // 2. 如果有新增周期，进一步初始化汇总单（可选）
+        if (resultVO.getSuccessCount() != null && resultVO.getSuccessCount() > 0) {
+            List<SalaryPeriod> newPeriods = iSalaryPeriodService.list(
+                    Wrappers.<SalaryPeriod>lambdaQuery()
+                            .eq(SalaryPeriod::getSettlementMonth, reqDTO.getSettlementMonth())
+                            .in(SalaryPeriod::getEmployeeId, reqDTO.getEmployeeIds())
+            );
             this.initSummaryForPeriods(newPeriods);
+            log.info("✅ 已为 {} 条周期补全了汇总单", newPeriods.size());
         }
-        return true;
+
+        // 3. 返回结果 VO
+        log.info("🎯 [薪资引擎] {} 月份账套初始化完成：目标 {} 人，成功 {} 人，跳过 {} 人",
+                resultVO.getSettlementMonth(),
+                resultVO.getTotalCount(),
+                resultVO.getSuccessCount(),
+                resultVO.getSkipCount());
+
+        return resultVO;
     }
 
     /**
@@ -648,12 +665,12 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                         .in(SalaryPeriod::getEmployeeId, allActiveIds)
         ).stream().map(SalaryPeriod::getEmployeeId).collect(Collectors.toList());
 
-        // 得到真正需要创建周期的员工 ID
+        // 4 得到真正需要创建周期的员工 ID
         List<Long> needCreateIds = allActiveIds.stream()
                 .filter(id -> !existPeriodEmpIds.contains(id))
                 .collect(Collectors.toList());
 
-        // 4. 如果有需要补全的周期，调用你现有的批量初始化 DTO
+        // 5. 如果有需要补全的周期，调用你现有的批量初始化 DTO
         if (CollUtil.isNotEmpty(needCreateIds)) {
             PeriodBatchInitReqDTO initReq = new PeriodBatchInitReqDTO();
             initReq.setSettlementMonth(settlementMonth);
@@ -662,12 +679,13 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             initReq.setEndDate(end);
 
             // 🌟 关键点：直接调用你已有的逻辑
-            // batchInitPeriods 内部已经包含了保存 Period 和 initSummaryForPeriods(汇总表) 的逻辑
             this.batchInitPeriods(initReq);
             log.info("✅ 已为 {} 名新入职或缺失周期的员工补全了账套", needCreateIds.size());
+        }else {
+            log.info("ℹ️ {} 月份周期已全部存在，无需补全", settlementMonth);
         }
 
-        // 5. 额外防御：检查是否有“有周期但没汇总单”的情况（针对手动删了汇总单的极端情况）
+        // 6. 额外防御：检查是否有“有周期但没汇总单”的情况（针对手动删了汇总单的极端情况）
         // 这一步能保证 Summary 页面数据的绝对完整
         List<SalaryPeriod> allPeriods = iSalaryPeriodService.list(
                 Wrappers.<SalaryPeriod>lambdaQuery().eq(SalaryPeriod::getSettlementMonth, settlementMonth)

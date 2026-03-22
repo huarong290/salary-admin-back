@@ -16,6 +16,7 @@ import com.salary.admin.model.dto.salary.period.PeriodEditReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryEmployee;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
+import com.salary.admin.model.vo.salary.period.PeriodBatchInitResultVO;
 import com.salary.admin.model.vo.salary.period.PeriodOptionVO;
 import com.salary.admin.model.vo.salary.period.PeriodVO;
 import com.salary.admin.service.salary.ISalaryEmployeeService;
@@ -23,16 +24,21 @@ import com.salary.admin.service.salary.ISalaryPeriodService;
 import com.salary.admin.utils.UserContextUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -81,18 +87,30 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
     }
 
     /**
-     * 批量初始化薪资周期（核心功能）
+     * 批量初始化薪资周期（核心功能，重构版）
+     * <p>
+     * 设计思想：
+     * 1. 周期归周期：只负责生成 SalaryPeriod，不涉及金额计算。
+     * 2. 幂等性：避免重复插入，保证 (employeeId, settlementMonth) 唯一。
+     * 3. 合法性校验：确保员工状态合法，避免脏数据进入系统。
+     * 4. 智能兜底：自动计算月天数，支持传入日期或默认法定计薪天数。
+     * 5. 在岗月数：批量查出员工入职日期，统一调用私有方法计算正确的 workMonth。
+     * 6. 分批保存：大规模员工场景下避免一次性 SQL 过大。
+     * 7. 返回结果 VO：只返回统计信息，避免一次性返回大数据量。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<SalaryPeriod> batchInitPeriodsOnly(PeriodBatchInitReqDTO reqDTO) {
+    public PeriodBatchInitResultVO batchInitPeriodsOnly(PeriodBatchInitReqDTO reqDTO) {
         String month = reqDTO.getSettlementMonth();
         List<Long> targetEmpIds = reqDTO.getEmployeeIds();
 
-        // 1. 确定目标名单：若未传 ID 列表，则默认加载所有在职员工
+        // ============================
+        // 1. 确定目标员工名单
+        // ============================
         if (CollUtil.isEmpty(targetEmpIds)) {
+            // 默认加载所有在职员工（employmentStatus=1，deleteFlag=0）
             targetEmpIds = employeeService.list(new LambdaQueryWrapper<SalaryEmployee>()
-                            .eq(SalaryEmployee::getEmploymentStatus, 1) // 在职
+                            .eq(SalaryEmployee::getEmploymentStatus, 1)
                             .eq(SalaryEmployee::getDeleteFlag, 0))
                     .stream().map(SalaryEmployee::getId).collect(Collectors.toList());
         }
@@ -100,57 +118,97 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         if (CollUtil.isEmpty(targetEmpIds)) {
             throw new BusinessException("未找到可初始化的在职员工名单");
         }
-
-        // 2. 🌟 幂等处理：排除该月份已经存在周期的员工，防止索引冲突
-        List<Long> existIds = this.list(new LambdaQueryWrapper<SalaryPeriod>()
+        int totalCount = targetEmpIds.size();
+        // ============================
+        // 2. 幂等处理：排除已存在周期
+        // ============================
+        Set<Long> existIds = this.list(new LambdaQueryWrapper<SalaryPeriod>()
                         .eq(SalaryPeriod::getSettlementMonth, month)
                         .in(SalaryPeriod::getEmployeeId, targetEmpIds))
-                .stream().map(SalaryPeriod::getEmployeeId).collect(Collectors.toList());
+                .stream().map(SalaryPeriod::getEmployeeId).collect(Collectors.toSet());
 
         List<Long> readyIds = targetEmpIds.stream()
                 .filter(id -> !existIds.contains(id))
                 .collect(Collectors.toList());
-
+        int skipCount = existIds.size();
         if (CollUtil.isEmpty(readyIds)) {
-            log.info("{} 月份周期已全部初始化", month);
-            return Collections.emptyList(); // 没人生效，返回空列表
+            log.info("{} 月份周期已全部初始化，无需重复建账", month);
+            return PeriodBatchInitResultVO.builder()
+                    .totalCount(totalCount)
+                    .successCount(0)
+                    .skipCount(skipCount)
+                    .settlementMonth(month)
+                    .build();
         }
 
-        // 3. 构造并批量保存周期记录
-        String workMonth = month.substring(0, 4) + "-" + month.substring(4);
+        // ============================
+        // 3. 批量查出员工入职日期
+        // ============================
+        Map<Long, SalaryEmployee> empMap = employeeService.listByIds(readyIds).stream()
+                .collect(Collectors.toMap(SalaryEmployee::getId, e -> e));
 
-        // ==========================================
-        // 🚀 企业级优化：智能计算本周期自然天数或法定天数
-        // ==========================================
+        // ============================
+        // 4. 智能计算月天数
+        // ============================
         BigDecimal calcMonthDays;
         if (reqDTO.getStartDate() != null && reqDTO.getEndDate() != null) {
-            // 如果传了具体日期，按实际日历天数计算 (包含起止当天所以需要 +1)
+            // 按实际日历天数计算（包含起止当天，所以 +1）
             long daysBetween = ChronoUnit.DAYS.between(reqDTO.getStartDate(), reqDTO.getEndDate()) + 1;
             calcMonthDays = BigDecimal.valueOf(daysBetween);
         } else {
-            // 如果没传起止日期，兜底使用国家标准法定计薪天数 21.75 天
+            // 默认使用国家标准法定计薪天数（可改为配置表读取）
             calcMonthDays = new BigDecimal("21.75");
         }
 
+        // ============================
+        // 5. 构造周期对象
+        // ============================
         List<SalaryPeriod> periods = readyIds.stream().map(empId -> {
+            SalaryEmployee emp = empMap.get(empId);
             SalaryPeriod p = new SalaryPeriod();
             p.setEmployeeId(empId);
             p.setSettlementMonth(month);
-            p.setWorkMonth(workMonth);
+
+            // 计算在岗月数 (统一调用私有方法)
+            p.setWorkMonth(calculateWorkMonthNum(emp, month));
+            // 透传前端 DTO 里的手动设置
             p.setStartDate(reqDTO.getStartDate());
             p.setEndDate(reqDTO.getEndDate());
 
-            // 🚀 使用高精度 BigDecimal 赋值，并且默认初始化为“满勤”
-            p.setMonthDays(calcMonthDays);
-            p.setAttendanceDays(calcMonthDays);
-            p.setFullAttendanceFlag(0);
+            // 默认值：月天数、出勤天数（后续考勤系统可回填）
+            // 优先用 DTO 手填的，否则用兜底计算的
+            p.setMonthDays(reqDTO.getMonthDays() != null ?
+                    reqDTO.getMonthDays() : calcMonthDays);
+            // 出勤天数和满勤状态：直接透传 DTO（支持前端弹窗的“全员满勤”快捷设置）
+            p.setAttendanceDays(reqDTO.getAttendanceDays() != null ?
+                    reqDTO.getAttendanceDays() : null);
+            p.setFullAttendanceFlag(null); // 建议初始化为 null，待考勤系统判定
             return p;
         }).collect(Collectors.toList());
 
-        this.saveBatch(periods);
+        // ============================
+        // 6. 分批保存，避免一次性 SQL 过大
+        // ============================
+        int batchSize = 500;
+        for (int i = 0; i < periods.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, periods.size());
+            List<SalaryPeriod> subList = periods.subList(i, end);
+            this.saveBatch(subList);
+        }
+        int successCount = periods.size();
         log.info("基础周期表批量初始化成功：新增 {} 条", periods.size());
-        return periods;
+        // ============================
+        // 7. 返回结果 VO
+        // ============================
+        return PeriodBatchInitResultVO.builder()
+                .totalCount(totalCount)
+                .successCount(successCount)
+                .skipCount(skipCount)
+                .settlementMonth(month)
+                .newPeriodEntities(periods) // 🌟 内部传输载荷
+                .build();
     }
+
 
     /**
      * 分页查询周期列表
@@ -296,4 +354,40 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         if (!UserContextUtil.isAdmin()) throw new BusinessException("权限不足：只有管理员可执行物理删除");
         log.warn("管理员 {} 正在执行物理删除敏感薪资数据", UserContextUtil.getUsername());
     }
+
+    /**
+     * 辅助方法：计算员工在岗月数（返回字符串，兼容数据库设计）
+     * <p>
+     * 特性：
+     * 1. 支持结算月份格式：yyyyMM 或 yyyy-MM
+     * 2. 自动归一化到每月 1 号，保证计算准确
+     * 3. 异常兜底返回 "1"，避免流程中断
+     *
+     * @param emp             员工对象（必须包含入职日期）
+     * @param settlementMonth 结算月份（格式：yyyyMM）
+     * @return 在岗月数字符串（最小值为 "1"）
+     */
+    private String calculateWorkMonthNum(SalaryEmployee emp, String settlementMonth) {
+
+        // 1. 增加结算月份的非空和长度校验
+        if (emp == null || emp.getEntryDate() == null || StringUtils.isBlank(settlementMonth)) {
+            log.warn("员工 {} 缺失入职日期，workMonth 默认设置为 1", emp != null ? emp.getId() : "未知");
+            return "1";
+        }
+        try {
+            // 🌟 增强：兼容 2024-02 或 202402 两种格式
+            String cleanMonth = settlementMonth.replace("-", "");
+            // 2. 归一化计算：全部对齐到 1 号
+            LocalDate current = LocalDate.parse(cleanMonth + "01", DateTimeFormatter.ofPattern("yyyyMMdd"));
+            LocalDate entry = emp.getEntryDate().withDayOfMonth(1);
+            // 3. 计算月差 + 1
+            long months = ChronoUnit.MONTHS.between(entry, current) + 1;
+            // 4. 返回字符串结果
+            return String.valueOf(Math.max(1, months));
+        } catch (Exception e) {
+            log.error("计算员工 {} 在岗月数异常: {}", emp.getId(), e.getMessage(), e);
+            return "1";
+        }
+    }
+
 }

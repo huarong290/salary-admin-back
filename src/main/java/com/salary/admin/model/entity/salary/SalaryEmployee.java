@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 /**
  * 员工基本信息表
@@ -66,9 +67,9 @@ public class SalaryEmployee extends BaseEntity<SalaryEmployee> {
     /**
      * 是否转岗: 0-否, 1-是
      */
-    @Schema(description = "是否转岗")
-    @TableField("is_transferred")
-    private Integer isTransferred;
+    @Schema(description = "是否转岗: 0-否, 1-是")
+    @TableField("transfer_flag")
+    private Integer transferFlag;
     /**
      * 住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴'
      */
@@ -76,6 +77,12 @@ public class SalaryEmployee extends BaseEntity<SalaryEmployee> {
     @TableField("accommodation_status")
     private Integer accommodationStatus;
 
+    /**
+     * 入职日期
+     */
+    @Schema(description = "入职日期")
+    @TableField("entry_date")
+    private LocalDate entryDate;
 
     @Override
     public Serializable pkVal() {

@@ -10,8 +10,9 @@
         <result column="company_name" property="companyName" />
         <result column="department" property="department" />
         <result column="employment_status" property="employmentStatus" />
-        <result column="is_transferred" property="isTransferred" />
+        <result column="transfer_flag" property="transferFlag" />
         <result column="accommodation_status" property="accommodationStatus" />
+        <result column="entry_date" property="entryDate" />
         <result column="delete_flag" property="deleteFlag" />
         <result column="create_by" property="createBy" />
         <result column="create_time" property="createTime" />
@@ -21,7 +22,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, employee_code, employee_name, company_name, department, employment_status, is_transferred, accommodation_status, delete_flag, create_by, create_time, update_by, update_time
+        id, employee_code, employee_name, company_name, department, employment_status, transfer_flag, accommodation_status,entry_date, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
     <!-- 物理删除：直接删除记录 -->

@@ -4,6 +4,7 @@ import com.salary.admin.model.dto.salary.period.PeriodAddReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
+import com.salary.admin.model.vo.salary.period.PeriodBatchInitResultVO;
 import com.salary.admin.model.vo.salary.summary.SummaryVO;
 
 import java.math.BigDecimal;
@@ -22,7 +23,7 @@ public interface ISalaryCoreEngine {
      * 1. 批量初始化薪资周期 (从 PeriodService 迁移)
      * 逻辑：根据选择的员工自动生成周期记录，并同步调用 initSummaryForPeriods 生成汇总记录
      */
-    boolean batchInitPeriods(PeriodBatchInitReqDTO reqDTO);
+    PeriodBatchInitResultVO batchInitPeriods(PeriodBatchInitReqDTO reqDTO);
 
     /**
      * 2. 联动初始化：当薪资周期创建后，同步创建空的汇总记录
