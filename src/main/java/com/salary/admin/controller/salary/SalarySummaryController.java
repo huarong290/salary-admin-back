@@ -145,7 +145,7 @@ public class SalarySummaryController {
         return ApiResult.successResult(previewResult);
     }
 
-    @PostMapping("/init/{settlementMonth}")
+    @PostMapping("/initBatch/{settlementMonth}")
     @Operation(summary = "全员月度一键建账 (初始化周期与汇总单)")
     @Loggable(title = "薪资引擎-月度建账")
     public ApiResult<Void> initMonthlyBatch(@PathVariable("settlementMonth") String settlementMonth) {

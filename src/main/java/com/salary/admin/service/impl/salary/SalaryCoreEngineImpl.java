@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 /**
  * 薪资核心引擎实现类
- *
+ * <p>
  * 核心定位：
  * - 作为薪资模块的“总调度室”，负责跨表、跨业务的复杂逻辑编排。
  * - 避免 Service 之间循环依赖，所有跨表逻辑集中在这里。
@@ -280,7 +280,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             // 2. 按基数比例 (如：公积金 8%)
             else if (item.getCalcType() == 2) {
                 // 🌟 优先级：item.base_amount > archive.base_salary
-                BigDecimal calcBase = (item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0)? item.getBaseAmount() : baseSalary;
+                BigDecimal calcBase = (item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0) ? item.getBaseAmount() : baseSalary;
 
                 BigDecimal ratio = item.getRatio() != null ? item.getRatio() : BigDecimal.ZERO;
                 itemAmount = calcBase.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
@@ -291,7 +291,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 BigDecimal standardAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
                 // 丝滑计算：标准额 × (出勤天数 ÷ 计薪天数)
                 itemAmount = standardAmount.multiply(attendanceDays).divide(monthDays, 2, RoundingMode.HALF_UP);
-                formulaStr = String.format("标准额 %s × (出勤 %s ÷ 计薪 %s)",standardAmount, attendanceDays, monthDays);
+                formulaStr = String.format("标准额 %s × (出勤 %s ÷ 计薪 %s)", standardAmount, attendanceDays, monthDays);
 
             }
 
@@ -364,24 +364,42 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                     .formula(pDed.getRemark() != null ? pDed.getRemark() : "当月临时导入")
                     .build());
         }
+
         // ==========================================
         // 🌟 5.0 个人所得税自动核算 (根据前面累加的结果计算)
         // ==========================================
-        // 公式：(应发总额 - 税前可扣除五险一金 - 5000起征点)
-        BigDecimal taxableIncome = incomeTotal.subtract(socialSecurityDeductionForTax).subtract(new BigDecimal("5000"));
+
+        // 1. 获取计税方案标识 (0-不计税, 1-个税, 2-劳务费)
+        // 这里的 archive 是 SalaryArchiveVO，请确保该 VO 中包含 taxScheme 字段
+        Integer taxScheme = archive.getTaxScheme() != null ? archive.getTaxScheme() : 1;
+
         BigDecimal personalTax = BigDecimal.ZERO;
 
-        if (taxableIncome.compareTo(BigDecimal.ZERO) > 0) {
-            // 匹配简易税率表 (7级超额累进)
-            if (taxableIncome.compareTo(new BigDecimal("3000")) <= 0) {
-                personalTax = taxableIncome.multiply(new BigDecimal("0.03")).setScale(2, RoundingMode.HALF_UP);
-            } else if (taxableIncome.compareTo(new BigDecimal("12000")) <= 0) {
-                personalTax = taxableIncome.multiply(new BigDecimal("0.1")).subtract(new BigDecimal("210")).setScale(2, RoundingMode.HALF_UP);
-            } else {
-                personalTax = taxableIncome.multiply(new BigDecimal("0.2")).subtract(new BigDecimal("1410")).setScale(2, RoundingMode.HALF_UP);
-            }
-        }
+        // 🚀 核心判定：只有方案不等于 0 时才计算税金
+        if (taxScheme != 0) {
+            // 公式：(应发总额 - 税前可扣除五险一金 - 5000起征点)
+            BigDecimal taxableIncome = incomeTotal.subtract(socialSecurityDeductionForTax).subtract(new BigDecimal("5000"));
 
+            if (taxableIncome.compareTo(BigDecimal.ZERO) > 0) {
+                // 如果是方案 1：普通居民个税
+                if (taxScheme == 1) {
+                    if (taxableIncome.compareTo(new BigDecimal("3000")) <= 0) {
+                        personalTax = taxableIncome.multiply(new BigDecimal("0.03")).setScale(2, RoundingMode.HALF_UP);
+                    } else if (taxableIncome.compareTo(new BigDecimal("12000")) <= 0) {
+                        personalTax = taxableIncome.multiply(new BigDecimal("0.1")).subtract(new BigDecimal("210")).setScale(2, RoundingMode.HALF_UP);
+                    } else {
+                        personalTax = taxableIncome.multiply(new BigDecimal("0.2")).subtract(new BigDecimal("1410")).setScale(2, RoundingMode.HALF_UP);
+                    }
+                }
+                // 如果是方案 2：劳务报酬 (这里可以根据需求扩展逻辑)
+                else if (taxScheme == 2) {
+                    personalTax = taxableIncome.multiply(new BigDecimal("0.2")).setScale(2, RoundingMode.HALF_UP);
+                }
+            }
+        } else {
+            log.info("ℹ️ 员工 {} [档案ID:{}] 计税方案为[不计税]，跳过税务核算", archive.getEmployeeName(), archive.getId());
+        }
+// 写入快照和累加扣款
         if (personalTax.compareTo(BigDecimal.ZERO) > 0) {
             deductionTotal = deductionTotal.add(personalTax);
             snapshotItems.add(SalaryDetailItemDTO.builder()
@@ -422,6 +440,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
         return record.getId();
     }
+
     // ============================
     // 5. 单人核算（手动录入）
     // ============================
@@ -444,9 +463,11 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     // ============================
     // 6. 全员核算
     // ============================
+
     /**
      * 生产环境建议：异步执行 (Async)
      * 如果你的公司员工超过 1000 人，这个方法执行时间可能会超过 30 秒，导致前端接口超时（Timeout）
+     *
      * @param settlementMonth
      */
     @Override
@@ -511,6 +532,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     // ============================
     // 7. 指定周期核算
     // ============================
+
     /**
      * 场景 B：指定核算 (精准核算某一个或多个周期) =重新考试（重新计算成绩单）
      * 主要用于前端点击“重新核算”时的单人即时核算
@@ -585,6 +607,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             this.refreshSummaryAmountBySummaryId(summary.getId());
         }
     }
+
     // ============================
     // 8. 汇总金额同步
     // ============================
@@ -690,11 +713,45 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         List<SalaryDeductionDetail> periodDeductions = iSalaryDeductionDetailService.list(Wrappers.<SalaryDeductionDetail>lambdaQuery().eq(SalaryDeductionDetail::getPeriodId, period.getId()));
         for (SalaryDeductionDetail pDed : periodDeductions) deductionTotal = deductionTotal.add(pDed.getAmount());
 
-        // 7. 计算最终实发金额 (防呆处理不能为负数)
+
+        // 7. 计算个人所得税 (预览模式)
+        BigDecimal personalTax = BigDecimal.ZERO;
+     // 获取计税方案：0-不计税, 1-个税, 2-劳务费
+        Integer taxScheme = archive.getTaxScheme() != null ? archive.getTaxScheme() : 1;
+
+        if (taxScheme != 0) {
+            // 提取五险一金等税前扣除项（预览逻辑中也需要累加 archiveItems 里的扣除项）
+            BigDecimal preTaxDeductions = BigDecimal.ZERO;
+            for (SalaryArchiveItem item : archiveItems) {
+                if (item.getItemType() == 2) {
+                    // 简单的名称判定或类型判定，确保预览时起征点计算准确
+                    preTaxDeductions = preTaxDeductions.add(item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO);
+                }
+            }
+
+            BigDecimal taxableIncome = incomeTotal.subtract(preTaxDeductions).subtract(new BigDecimal("5000"));
+            if (taxableIncome.compareTo(BigDecimal.ZERO) > 0) {
+                if (taxScheme == 1) { // 居民个税
+                    if (taxableIncome.compareTo(new BigDecimal("3000")) <= 0) {
+                        personalTax = taxableIncome.multiply(new BigDecimal("0.03")).setScale(2, RoundingMode.HALF_UP);
+                    } else if (taxableIncome.compareTo(new BigDecimal("12000")) <= 0) {
+                        personalTax = taxableIncome.multiply(new BigDecimal("0.1")).subtract(new BigDecimal("210")).setScale(2, RoundingMode.HALF_UP);
+                    } else {
+                        personalTax = taxableIncome.multiply(new BigDecimal("0.2")).subtract(new BigDecimal("1410")).setScale(2, RoundingMode.HALF_UP);
+                    }
+                } else if (taxScheme == 2) { // 劳务报酬
+                    personalTax = taxableIncome.multiply(new BigDecimal("0.2")).setScale(2, RoundingMode.HALF_UP);
+                }
+            }
+        }
+
+        // 累加预览扣款总额
+        deductionTotal = deductionTotal.add(personalTax);
+        // 8. 计算最终实发金额 (防呆处理不能为负数)
         BigDecimal finalSalary = incomeTotal.subtract(deductionTotal);
         if (finalSalary.compareTo(BigDecimal.ZERO) < 0) finalSalary = BigDecimal.ZERO;
 
-        // 🌟 8. 组装返回给前端的预览视图 (VO)
+        // 9. 组装返回给前端的预览视图 (VO)
         SummaryVO previewVO = new SummaryVO();
         previewVO.setEmployeeName(employee != null ? employee.getEmployeeName() : "未知员工");
         previewVO.setSettlementMonth(period.getSettlementMonth());

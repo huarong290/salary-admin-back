@@ -110,6 +110,7 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         SalaryArchive newArchive = archiveConvert.toEntity(req);
         newArchive.setVersion(nextVersion);
         newArchive.setIsLatest(1);
+        newArchive.setTaxScheme(req.getTaxScheme());
         newArchive.setAuditStatus(0); // 🌟 核心修正：强制设为 0-待审核状态
         this.save(newArchive);
 
