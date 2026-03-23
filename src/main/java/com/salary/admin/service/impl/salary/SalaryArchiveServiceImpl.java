@@ -109,9 +109,11 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         // 3. 创建新版本档案主表
         SalaryArchive newArchive = archiveConvert.toEntity(req);
         newArchive.setVersion(nextVersion);
-        newArchive.setIsLatest(1);
+        // 待审核的草稿，绝对不能作为最新生效版本！
+        newArchive.setIsLatest(0);
         newArchive.setTaxScheme(req.getTaxScheme());
-        newArchive.setAuditStatus(0); // 🌟 核心修正：强制设为 0-待审核状态
+        // 强制设为 0-待审核状态
+        newArchive.setAuditStatus(0);
         this.save(newArchive);
 
         // 4. 处理并保存明细项 (Items) - 保持你原来完美的比例计算逻辑不变:增强计算严谨性 + 冗余名称填充
@@ -164,10 +166,11 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean revokeLatestVersion(Long employeeId) {
-        // 1. 查找当前最新版本
+        // 1. 精准查找当前【已生效】的最新版本
         SalaryArchive latestArchive = this.getOne(Wrappers.<SalaryArchive>lambdaQuery()
                 .eq(SalaryArchive::getEmployeeId, employeeId)
-                .eq(SalaryArchive::getIsLatest, 1));
+                .eq(SalaryArchive::getAuditStatus, 1) // 必须是已生效的
+                .eq(SalaryArchive::getIsLatest, 1));  // 且是最新的
 
         if (latestArchive == null) {
             throw new BusinessException("未找到该员工的薪资档案记录");
@@ -186,14 +189,16 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         iSalaryArchiveItemService.remove(Wrappers.<SalaryArchiveItem>lambdaQuery()
                 .eq(SalaryArchiveItem::getArchiveId, latestArchive.getId()));
 
-        // 4. 时光倒流版本回滚：将上一个版本重新激活为 "最新状态"
+        // 4. 时光倒流：将上一个正式版本 (Version - 1 且 AuditStatus = 1) 重新激活
         if (latestArchive.getVersion() > 1) {
             SalaryArchive previousArchive = this.getOne(Wrappers.<SalaryArchive>lambdaQuery()
                     .eq(SalaryArchive::getEmployeeId, employeeId)
+                    .eq(SalaryArchive::getAuditStatus, 1)
                     .eq(SalaryArchive::getVersion, latestArchive.getVersion() - 1));
 
             if (previousArchive != null) {
                 previousArchive.setIsLatest(1);
+                // 恢复无限期
                 previousArchive.setExpiryDate(LocalDate.of(9999, 12, 31));
                 this.updateById(previousArchive);
             }
@@ -228,7 +233,7 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
                     .eq(SalaryArchive::getAuditStatus, 1) // 找到还在生效的旧版本
                     .eq(SalaryArchive::getIsLatest, 1)
                     .ne(SalaryArchive::getId, pendingArchive.getId())
-                    .set(SalaryArchive::getIsLatest, 0)
+                    .set(SalaryArchive::getIsLatest, 0) //卸任老版本：把之前的 isLatest=1 改为 0
                     .set(SalaryArchive::getExpiryDate, newEffectiveDate.minusDays(1))); // 截断到新版本生效的前一天
 
             // 让新版本正式生效

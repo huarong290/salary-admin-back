@@ -653,6 +653,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         return periodId;
     }
 
+
     @Override
     public SummaryVO previewCalculateByPeriod(Long periodId) {
         // 1. 获取前置基础数据
@@ -686,50 +687,71 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             incomeTotal = incomeTotal.add(fullAttendanceBonus);
         }
 
+        // ==========================================
+        // 🌟 修复点 1：拉取字典，保证和真实核算逻辑环境一致
+        // ==========================================
+        Map<Long, SalaryDeductionType> deductionTypeMap = iSalaryDeductionTypeService.list().stream()
+                .collect(Collectors.toMap(SalaryDeductionType::getId, t -> t));
+
         // 5. 计算档案固定项 (FIXED)
+        BigDecimal socialSecurityDeductionForTax = BigDecimal.ZERO; // 专门用于记录个税税前可扣除的“五险一金”
+
         List<SalaryArchiveItem> archiveItems = iSalaryArchiveItemService.list(
                 Wrappers.<SalaryArchiveItem>lambdaQuery().eq(SalaryArchiveItem::getArchiveId, archive.getId())
         );
         for (SalaryArchiveItem item : archiveItems) {
             BigDecimal itemAmount = BigDecimal.ZERO;
-            if (item.getCalcType() == 1) { // 固定金额
+
+            // 🌟 修复点 2：复刻真实金额折算，完美支持固定额、比例和出勤折算
+            if (item.getCalcType() == 1) {
                 itemAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
-            } else if (item.getCalcType() == 2) { // 比例基数
+            } else if (item.getCalcType() == 2) {
                 BigDecimal calcBase = (item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0) ? item.getBaseAmount() : baseSalary;
                 itemAmount = calcBase.multiply(item.getRatio() != null ? item.getRatio() : BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
-            } else if (item.getCalcType() == 3) { // 出勤折算
+            } else if (item.getCalcType() == 3) {
                 BigDecimal standardAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
                 itemAmount = standardAmount.multiply(attendanceDays).divide(monthDays, 2, RoundingMode.HALF_UP);
             }
 
-            if (item.getItemType() == 1) incomeTotal = incomeTotal.add(itemAmount);
-            else deductionTotal = deductionTotal.add(itemAmount);
+            if (item.getItemType() == 1) {
+                incomeTotal = incomeTotal.add(itemAmount);
+            } else {
+                deductionTotal = deductionTotal.add(itemAmount);
+                // 🌟 修复点 3：精准提取五险一金用于抵扣个税
+                SalaryDeductionType dict = deductionTypeMap.get(item.getTypeId());
+                if (dict != null) {
+                    String itemName = dict.getTypeName();
+                    if (itemName.contains("社保") || itemName.contains("保险") || itemName.contains("公积金")) {
+                        socialSecurityDeductionForTax = socialSecurityDeductionForTax.add(itemAmount);
+                    }
+                }
+            }
         }
 
         // 6. 计算当月临时变动项 (VARIABLE)
-        List<SalaryIncomeDetail> periodIncomes = iSalaryIncomeDetailService.list(Wrappers.<SalaryIncomeDetail>lambdaQuery().eq(SalaryIncomeDetail::getPeriodId, period.getId()));
-        for (SalaryIncomeDetail pInc : periodIncomes) incomeTotal = incomeTotal.add(pInc.getAmount());
+        List<SalaryIncomeDetail> periodIncomes = iSalaryIncomeDetailService.list(
+                Wrappers.<SalaryIncomeDetail>lambdaQuery().eq(SalaryIncomeDetail::getPeriodId, period.getId())
+        );
+        for (SalaryIncomeDetail pInc : periodIncomes) {
+            BigDecimal val = pInc.getAmount() != null ? pInc.getAmount() : BigDecimal.ZERO;
+            incomeTotal = incomeTotal.add(val);
+        }
 
-        List<SalaryDeductionDetail> periodDeductions = iSalaryDeductionDetailService.list(Wrappers.<SalaryDeductionDetail>lambdaQuery().eq(SalaryDeductionDetail::getPeriodId, period.getId()));
-        for (SalaryDeductionDetail pDed : periodDeductions) deductionTotal = deductionTotal.add(pDed.getAmount());
+        List<SalaryDeductionDetail> periodDeductions = iSalaryDeductionDetailService.list(
+                Wrappers.<SalaryDeductionDetail>lambdaQuery().eq(SalaryDeductionDetail::getPeriodId, period.getId())
+        );
+        for (SalaryDeductionDetail pDed : periodDeductions) {
+            BigDecimal val = pDed.getAmount() != null ? pDed.getAmount() : BigDecimal.ZERO;
+            deductionTotal = deductionTotal.add(val);
+        }
 
-
-        // 7. 计算个人所得税 (预览模式)
+        // 7. 计算个人所得税 (完美复刻真实税务逻辑)
         BigDecimal personalTax = BigDecimal.ZERO;
-     // 获取计税方案：0-不计税, 1-个税, 2-劳务费
         Integer taxScheme = archive.getTaxScheme() != null ? archive.getTaxScheme() : 1;
 
         if (taxScheme != 0) {
-            // 提取五险一金等税前扣除项（预览逻辑中也需要累加 archiveItems 里的扣除项）
-            BigDecimal preTaxDeductions = BigDecimal.ZERO;
-            for (SalaryArchiveItem item : archiveItems) {
-                if (item.getItemType() == 2) {
-                    // 简单的名称判定或类型判定，确保预览时起征点计算准确
-                    preTaxDeductions = preTaxDeductions.add(item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO);
-                }
-            }
-
-            BigDecimal taxableIncome = incomeTotal.subtract(preTaxDeductions).subtract(new BigDecimal("5000"));
+            // 🌟 修复点 4：使用精准计算出来的 socialSecurityDeductionForTax 进行抵扣
+            BigDecimal taxableIncome = incomeTotal.subtract(socialSecurityDeductionForTax).subtract(new BigDecimal("5000"));
             if (taxableIncome.compareTo(BigDecimal.ZERO) > 0) {
                 if (taxScheme == 1) { // 居民个税
                     if (taxableIncome.compareTo(new BigDecimal("3000")) <= 0) {
@@ -745,8 +767,11 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             }
         }
 
-        // 累加预览扣款总额
-        deductionTotal = deductionTotal.add(personalTax);
+        // 个税累加至扣款总额
+        if (personalTax.compareTo(BigDecimal.ZERO) > 0) {
+            deductionTotal = deductionTotal.add(personalTax);
+        }
+
         // 8. 计算最终实发金额 (防呆处理不能为负数)
         BigDecimal finalSalary = incomeTotal.subtract(deductionTotal);
         if (finalSalary.compareTo(BigDecimal.ZERO) < 0) finalSalary = BigDecimal.ZERO;
@@ -757,10 +782,9 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         previewVO.setSettlementMonth(period.getSettlementMonth());
         previewVO.setSalarySubtotal(incomeTotal);
         previewVO.setSalaryDeductionTotal(deductionTotal);
-        previewVO.setSalaryTotal(finalSalary); // 最终核算结果
+        previewVO.setSalaryTotal(finalSalary);
 
         return previewVO;
     }
-
 
 }

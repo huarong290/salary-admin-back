@@ -79,20 +79,32 @@
         sa.currency,
         sa.change_reason,
         sa.tax_scheme,
-        sa.version,
         sa.remark,
-        se.employee_name,  se.employee_code   FROM salary_archive sa
+        se.employee_name,
+        se.employee_code
+        FROM salary_archive sa
         INNER JOIN salary_employee se ON sa.employee_id = se.id AND se.delete_flag = 0
         WHERE sa.delete_flag = 0
-        <if test="req.isLatest != null">
-            AND sa.is_latest = #{req.isLatest}
+
+        <if test="req.isLatest != null and req.isLatest == 1">
+            AND (sa.is_latest = 1 OR sa.audit_status = 0)
         </if>
+
+        <if test="req.isLatest != null and req.isLatest == 0">
+            AND sa.is_latest = 0 AND sa.audit_status != 0
+        </if>
+
+        <if test="req.auditStatus != null">
+            AND sa.audit_status = #{req.auditStatus}
+        </if>
+
         <if test="req.keyword != null and req.keyword != ''">
             AND (se.employee_name LIKE CONCAT('%', #{req.keyword}, '%')
             OR se.employee_code LIKE CONCAT('%', #{req.keyword}, '%'))
         </if>
         ORDER BY sa.update_time DESC
     </select>
+
     <select id="getArchiveDetailById" resultMap="SalaryArchiveVOResultMap">
         SELECT
             sa.*,

@@ -1,6 +1,5 @@
 package com.salary.admin.model.dto.salary.archive;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.salary.admin.model.dto.salary.archiveitem.ArchiveItemAddDTO;
@@ -27,6 +26,9 @@ public class ArchiveAddReqDTO {
     @Schema(description = "基本工资", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "基本工资不能为空")
     private BigDecimal baseSalary;
+
+    @Schema(description = "全勤奖标准")
+    private BigDecimal fullAttendanceBonus;
 
     @Schema(description = "试用期底薪")
     private BigDecimal probationBaseSalary;
