@@ -1,6 +1,5 @@
 package com.salary.admin.service.impl.salary;
 
-
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.salary.admin.model.dto.salary.period.PeriodAddReqDTO;
@@ -65,7 +64,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         // 调用底层 Service 完成周期初始化
         PeriodBatchInitResultVO resultVO = iSalaryPeriodService.batchInitPeriodsOnly(reqDTO);
 
-        // 🌟 企业级优化：直接使用 VO 内部的新增实体列表，避免二次查询
+        //企业级优化：直接使用 VO 内部的新增实体列表，避免二次查询
         if (CollUtil.isNotEmpty(resultVO.getNewPeriodEntities())) {
             this.initSummaryForPeriods(resultVO.getNewPeriodEntities());
             log.info("✅ 已联动初始化 {} 条汇总单 (Summary)", resultVO.getNewPeriodEntities().size());
@@ -204,12 +203,13 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         BigDecimal incomeTotal = BigDecimal.ZERO;
         BigDecimal deductionTotal = BigDecimal.ZERO;
 
-        // 🌟 使用你定义的完美 DTO 集合来代替 JSONObject
+        //使用你定义的完美 DTO 集合来代替 JSONObject
         List<SalaryDetailItemDTO> snapshotItems = new ArrayList<>();
 
         // --- 写入底薪明细 ---
         incomeTotal = incomeTotal.add(proratedBaseSalary);
         snapshotItems.add(SalaryDetailItemDTO.builder()
+                .typeId(null) // 系统内置项，无字典ID
                 .itemName("基本工资")
                 .amount(proratedBaseSalary)
                 .itemType(1)
@@ -217,19 +217,21 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 .source("BASE")
                 .formula(String.format("底薪 %s ÷ %s天 × 出勤 %s天", baseSalary, monthDays, attendanceDays))
                 .build());
+
         // ==========================================
-        // 🌟 1.5 核心注入：全勤奖自动核算 (零信任机制)
+        //1.5 核心注入：全勤奖自动核算 (零信任机制)
         // ==========================================
         // 前提：请确保你的 SalaryArchiveVO 里已经加上了 fullAttendanceBonus 字段
         BigDecimal fullAttendanceBonus = archive.getFullAttendanceBonus() != null
                 ? archive.getFullAttendanceBonus() : BigDecimal.ZERO;
-// 只有当员工档案里配置了全勤奖标准（>0）时，系统才去判定
+        // 只有当员工档案里配置了全勤奖标准（>0）时，系统才去判定
         if (fullAttendanceBonus.compareTo(BigDecimal.ZERO) > 0) {
             // 引擎只认底层周期表的裁决开关
             if (Integer.valueOf(1).equals(period.getFullAttendanceFlag())) {
                 // 开关为 1 (满勤)：痛快发钱！
                 incomeTotal = incomeTotal.add(fullAttendanceBonus);
                 snapshotItems.add(SalaryDetailItemDTO.builder()
+                        .typeId(null) // 系统内置项
                         .itemName("全勤奖")
                         .amount(fullAttendanceBonus)
                         .itemType(1) // 1: 收入
@@ -240,6 +242,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             } else {
                 // 开关为 0 (非满勤)：一分不给，且白纸黑字写入快照，杜绝月末扯皮！
                 snapshotItems.add(SalaryDetailItemDTO.builder()
+                        .typeId(null) // 系统内置项
                         .itemName("全勤奖")
                         .amount(BigDecimal.ZERO)
                         .itemType(1)
@@ -249,6 +252,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                         .build());
             }
         }
+
         // ==========================================
         // 2. 提前拉取字典，用于翻译 FIXED 档案项
         // ==========================================
@@ -284,15 +288,14 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
                 BigDecimal ratio = item.getRatio() != null ? item.getRatio() : BigDecimal.ZERO;
                 itemAmount = calcBase.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
-//                formulaStr = String.format("基数 %s × 比例 %s%%", calcBase, ratio.multiply(new BigDecimal("100")).setScale(2));
                 formulaStr = String.format("基数 %s × 比例 %s%%", calcBase, ratio.multiply(new BigDecimal("100")).stripTrailingZeros().toPlainString());
-            }//  3. 新增：按出勤天数折算的固定额度 (如：餐补、按比例发放的全勤奖等)
+            }
+            //3. 新增：按出勤天数折算的固定额度 (如：餐补、按比例发放的全勤奖等)
             else if (item.getCalcType() == 3) {
                 BigDecimal standardAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
                 // 丝滑计算：标准额 × (出勤天数 ÷ 计薪天数)
                 itemAmount = standardAmount.multiply(attendanceDays).divide(monthDays, 2, RoundingMode.HALF_UP);
                 formulaStr = String.format("标准额 %s × (出勤 %s ÷ 计薪 %s)", standardAmount, attendanceDays, monthDays);
-
             }
 
             // 翻译名称与分类，并累加总额
@@ -313,8 +316,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 if (dict != null) {
                     itemName = dict.getTypeName();
                     category = dict.getCategoryName();
-                    // 🌟 关键判定：如果是社保或公积金，累加到税前扣除额中
-                    // 这里可以通过名称判定，或者给字典表增加一个标记位 `is_tax_deductible`
+                    //关键判定：如果是社保或公积金，累加到税前扣除额中
                     if (itemName.contains("社保") || itemName.contains("保险") || itemName.contains("公积金")) {
                         socialSecurityDeductionForTax = socialSecurityDeductionForTax.add(itemAmount);
                     }
@@ -323,6 +325,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
             // --- 写入档案固定项明细 ---
             snapshotItems.add(SalaryDetailItemDTO.builder()
+                    .typeId(item.getTypeId()) //核心注入：打通 BI 报表数据血脉
                     .itemName(itemName)
                     .amount(itemAmount)
                     .itemType(item.getItemType())
@@ -341,7 +344,9 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         for (SalaryIncomeDetail pInc : periodIncomes) {
             incomeTotal = incomeTotal.add(pInc.getAmount());
             snapshotItems.add(SalaryDetailItemDTO.builder()
-                    .itemName(pInc.getIncomeTypeName()) // 你的表结构里直接冗余了这个，很赞
+                    //核心注入: 如果你的实体类获取字典ID的方法名叫 getTypeId, 请替换下面的 getIncomeTypeId()
+                    .typeId(pInc.getIncomeTypeId())
+                    .itemName(pInc.getIncomeTypeName())
                     .amount(pInc.getAmount())
                     .itemType(1)
                     .category(pInc.getCategoryName())
@@ -356,6 +361,8 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         for (SalaryDeductionDetail pDed : periodDeductions) {
             deductionTotal = deductionTotal.add(pDed.getAmount());
             snapshotItems.add(SalaryDetailItemDTO.builder()
+                    //核心注入: 如果你的实体类获取字典ID的方法名叫 getTypeId, 请替换下面的 getDeductionTypeId()
+                    .typeId(pDed.getDeductionTypeId())
                     .itemName(pDed.getDeductionTypeName())
                     .amount(pDed.getAmount())
                     .itemType(2)
@@ -366,13 +373,9 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         }
 
         // ==========================================
-        // 🌟 5.0 个人所得税自动核算 (根据前面累加的结果计算)
+        //5.0 个人所得税自动核算 (根据前面累加的结果计算)
         // ==========================================
-
-        // 1. 获取计税方案标识 (0-不计税, 1-个税, 2-劳务费)
-        // 这里的 archive 是 SalaryArchiveVO，请确保该 VO 中包含 taxScheme 字段
         Integer taxScheme = archive.getTaxScheme() != null ? archive.getTaxScheme() : 1;
-
         BigDecimal personalTax = BigDecimal.ZERO;
 
         // 🚀 核心判定：只有方案不等于 0 时才计算税金
@@ -399,14 +402,17 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         } else {
             log.info("ℹ️ 员工 {} [档案ID:{}] 计税方案为[不计税]，跳过税务核算", archive.getEmployeeName(), archive.getId());
         }
-// 写入快照和累加扣款
+
+        // 写入快照和累加扣款
         if (personalTax.compareTo(BigDecimal.ZERO) > 0) {
             deductionTotal = deductionTotal.add(personalTax);
             snapshotItems.add(SalaryDetailItemDTO.builder()
+                    .typeId(null) // 系统内置项，无字典ID
                     .itemName("个人所得税").amount(personalTax).itemType(2)
                     .category("法定扣款").source("SYSTEM_CALC")
                     .formula("应纳税所得额 × 适用税率 - 速算扣除数").build());
         }
+
         // ==========================================
         // 6. 最终实发计算与数据入库
         // ==========================================
@@ -416,12 +422,22 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             finalSalary = BigDecimal.ZERO;
         }
 
-        // 🌟 组装最终 JSON 快照
+        //提取外部参数
+        String currency = archive.getCurrency() != null ? archive.getCurrency() : "CNY";
+        BigDecimal exchangeRate = BigDecimal.ONE;
+        String paymentMethod = "YH转账";
+
+        //组装最终 JSON 快照
         SalarySnapshotDTO finalSnapshot = new SalarySnapshotDTO();
         finalSnapshot.setMonthDays(monthDays);
         finalSnapshot.setAttendanceDays(attendanceDays);
         finalSnapshot.setBaseSalary(baseSalary);
-        finalSnapshot.setItems(snapshotItems); // 注入明细列表
+        // 注入外层属性固化
+        finalSnapshot.setCurrency(currency);
+        finalSnapshot.setExchangeRate(exchangeRate);
+        finalSnapshot.setPaymentMethod(paymentMethod);
+        // 注入明细列表
+        finalSnapshot.setItems(snapshotItems);
 
         SalaryPaymentRecord record = new SalaryPaymentRecord();
         record.setSummaryId(summaryId);
@@ -432,17 +448,14 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         record.setDeductionTotal(deductionTotal);
         record.setFinalSalary(finalSalary);
         record.setIsManual(0);
-        // ==========================================
-        // 🌟 新增：多币种及支付相关字段填充
-        // ==========================================
-        String currency = archive.getCurrency() != null ? archive.getCurrency() : "CNY";
+
+        // 填充物理表多币种属性
         record.setSettlementCurrency(currency);
-        // 若未来引入真实汇率表，可在此替换 BigDecimal.ONE
-        record.setExchangeRate(BigDecimal.ONE);
-        // 假设引擎算出来的最终金额已经是折合后的本位币金额
+        record.setExchangeRate(exchangeRate);
         record.setBaseFinalSalary(finalSalary);
-        record.setPaymentMethod("银行转账"); // 默认支付方式
-        // 🌟 使用 Fastjson2 序列化对象写入数据库
+        record.setPaymentMethod(paymentMethod);
+
+        //使用 Fastjson2 序列化对象写入数据库
         record.setDetailJson(com.alibaba.fastjson2.JSON.toJSONString(finalSnapshot));
 
         iSalaryPaymentRecordService.save(record);
@@ -465,7 +478,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         record.setIsManual(1); // 手动录入
         record.setRemark(remark);
         // ==========================================
-        // 🌟 新增：多币种及支付相关字段填充 (防空兜底)
+        //新增：多币种及支付相关字段填充 (防空兜底)
         // ==========================================
         // 手动调账时，去查该员工当前生效档案获取基准币种
         SalaryArchiveVO archive = iSalaryArchiveService.getCurrentArchive(employeeId);
@@ -481,6 +494,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
         return record.getId();
     }
+
     // ============================
     // 6. 全员核算
     // ============================
@@ -495,7 +509,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     @Transactional(rollbackFor = Exception.class)
     public void executeGlobalSettlement(String settlementMonth) {
         log.info("🚀 [薪资引擎] 开始执行 {} 月份全员核算任务", settlementMonth);
-        // 🌟 【新增：自动补偿机制】
+        //【新增：自动补偿机制】
         // 在算钱之前，先确保本月所有在职员工的“坑位”（Period 和 Summary）已经占好了
         // 如果已经初始化过了，这个方法内部有幂等检查，执行速度极快
         this.initMonthlyBatchForAll(settlementMonth);
@@ -513,7 +527,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         int failCount = 0;
 
         for (SalaryPeriod period : periods) {
-            // 🌟 核心防线：单人核算独立 Try-Catch，绝不能让一个人报错卡死全公司发薪
+            //核心防线：单人核算独立 Try-Catch，绝不能让一个人报错卡死全公司发薪
             try {
                 // 2. 获取对应的汇总单 ID
                 SalarySummary summary = iSalarySummaryService.getOne(

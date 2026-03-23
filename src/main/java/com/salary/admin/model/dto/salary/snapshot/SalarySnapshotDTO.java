@@ -1,6 +1,7 @@
 package com.salary.admin.model.dto.salary.snapshot;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -33,7 +34,24 @@ public class SalarySnapshotDTO {
      * 员工的固定月薪，不考虑出勤情况时的标准工资，作为财务对账参照。
      */
     private BigDecimal baseSalary;
-
+    /**
+     * 结算币种 (固化)
+     *
+     */
+    @Schema(description = "结算币种 (固化)")
+    private String currency;
+    /**
+     * 核算汇率 (固化)
+     *
+     */
+    @Schema(description = "核算汇率 (固化)")
+    private BigDecimal exchangeRate;
+    /**
+     * 预计发放方式 (固化)
+     *
+     */
+    @Schema(description = "预计发放方式 (固化)")
+    private String paymentMethod;
     /**
      * 薪资构成明细快照 (核心)
      * 包含该月所有薪资项目的详细信息（底薪折算、固定津贴、临时奖惩、扣款等）。
