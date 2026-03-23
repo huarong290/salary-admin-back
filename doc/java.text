@@ -188,3 +188,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     // - addPeriodAndSummary
     // - previewCalculateByPeriod
 }
+
+
+
+select * from cw_ods_yh_t_account_flow where user_id ='208022' and currency_code ='USDT' and order_type= 17 order by created_at desc limit 30;

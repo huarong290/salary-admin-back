@@ -83,6 +83,31 @@ public class SalaryPaymentRecord extends BaseEntity<SalaryPaymentRecord> {
     @TableField("is_manual")
     private Integer isManual;
     /**
+     * 结算币种(CNY/USD/PHP等)
+     */
+    @Schema(description = "结算币种(CNY/USD/PHP等)")
+    @TableField("settlement_currency")
+    private String settlementCurrency;
+
+    /**
+     * 核算汇率(相对于系统本位币)
+     */
+    @Schema(description = "核算汇率(相对于系统本位币)")
+    @TableField("exchange_rate")
+    private BigDecimal exchangeRate;
+    /**
+     * 折合本位币实发金额(用于汇总报表)
+     */
+    @Schema(description = "折合本位币实发金额(用于汇总报表)")
+    @TableField("base_final_salary")
+    private BigDecimal baseFinalSalary;
+    /**
+     * 发放方式(银行卡/USDT地址/现金)
+     */
+    @Schema(description = "发放方式(银行卡/USDT地址/现金)")
+    @TableField("payment_method")
+    private String paymentMethod;
+    /**
      * 计算详情快照(存储当时所有income/deduction的JSON)
      */
     @Schema(description = "计算详情快照(存储当时所有income/deduction的JSON)")

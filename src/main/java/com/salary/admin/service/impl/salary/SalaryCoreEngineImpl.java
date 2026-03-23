@@ -265,7 +265,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 Wrappers.<SalaryArchiveItem>lambdaQuery().eq(SalaryArchiveItem::getArchiveId, archive.getId())
         );
 
-        // 🌟 新增：专门用于记录个税税前可扣除的“五险一金”总额
+        // 专门用于记录个税税前可扣除的“五险一金”总额
         BigDecimal socialSecurityDeductionForTax = BigDecimal.ZERO;
         for (SalaryArchiveItem item : archiveItems) {
             BigDecimal itemAmount = BigDecimal.ZERO;
@@ -279,14 +279,14 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             }
             // 2. 按基数比例 (如：公积金 8%)
             else if (item.getCalcType() == 2) {
-                // 🌟 优先级：item.base_amount > archive.base_salary
+                // 优先级：item.base_amount > archive.base_salary
                 BigDecimal calcBase = (item.getBaseAmount() != null && item.getBaseAmount().compareTo(BigDecimal.ZERO) > 0) ? item.getBaseAmount() : baseSalary;
 
                 BigDecimal ratio = item.getRatio() != null ? item.getRatio() : BigDecimal.ZERO;
                 itemAmount = calcBase.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
 //                formulaStr = String.format("基数 %s × 比例 %s%%", calcBase, ratio.multiply(new BigDecimal("100")).setScale(2));
                 formulaStr = String.format("基数 %s × 比例 %s%%", calcBase, ratio.multiply(new BigDecimal("100")).stripTrailingZeros().toPlainString());
-            }// 🌟 3. 新增：按出勤天数折算的固定额度 (如：餐补、按比例发放的全勤奖等)
+            }//  3. 新增：按出勤天数折算的固定额度 (如：餐补、按比例发放的全勤奖等)
             else if (item.getCalcType() == 3) {
                 BigDecimal standardAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
                 // 丝滑计算：标准额 × (出勤天数 ÷ 计薪天数)
@@ -432,6 +432,16 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         record.setDeductionTotal(deductionTotal);
         record.setFinalSalary(finalSalary);
         record.setIsManual(0);
+        // ==========================================
+        // 🌟 新增：多币种及支付相关字段填充
+        // ==========================================
+        String currency = archive.getCurrency() != null ? archive.getCurrency() : "CNY";
+        record.setSettlementCurrency(currency);
+        // 若未来引入真实汇率表，可在此替换 BigDecimal.ONE
+        record.setExchangeRate(BigDecimal.ONE);
+        // 假设引擎算出来的最终金额已经是折合后的本位币金额
+        record.setBaseFinalSalary(finalSalary);
+        record.setPaymentMethod("银行转账"); // 默认支付方式
         // 🌟 使用 Fastjson2 序列化对象写入数据库
         record.setDetailJson(com.alibaba.fastjson2.JSON.toJSONString(finalSnapshot));
 
@@ -454,6 +464,17 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         record.setFinalSalary(finalAmount);
         record.setIsManual(1); // 手动录入
         record.setRemark(remark);
+        // ==========================================
+        // 🌟 新增：多币种及支付相关字段填充 (防空兜底)
+        // ==========================================
+        // 手动调账时，去查该员工当前生效档案获取基准币种
+        SalaryArchiveVO archive = iSalaryArchiveService.getCurrentArchive(employeeId);
+        String currency = (archive != null && archive.getCurrency() != null) ? archive.getCurrency() : "CNY";
+
+        record.setSettlementCurrency(currency);
+        record.setExchangeRate(BigDecimal.ONE);
+        record.setBaseFinalSalary(finalAmount);
+        record.setPaymentMethod("人工线下结账");
         iSalaryPaymentRecordService.save(record);
         // 2. 刷新汇总单金额
         this.refreshSummaryAmountBySummaryId(summaryId);
@@ -688,7 +709,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         }
 
         // ==========================================
-        // 🌟 修复点 1：拉取字典，保证和真实核算逻辑环境一致
+        // 拉取字典，保证和真实核算逻辑环境一致
         // ==========================================
         Map<Long, SalaryDeductionType> deductionTypeMap = iSalaryDeductionTypeService.list().stream()
                 .collect(Collectors.toMap(SalaryDeductionType::getId, t -> t));
@@ -702,7 +723,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         for (SalaryArchiveItem item : archiveItems) {
             BigDecimal itemAmount = BigDecimal.ZERO;
 
-            // 🌟 修复点 2：复刻真实金额折算，完美支持固定额、比例和出勤折算
+            // 复刻真实金额折算，完美支持固定额、比例和出勤折算
             if (item.getCalcType() == 1) {
                 itemAmount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
             } else if (item.getCalcType() == 2) {
@@ -717,7 +738,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 incomeTotal = incomeTotal.add(itemAmount);
             } else {
                 deductionTotal = deductionTotal.add(itemAmount);
-                // 🌟 修复点 3：精准提取五险一金用于抵扣个税
+                // 精准提取五险一金用于抵扣个税
                 SalaryDeductionType dict = deductionTypeMap.get(item.getTypeId());
                 if (dict != null) {
                     String itemName = dict.getTypeName();
@@ -750,7 +771,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         Integer taxScheme = archive.getTaxScheme() != null ? archive.getTaxScheme() : 1;
 
         if (taxScheme != 0) {
-            // 🌟 修复点 4：使用精准计算出来的 socialSecurityDeductionForTax 进行抵扣
+            // 使用精准计算出来的 socialSecurityDeductionForTax 进行抵扣
             BigDecimal taxableIncome = incomeTotal.subtract(socialSecurityDeductionForTax).subtract(new BigDecimal("5000"));
             if (taxableIncome.compareTo(BigDecimal.ZERO) > 0) {
                 if (taxScheme == 1) { // 居民个税
