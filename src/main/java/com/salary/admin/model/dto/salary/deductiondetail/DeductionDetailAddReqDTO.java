@@ -42,6 +42,9 @@ public class DeductionDetailAddReqDTO implements Serializable {
     @Schema(description = "汇率 (原币兑本币，如 PHP兑CNY 约为0.125)", defaultValue = "1.00")
     private BigDecimal exchangeRate = BigDecimal.ONE;
 
+    @Schema(description = "结算币种 (入账时的系统本位币，如 CNY, USD)", defaultValue = "CNY")
+    private String settlementCurrency;
+
     @Schema(description = "金额")
     private BigDecimal amount;
 

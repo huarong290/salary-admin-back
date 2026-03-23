@@ -93,6 +93,8 @@ public class SalaryIncomeDetailServiceImpl
         entity.setIncomeTypeName(type.getTypeName()); // 🌟 核心：烙印项目名称
         entity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
         entity.setCurrency(reqDTO.getCurrency()); // 记录原币种
+        // 🌟 核心：确保结算币种被记录
+        entity.setSettlementCurrency(reqDTO.getSettlementCurrency());
         // 🌟 统一调用内部方法进行多币种核算
         recalculateAmount(entity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
 
@@ -126,7 +128,8 @@ public class SalaryIncomeDetailServiceImpl
         updateEntity.setIncomeTypeName(type.getTypeName());
         updateEntity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
         updateEntity.setCurrency(reqDTO.getCurrency()); // 允许修改币种
-
+        // 🌟 核心：更新时也带上结算币种
+        updateEntity.setSettlementCurrency(reqDTO.getSettlementCurrency());
         // 🌟 核心修复：修改时必须重新核算本币金额
         recalculateAmount(updateEntity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
         return this.updateById(updateEntity);

@@ -89,6 +89,12 @@ public class SalaryIncomeDetail extends BaseEntity<SalaryIncomeDetail> {
     @TableField("amount")
     private BigDecimal amount;
     /**
+     * 结算币种 (入账时的系统本位币，如 CNY, USD)
+     */
+    @Schema(description = "结算币种 (入账时的系统本位币)")
+    @TableField("settlement_currency")
+    private String settlementCurrency;
+    /**
      * 备注说明
      */
     @Schema(description = "备注说明")

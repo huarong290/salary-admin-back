@@ -82,6 +82,11 @@ public class IncomeDetailVO implements Serializable {
     @Schema(description = "金额")
     private BigDecimal amount;
     /**
+     * 结算币种 (入账时的系统本位币，如 CNY, USD)
+     */
+    @Schema(description = "结算币种 (入账时的系统本位币)")
+    private String settlementCurrency;
+    /**
      * 备注
      */
     @Schema(description = "备注")

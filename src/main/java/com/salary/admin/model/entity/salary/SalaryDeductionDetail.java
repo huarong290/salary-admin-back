@@ -89,6 +89,12 @@ public class SalaryDeductionDetail extends BaseEntity<SalaryDeductionDetail> {
     @TableField("amount")
     private BigDecimal amount;
     /**
+     * 结算币种 (入账时的系统本位币，如 CNY, USD)
+     */
+    @Schema(description = "结算币种 (入账时的系统本位币)")
+    @TableField("settlement_currency")
+    private String settlementCurrency;
+    /**
      * 备注
      */
     @Schema(description = "备注")

@@ -14,6 +14,7 @@
         <result column="original_amount" property="originalAmount"/>
         <result column="exchange_rate" property="exchangeRate"/>
         <result column="amount" property="amount"/>
+        <result column="settlement_currency" property="settlementCurrency" />
         <result column="remark" property="remark"/>
         <result column="delete_flag" property="deleteFlag"/>
         <result column="create_by" property="createBy"/>
@@ -25,7 +26,7 @@
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id
-        , period_id, employee_id,deduction_type_id,deduction_type_name, category_name,currency,original_amount,exchange_rate,amount, remark, delete_flag, create_by, create_time, update_by, update_time
+        , period_id, employee_id,deduction_type_id,deduction_type_name, category_name,currency,original_amount,exchange_rate,amount,settlement_currency, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
     <!-- 物理删除：直接删除记录 -->

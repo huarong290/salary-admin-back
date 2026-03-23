@@ -87,7 +87,7 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
         entity.setDeductionTypeName(type.getTypeName()); // 🌟 烙印名称
         entity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
         entity.setCurrency(reqDTO.getCurrency()); // 记录原币种
-
+        entity.setSettlementCurrency(reqDTO.getSettlementCurrency());
         // 🌟 统一调用内部方法进行多币种核算
         recalculateAmount(entity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
 
@@ -122,7 +122,8 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
         updateEntity.setDeductionTypeName(type.getTypeName());
         updateEntity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
         updateEntity.setCurrency(reqDTO.getCurrency()); // 允许修改币种
-
+        // 🌟 核心：保存入账时的系统结算币种
+        updateEntity.setSettlementCurrency(reqDTO.getSettlementCurrency());
         // 🌟 核心修复：修改时必须重新核算本币金额
         recalculateAmount(updateEntity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
         return this.updateById(updateEntity);
@@ -201,6 +202,7 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
             entity.setAmount(calculatedAmount); // 引擎最终认准的本币金额
             entity.setOriginalAmount(originalAmount);
             entity.setExchangeRate(exchangeRate);
+
         }
     }
 }
