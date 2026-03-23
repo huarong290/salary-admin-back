@@ -538,8 +538,8 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                     continue;
                 }
 
-                // 3. 获取员工核算月对应的生效档案
-                SalaryArchiveVO archive = iSalaryArchiveService.getCurrentArchive(period.getEmployeeId());
+                // 3. 获取员工核算月对应的生效档案 废弃 getCurrentArchive，采用时间切片精准匹配当期生效档案
+                SalaryArchiveVO archive = this.matchArchiveByTimeSlice(period.getEmployeeId(), period.getSettlementMonth());
                 if (archive == null) {
                     log.warn("员工ID {} 缺失生效薪资档案，跳过核算", period.getEmployeeId());
                     continue;
@@ -597,8 +597,8 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                     continue;
                 }
 
-                // 3. 获取员工当前生效的薪资档案
-                SalaryArchiveVO archive = iSalaryArchiveService.getCurrentArchive(period.getEmployeeId());
+                // 3. 获取员工当前生效的薪资档案 废弃 getCurrentArchive，采用时间切片精准匹配当期生效档案
+                SalaryArchiveVO archive = this.matchArchiveByTimeSlice(period.getEmployeeId(), period.getSettlementMonth());
                 if (archive == null) {
                     log.warn("员工ID {} 缺失生效薪资档案，跳过核算", period.getEmployeeId());
                     continue;
@@ -696,7 +696,8 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         if (period == null) {
             throw new RuntimeException("指定的薪资周期不存在");
         }
-        SalaryArchiveVO archive = iSalaryArchiveService.getCurrentArchive(period.getEmployeeId());
+        // 获取员工当前生效的薪资档案 废弃 getCurrentArchive，采用时间切片精准匹配当期生效档案
+        SalaryArchiveVO archive = this.matchArchiveByTimeSlice(period.getEmployeeId(), period.getSettlementMonth());
         if (archive == null) {
             throw new RuntimeException("未找到该员工生效的薪资档案");
         }
@@ -820,6 +821,37 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         previewVO.setSalaryTotal(finalSalary);
 
         return previewVO;
+    }
+
+
+
+    // ==========================================
+    // 🌟 【企业级重构】：基于时间切片的档案寻址机 (Temporal Matching)
+    // 作用：穿越时间，精准获取员工在指定计薪月【当时处于生效期内】的薪资档案，绝不使用未来或已被篡改的档案。
+    // ==========================================
+    private SalaryArchiveVO matchArchiveByTimeSlice(Long employeeId, String settlementMonth) {
+        // 1. 推算该计薪周期的最后一天 (例如：传入"202503" -> 算出"2025-03-31")
+        LocalDate periodEndDate = cn.hutool.core.date.DateUtil.endOfMonth(
+                cn.hutool.core.date.DateUtil.parse(settlementMonth, "yyyyMM")
+        ).toLocalDateTime().toLocalDate();
+
+        // 2. 去拉链表里寻址：档案生效日 <= 月底，且 档案失效日 >= 月底 的那条唯一正式档案
+        SalaryArchive targetArchive = iSalaryArchiveService.getOne(
+                Wrappers.<SalaryArchive>lambdaQuery()
+                        .eq(SalaryArchive::getEmployeeId, employeeId)
+                        .eq(SalaryArchive::getAuditStatus, 1) // 必须是正式生效版
+                        .le(SalaryArchive::getEffectiveDate, periodEndDate)
+                        .ge(SalaryArchive::getExpiryDate, periodEndDate)
+                        .orderByDesc(SalaryArchive::getEffectiveDate)
+                        .last("LIMIT 1") // 兜底防止脏数据重叠
+        );
+
+        if (targetArchive == null) {
+            return null; // 当时确实没有生效档案 (可能还没入职或未定薪)
+        }
+
+        // 3. 拿到确切的历史版本 ID 后，调用现成的详情接口组装完整的 VO (包含当时的收支明细项)
+        return iSalaryArchiveService.getArchiveDetail(targetArchive.getId());
     }
 
 }
