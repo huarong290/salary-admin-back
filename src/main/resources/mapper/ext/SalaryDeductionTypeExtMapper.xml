@@ -8,21 +8,23 @@
         <result column="type_code" property="typeCode" />
         <result column="type_name" property="typeName" />
         <result column="pinyin_code" property="pinyinCode" />
-        <result column="category_name" property="categoryName" />
+        <result column="category_id" property="categoryId" />
         <result column="description" property="description" />
-        <result column="fixed_flag" property="fixedFlag" />
-        <result column="tax_deductible_flag" property="taxDeductibleFlag" />
         <result column="sort_value" property="sortValue" />
+        <result column="tax_deductible_flag" property="taxDeductibleFlag" />
+        <result column="social_base_flag" property="socialBaseFlag" />
+        <result column="bonus_flag" property="bonusFlag" />
+        <result column="attendance_related_flag" property="attendanceRelatedFlag" />
         <result column="delete_flag" property="deleteFlag" />
-        <result column="create_by" property="createBy" />
         <result column="create_time" property="createTime" />
-        <result column="update_by" property="updateBy" />
+        <result column="create_by" property="createBy" />
         <result column="update_time" property="updateTime" />
+        <result column="update_by" property="updateBy" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, type_code, type_name, pinyin_code, category_name, description, fixed_flag,tax_deductible_flag, sort_value,delete_flag, create_by, create_time, update_by, update_time
+        id, type_code, type_name, pinyin_code, category_id, description, sort_value, tax_deductible_flag, social_base_flag, bonus_flag, attendance_related_flag, delete_flag, create_time, create_by, update_time, update_by
     </sql>
 
     <!-- 物理删除：直接删除记录 -->

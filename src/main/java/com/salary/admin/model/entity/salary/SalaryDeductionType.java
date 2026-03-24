@@ -52,11 +52,11 @@ public class SalaryDeductionType extends BaseEntity<SalaryDeductionType> {
     @TableField("pinyin_code")
     private String pinyinCode;
     /**
-     * 扣款分类
+     * 扣款分类关联分类ID
      */
-    @Schema(description = "扣款分类")
-    @TableField("category_name")
-    private String categoryName;
+    @Schema(description = "关联分类ID")
+    @TableField("category_id")
+    private Long categoryId;
     /**
      * 扣款项说明
      */
@@ -75,6 +75,24 @@ public class SalaryDeductionType extends BaseEntity<SalaryDeductionType> {
     @Schema(description = "是否为税前合法扣除项(如五险一金): 0-否, 1-是")
     @TableField("tax_deductible_flag")
     private Integer taxDeductibleFlag;
+    /**
+     * 是否计入社保基数扣减: 0-否, 1-是
+     */
+    @Schema(description = "是否计入社保基数扣减: 0-否, 1-是")
+    @TableField("social_base_flag")
+    private Integer socialBaseFlag;
+    /**
+     * 是否影响奖金发放: 0-否, 1-是
+     */
+    @Schema(description = "是否影响奖金发放: 0-否, 1-是")
+    @TableField("bonus_flag")
+    private Integer bonusFlag;
+    /**
+     * 是否与考勤强相关 (如迟到早退扣款): 0-否, 1-是
+     */
+    @Schema(description = "是否与考勤强相关 (如迟到早退扣款): 0-否, 1-是")
+    @TableField("attendance_related_flag")
+    private Integer attendanceRelatedFlag;
     /**
      * 排序值 (数值越小越靠前)
      */

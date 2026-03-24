@@ -53,6 +53,8 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     private final ISalaryDeductionTypeService iSalaryDeductionTypeService;
     private final ISalaryEmployeeService iSalaryEmployeeService;
 
+    // 🌟 升级：注入统一分类树服务
+    private final ISalaryCategoryService iSalaryCategoryService;
     // ============================
     // 1. 周期初始化编排
     // ============================
@@ -253,14 +255,18 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             }
         }
 
+
         // ==========================================
-        // 2. 提前拉取字典，用于翻译 FIXED 档案项
+        // 2. 🌟 升级：拉取字典与 L2 层分类数据 (解决 category_name 移除的问题)
         // ==========================================
-        // 建议在真实项目中增加缓存，防止每次发薪都查全表
         Map<Long, SalaryIncomeType> incomeTypeMap = iSalaryIncomeTypeService.list().stream()
                 .collect(Collectors.toMap(SalaryIncomeType::getId, t -> t));
         Map<Long, SalaryDeductionType> deductionTypeMap = iSalaryDeductionTypeService.list().stream()
                 .collect(Collectors.toMap(SalaryDeductionType::getId, t -> t));
+
+        // 拉取统一定义的树形分类表
+        Map<Long, String> categoryMap = iSalaryCategoryService.list().stream()
+                .collect(Collectors.toMap(SalaryCategory::getId, SalaryCategory::getCategoryName));
 
         // ==========================================
         // 3. 处理薪资档案中的【固定配置项】 (FIXED)
@@ -308,16 +314,17 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 SalaryIncomeType dict = incomeTypeMap.get(item.getTypeId());
                 if (dict != null) {
                     itemName = dict.getTypeName();
-                    category = dict.getCategoryName();
+                    category = categoryMap.getOrDefault(dict.getCategoryId(), "未分类");
                 }
             } else {
                 deductionTotal = deductionTotal.add(itemAmount);
                 SalaryDeductionType dict = deductionTypeMap.get(item.getTypeId());
                 if (dict != null) {
                     itemName = dict.getTypeName();
-                    category = dict.getCategoryName();
+                    category = categoryMap.getOrDefault(dict.getCategoryId(), "未分类");
                     //关键判定：如果是社保或公积金，累加到税前扣除额中
-                    if (itemName.contains("社保") || itemName.contains("保险") || itemName.contains("公积金")) {
+                    // 现在我们有了高端的标志位，不用再去写死 contains("社保") 了！
+                    if (Integer.valueOf(1).equals(dict.getTaxDeductibleFlag())) {
                         socialSecurityDeductionForTax = socialSecurityDeductionForTax.add(itemAmount);
                     }
                 }
@@ -455,6 +462,13 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         record.setBaseFinalSalary(finalSalary);
         record.setPaymentMethod(paymentMethod);
 
+        record.setVersion(1);       // 审计版本
+        record.setValidFlag(1);     // 有效性标志
+        record.setSplitCnyAmount(finalSalary); // 默认全额发主币种（后续可扩展独立拆分逻辑）
+        record.setSplitUsdtAmount(BigDecimal.ZERO);
+        record.setUsdtExchangeRate(BigDecimal.ZERO);
+        record.setCnyPayStatus(0);
+        record.setUsdtPayStatus(0);
         //使用 Fastjson2 序列化对象写入数据库
         record.setDetailJson(com.alibaba.fastjson2.JSON.toJSONString(finalSnapshot));
 
@@ -488,6 +502,15 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         record.setExchangeRate(BigDecimal.ONE);
         record.setBaseFinalSalary(finalAmount);
         record.setPaymentMethod("人工线下结账");
+
+        record.setVersion(1);
+        record.setValidFlag(1);
+        record.setSplitCnyAmount(finalAmount);
+        record.setSplitUsdtAmount(BigDecimal.ZERO);
+        record.setUsdtExchangeRate(BigDecimal.ZERO);
+        record.setCnyPayStatus(0);
+        record.setUsdtPayStatus(0);
+
         iSalaryPaymentRecordService.save(record);
         // 2. 刷新汇总单金额
         this.refreshSummaryAmountBySummaryId(summaryId);
@@ -726,6 +749,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         // ==========================================
         // 拉取字典，保证和真实核算逻辑环境一致
         // ==========================================
+        // 升级：同样拉取最新分类以应对预览模式下的名称翻译
         Map<Long, SalaryDeductionType> deductionTypeMap = iSalaryDeductionTypeService.list().stream()
                 .collect(Collectors.toMap(SalaryDeductionType::getId, t -> t));
 
@@ -756,8 +780,8 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 // 精准提取五险一金用于抵扣个税
                 SalaryDeductionType dict = deductionTypeMap.get(item.getTypeId());
                 if (dict != null) {
-                    String itemName = dict.getTypeName();
-                    if (itemName.contains("社保") || itemName.contains("保险") || itemName.contains("公积金")) {
+                    // 🌟 升级：精准利用标志位判断社保扣除
+                    if (Integer.valueOf(1).equals(dict.getTaxDeductibleFlag())) {
                         socialSecurityDeductionForTax = socialSecurityDeductionForTax.add(itemAmount);
                     }
                 }

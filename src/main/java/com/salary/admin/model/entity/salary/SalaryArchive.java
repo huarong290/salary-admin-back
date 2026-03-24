@@ -34,11 +34,20 @@ public class SalaryArchive extends BaseEntity<SalaryArchive> {
     @Schema(description = "员工ID")
     @TableField("employee_id")
     private Long employeeId;
+    // ==========================================
+    // 🌟 升级：新增套账预留字段
+    // ==========================================
+    @Schema(description = "绑定的薪资套账ID (为V2.0规则引擎铺垫)")
+    @TableField("salary_group_id")
+    private Long salaryGroupId;
+    // ==========================================
+    // 🛑 核心排雷：严禁使用 @Version 注解！
+    // 这里的 version 是业务版本号，绝不能让 MyBatis-Plus 乐观锁自动 +1 篡改历史。
+    // ==========================================
     /**
      * 版本号 (每次调薪递增)
      */
     @Schema(description = "版本号 (每次调薪递增)")
-    @Version
     @TableField("version")
     private Integer version;
     /**

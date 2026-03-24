@@ -9,14 +9,12 @@ import com.salary.admin.exception.BusinessException;
 import com.salary.admin.mapper.ext.salary.SalaryDeductionDetailExtMapper;
 import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailAddReqDTO;
 import com.salary.admin.model.dto.salary.deductiondetail.DeductionDetailQueryReqDTO;
+import com.salary.admin.model.entity.salary.SalaryCategory;
 import com.salary.admin.model.entity.salary.SalaryDeductionDetail;
 import com.salary.admin.model.entity.salary.SalaryDeductionType;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.deductiondetail.DeductionDetailVO;
-import com.salary.admin.service.salary.ISalaryDeductionDetailService;
-import com.salary.admin.service.salary.ISalaryDeductionTypeService;
-import com.salary.admin.service.salary.ISalaryEmployeeService;
-import com.salary.admin.service.salary.ISalaryPeriodService;
+import com.salary.admin.service.salary.*;
 import com.salary.admin.utils.UserContextUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +56,9 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
 
     @Resource
     private ISalaryEmployeeService employeeService; // 员工服务，用于获取员工信息
-
+    // 升级：注入统一分类服务，用于反查分类名称
+    @Resource
+    private ISalaryCategoryService categoryService;
     @Value("${salary.delete.allow-physical:false}")
     private boolean allowPhysicalDelete; // 配置项：是否允许物理删除
 
@@ -83,12 +83,13 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
         }
 
         SalaryDeductionDetail entity = deductionDetailConvert.toEntity(reqDTO);
-        entity.setEmployeeId(period.getEmployeeId()); // 🌟 烙印员工ID
-        entity.setDeductionTypeName(type.getTypeName()); // 🌟 烙印名称
-        entity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+        entity.setEmployeeId(period.getEmployeeId()); // 烙印员工ID
+        entity.setDeductionTypeName(type.getTypeName()); //  烙印名称
+        // 通过字典中记录的 categoryId 去统一分类表里查名称，并烙印到快照表中
+        entity.setCategoryName(this.resolveCategoryName(type.getCategoryId()));
         entity.setCurrency(reqDTO.getCurrency()); // 记录原币种
         entity.setSettlementCurrency(reqDTO.getSettlementCurrency());
-        // 🌟 统一调用内部方法进行多币种核算
+        // 统一调用内部方法进行多币种核算
         recalculateAmount(entity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
 
         this.save(entity);
@@ -120,11 +121,12 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
         updateEntity.setId(reqDTO.getId());
         updateEntity.setEmployeeId(period.getEmployeeId());
         updateEntity.setDeductionTypeName(type.getTypeName());
-        updateEntity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+        // ：修改时也需要重新拉取最新的分类名称
+        updateEntity.setCategoryName(this.resolveCategoryName(type.getCategoryId()));
         updateEntity.setCurrency(reqDTO.getCurrency()); // 允许修改币种
-        // 🌟 核心：保存入账时的系统结算币种
+        // 保存入账时的系统结算币种
         updateEntity.setSettlementCurrency(reqDTO.getSettlementCurrency());
-        // 🌟 核心修复：修改时必须重新核算本币金额
+        // 修改时必须重新核算本币金额
         recalculateAmount(updateEntity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
         return this.updateById(updateEntity);
     }
@@ -204,6 +206,17 @@ public class SalaryDeductionDetailServiceImpl extends ServiceImpl<SalaryDeductio
             entity.setExchangeRate(exchangeRate);
 
         }
+    }
+
+    /**
+     * 🌟 升级：新增私有方法，专门处理通过分类ID查询分类名称的逻辑
+     */
+    private String resolveCategoryName(Long categoryId) {
+        if (categoryId == null || categoryId <= 0) {
+            return "未分类";
+        }
+        SalaryCategory category = categoryService.getById(categoryId);
+        return category != null ? category.getCategoryName() : "未分类";
     }
 }
 

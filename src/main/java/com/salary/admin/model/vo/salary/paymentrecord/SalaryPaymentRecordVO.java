@@ -41,7 +41,7 @@ public class SalaryPaymentRecordVO extends SalaryPaymentRecord implements Serial
     @Schema(description = "结算月份")
     private String settlementMonth;
 
-    // 🌟 核心修正：使用快照 DTO 来接收解析后的 JSON
+    // 使用快照 DTO 来接收解析后的 JSON
     // 我们将字段名设为 parsedSnapshot，以区分原生的字符串 detailJson
     @Schema(description = "解析后的快照详情对象 (包含出勤天数、底薪及明细列表)")
     private SalarySnapshotDTO parsedSnapshot;

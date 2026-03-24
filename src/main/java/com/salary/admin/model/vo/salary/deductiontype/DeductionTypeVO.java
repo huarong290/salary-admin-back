@@ -1,6 +1,5 @@
 package com.salary.admin.model.vo.salary.deductiontype;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -43,6 +42,11 @@ public class DeductionTypeVO implements Serializable {
     @Schema(description = "拼音缩写")
     private String pinyinCode;
     /**
+     * 分类ID
+     */
+    @Schema(description = "分类ID (用于前端编辑回显)")
+    private Long categoryId;
+    /**
      * 扣款分类
      */
     @Schema(description = "扣款分类")
@@ -57,6 +61,21 @@ public class DeductionTypeVO implements Serializable {
      */
     @Schema(description = "是否为税前合法扣除项(如五险一金): 0-否, 1-是")
     private Integer taxDeductibleFlag;
+    /**
+     * 是否计入社保基数扣减: 0-否, 1-是
+     */
+    @Schema(description = "是否计入社保基数扣减: 0-否, 1-是")
+    private Integer socialBaseFlag;
+    /**
+     * 是否影响奖金发放: 0-否, 1-是
+     */
+    @Schema(description = "是否影响奖金发放: 0-否, 1-是")
+    private Integer bonusFlag;
+    /**
+     * 否与考勤强相关 (如迟到早退扣款): 0-否, 1-是
+     */
+    @Schema(description = "是否与考勤强相关 (如迟到早退扣款): 0-否, 1-是")
+    private Integer attendanceRelatedFlag;
     /**
      * 扣款项说明
      */

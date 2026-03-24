@@ -107,6 +107,34 @@ public class SalaryPaymentRecord extends BaseEntity<SalaryPaymentRecord> {
     @Schema(description = "发放方式(银行卡/USDT地址/现金)")
     @TableField("payment_method")
     private String paymentMethod;
+
+    @Schema(description = "拆分发放：法币(CNY/PHP)部分金额")
+    @TableField("split_cny_amount")
+    private BigDecimal splitCnyAmount;
+
+    @Schema(description = "拆分发放：加密货币(USDT)部分金额")
+    @TableField("split_usdt_amount")
+    private BigDecimal splitUsdtAmount;
+
+    @Schema(description = "当期 USDT 兑法币的结算汇率")
+    @TableField("usdt_exchange_rate")
+    private BigDecimal usdtExchangeRate;
+
+    @Schema(description = "法币部分发放状态(0未发 1已发)")
+    @TableField("cny_pay_status")
+    private Integer cnyPayStatus;
+
+    @Schema(description = "USDT部分发放状态(0未发 1已发)")
+    @TableField("usdt_pay_status")
+    private Integer usdtPayStatus;
+
+    @Schema(description = "计算版本")
+    @TableField("version")
+    private Integer version;
+
+    @Schema(description = "是否有效(0无效 1有效)")
+    @TableField("valid_flag")
+    private Integer validFlag;
     /**
      * 计算详情快照(存储当时所有income/deduction的JSON)
      */

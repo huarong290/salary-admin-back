@@ -199,8 +199,12 @@ CREATE TABLE `salary_income_type`
     `type_code`     VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '收入类型缩写简称',
     `type_name`     VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '收入类型名称',
     `pinyin_code`   VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '拼音缩写',
-    `category_name` VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '收入分类',
+    `category_id`           BIGINT       NOT NULL COMMENT '关联分类ID',
+--     `category_name` VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '收入分类',
     `taxable_flag`  TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '是否纳入个税计税基数: 0-否, 1-是',
+    `social_base_flag`        TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否计入社保基数',
+    `bonus_flag`              TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否奖金类',
+    `attendance_related_flag` TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否考勤相关',
     `description`   VARCHAR(255) NOT NULL DEFAULT '' COMMENT '收入项说明',
     `sort_value`    INT          NOT NULL DEFAULT '0' COMMENT '排序值 (数值越小越靠前)',
     `delete_flag`   BIGINT(1)    NOT NULL DEFAULT '0' COMMENT '是否删除',
@@ -222,11 +226,14 @@ CREATE TABLE `salary_deduction_type`
     `type_code`           VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '扣款类型缩写简称',
     `type_name`           VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '扣款类型名称',
     `pinyin_code`         VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '拼音缩写',
-    `category_name`       VARCHAR(64)  DEFAULT NULL COMMENT '扣款分类',
+    `category_id`           BIGINT       NOT NULL COMMENT '分类ID',
+--     `category_name`       VARCHAR(64)  DEFAULT NULL COMMENT '扣款分类',
     `description`         VARCHAR(255) DEFAULT NULL COMMENT '扣款项说明',
     `sort_value`          INT          NOT NULL DEFAULT '0' COMMENT '排序值 (数值越小越靠前)',
-    `fixed_flag`          TINYINT(1)   DEFAULT '0' COMMENT '是否固定扣款',
-    `tax_deductible_flag` TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否为税前合法扣除项(如五险一金): 0-否, 1-是',
+    `tax_deductible_flag`  TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '是否纳入个税计税基数: 0-否, 1-是',
+    `social_base_flag`        TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否计入社保基数',
+    `bonus_flag`              TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否奖金类',
+    `attendance_related_flag` TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否考勤相关',
     `delete_flag`         BIGINT(1)    NOT NULL DEFAULT '0' COMMENT '是否删除',
     `create_by`           VARCHAR(64)  NOT NULL DEFAULT 'admin' COMMENT '创建者',
     `create_time`         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -464,6 +471,9 @@ CREATE TABLE `salary_payment_record`
     `usdt_pay_status`     TINYINT(1)     NOT NULL DEFAULT '0' COMMENT 'USDT部分发放状态(0未发 1已发)',
 
     -- 审计快照
+    -- 审计增强
+    `version`             INT            NOT NULL DEFAULT 1 COMMENT '计算版本',
+    `valid_flag`            TINYINT(1)     NOT NULL DEFAULT 1 COMMENT '是否有效',
     `detail_json`         JSON           DEFAULT NULL COMMENT '计算详情快照(存储当时所有公式与环境变量的JSON)',
     `remark`              TEXT           DEFAULT NULL COMMENT '备注',
     `delete_flag`         BIGINT(1)      NOT NULL DEFAULT '0',
@@ -506,6 +516,7 @@ CREATE TABLE `salary_factor` (
                                  `factor_code`   VARCHAR(64)  NOT NULL COMMENT '因子编码 (如: base_salary, attendance_days)',
                                  `factor_name`   VARCHAR(64)  NOT NULL COMMENT '因子名称 (如: 基本工资, 出勤天数)',
                                  `factor_type`   TINYINT(1)   NOT NULL COMMENT '因子来源: 1-系统内置, 2-档案提取, 3-当月导入',
+                                 `scope_type`    VARCHAR(32)  NOT NULL COMMENT 'GLOBAL / ARCHIVE / PERIOD',
                                  `data_type`     VARCHAR(16)  NOT NULL DEFAULT 'NUMBER' COMMENT '数据类型: NUMBER, STRING, BOOLEAN',
                                  `default_value` VARCHAR(64)  DEFAULT '0' COMMENT '兜底默认值',
                                  `delete_flag`   BIGINT(1)    NOT NULL DEFAULT '0',
@@ -528,6 +539,10 @@ CREATE TABLE `salary_rule` (
                                `rule_name`            VARCHAR(128) NOT NULL COMMENT '规则名称 (如: 研发部全勤奖规则)',
                                `formula_expression`   TEXT         NOT NULL COMMENT '表达式引擎公式 (如: (base_salary/month_days)*attendance_days)',
                                `condition_expression` TEXT         DEFAULT NULL COMMENT '前置触发条件 (如: employment_status == 1)',
+                               `priority`             INT          NOT NULL DEFAULT 0 COMMENT '执行顺序',
+                               `result_key`           VARCHAR(64)  NOT NULL COMMENT '结果变量名',
+                               `accumulative_flag`    TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '是否叠加',
+                               `status`               TINYINT(1)   NOT NULL DEFAULT 1,
                                `delete_flag`          BIGINT(1)    NOT NULL DEFAULT '0',
                                `create_time`          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                `create_by`            VARCHAR(64)  NOT NULL DEFAULT 'admin',
@@ -536,3 +551,25 @@ CREATE TABLE `salary_rule` (
                                PRIMARY KEY (`id`),
                                KEY `idx_salary_group` (`salary_group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【V2.0 预留】薪资动态计算规则(公式)表';
+
+
+-- ==========================================================
+-- 21. 薪资分类表（统一收入/扣款分类体系）
+-- ==========================================================
+DROP TABLE IF EXISTS `salary_category`;
+CREATE TABLE `salary_category` (
+                                   `id`              BIGINT       NOT NULL AUTO_INCREMENT,
+                                   `category_code`   VARCHAR(64)  NOT NULL COMMENT '分类编码（BONUS / BASIC / LIFE / ATTENDANCE）',
+                                   `category_name`   VARCHAR(64)  NOT NULL COMMENT '分类名称',
+                                   `category_type`   TINYINT(1)   NOT NULL COMMENT '分类类型: 1收入分类 2扣款分类 3通用分类',
+                                   `parent_id`       BIGINT       NOT NULL DEFAULT 0 COMMENT '父级分类ID（用于二级分类）',
+                                   `sort_value`      INT          NOT NULL DEFAULT 0,
+                                   `status`          TINYINT(1)   NOT NULL DEFAULT 1,
+                                   `delete_flag`          BIGINT(1)    NOT NULL DEFAULT '0',
+                                   `create_time`          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                   `create_by`            VARCHAR(64)  NOT NULL DEFAULT 'admin',
+                                   `update_time`          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                   `update_by`            VARCHAR(64)  NOT NULL DEFAULT 'admin',
+                                   PRIMARY KEY (`id`),
+                                   UNIQUE KEY `uk_category_code` (`category_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资统一分类表';

@@ -43,6 +43,11 @@ public class IncomeTypeVO implements Serializable {
     @Schema(description = "拼音缩写")
     private String pinyinCode;
     /**
+     * 关联分类ID
+     */
+    @Schema(description = "关联分类ID (用于前端编辑回显)")
+    private Long categoryId;
+    /**
      * 分类
      */
     @Schema(description = "分类 (如: 固定工资, 补贴, 奖金)")
@@ -55,12 +60,25 @@ public class IncomeTypeVO implements Serializable {
     @TableField("taxable_flag")
     private Integer taxableFlag;
     /**
+     * 是否计入社保基数: 0-否, 1-是
+     */
+    @Schema(description = "是否计入社保基数: 0-否, 1-是")
+    private Integer socialBaseFlag;
+    /**
+     * 是否属于奖金类 (用于年终奖独立计税等场景): 0-否, 1-是
+     */
+    @Schema(description = "是否属于奖金类 (用于年终奖独立计税等场景): 0-否, 1-是")
+    private Integer bonusFlag;
+    /**
+     * 是否与考勤强相关 (决定是否按出勤天数折算): 0-否, 1-是
+     */
+    @Schema(description = "是否与考勤强相关 (决定是否按出勤天数折算): 0-否, 1-是")
+    private Integer attendanceRelatedFlag;
+    /**
      * 备注
      */
     @Schema(description = "备注")
     private String description;
-
-
     /**
      * 排序值
      */

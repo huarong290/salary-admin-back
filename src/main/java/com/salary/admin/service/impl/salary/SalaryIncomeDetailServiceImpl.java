@@ -10,6 +10,7 @@ import com.salary.admin.mapper.ext.salary.SalaryIncomeDetailExtMapper;
 import com.salary.admin.model.dto.salary.imcomedetail.IncomeDetailAddReqDTO;
 import com.salary.admin.model.dto.salary.imcomedetail.IncomeDetailQueryReqDTO;
 import com.salary.admin.model.dto.salary.imcomedetail.IncomeDetailUpdateReqDTO;
+import com.salary.admin.model.entity.salary.SalaryCategory;
 import com.salary.admin.model.entity.salary.SalaryIncomeDetail;
 import com.salary.admin.model.entity.salary.SalaryIncomeType;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
@@ -59,7 +60,9 @@ public class SalaryIncomeDetailServiceImpl
 
     @Value("${salary.delete.allow-physical:false}")
     private boolean allowPhysicalDelete; // 是否允许物理删除（配置项）
-
+    // 🌟 升级：注入统一分类服务，用于反查分类名称
+    @Resource
+    private ISalaryCategoryService categoryService;
     @Resource
     private ISalaryConfigService salaryConfigService;
     @Resource
@@ -89,13 +92,14 @@ public class SalaryIncomeDetailServiceImpl
 
         // 3. 组装实体并烙印数据
         SalaryIncomeDetail entity = incomeDetailConvert.toEntity(reqDTO);
-        entity.setEmployeeId(period.getEmployeeId()); // 🌟 核心：自动补齐员工ID
-        entity.setIncomeTypeName(type.getTypeName()); // 🌟 核心：烙印项目名称
-        entity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+        entity.setEmployeeId(period.getEmployeeId()); //自动补齐员工ID
+        entity.setIncomeTypeName(type.getTypeName()); // 烙印项目名称
+        // 通过 categoryId 从统一分类树中查出真实的分类名称
+        entity.setCategoryName(this.resolveCategoryName(type.getCategoryId()));
         entity.setCurrency(reqDTO.getCurrency()); // 记录原币种
-        // 🌟 核心：确保结算币种被记录
+        // 确保结算币种被记录
         entity.setSettlementCurrency(reqDTO.getSettlementCurrency());
-        // 🌟 统一调用内部方法进行多币种核算
+        //  统一调用内部方法进行多币种核算
         recalculateAmount(entity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
 
 
@@ -126,11 +130,12 @@ public class SalaryIncomeDetailServiceImpl
         updateEntity.setId(reqDTO.getId()); // 确保 ID 不丢失
         updateEntity.setEmployeeId(period.getEmployeeId());
         updateEntity.setIncomeTypeName(type.getTypeName());
-        updateEntity.setCategoryName(type.getCategoryName() != null ? type.getCategoryName() : "未分类");
+        // 更新时也必须重新拉取并烙印最新的分类名称
+        updateEntity.setCategoryName(this.resolveCategoryName(type.getCategoryId()));
         updateEntity.setCurrency(reqDTO.getCurrency()); // 允许修改币种
-        // 🌟 核心：更新时也带上结算币种
+        // 更新时也带上结算币种
         updateEntity.setSettlementCurrency(reqDTO.getSettlementCurrency());
-        // 🌟 核心修复：修改时必须重新核算本币金额
+        // ：修改时必须重新核算本币金额
         recalculateAmount(updateEntity, reqDTO.getOriginalAmount(), reqDTO.getExchangeRate());
         return this.updateById(updateEntity);
     }
@@ -210,6 +215,15 @@ public class SalaryIncomeDetailServiceImpl
             entity.setExchangeRate(exchangeRate);
         }
     }
-// 同理，在 Deduction 类中也加一个类似的私有方法
+    /**
+     * 🌟 升级：新增私有方法，专门处理通过分类ID查询分类名称的逻辑
+     */
+    private String resolveCategoryName(Long categoryId) {
+        if (categoryId == null || categoryId <= 0) {
+            return "未分类";
+        }
+        SalaryCategory category = categoryService.getById(categoryId);
+        return category != null ? category.getCategoryName() : "未分类";
+    }
 }
 

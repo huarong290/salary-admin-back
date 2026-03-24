@@ -15,6 +15,7 @@ import com.salary.admin.model.dto.salary.archive.ArchiveAuditDTO;
 import com.salary.admin.model.dto.salary.archive.ArchiveQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryArchive;
 import com.salary.admin.model.entity.salary.SalaryArchiveItem;
+import com.salary.admin.model.entity.salary.SalaryCategory;
 import com.salary.admin.model.entity.salary.SalaryPaymentRecord;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
 import com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO;
@@ -61,7 +62,8 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
     private final ISalaryIncomeTypeService iSalaryIncomeTypeService;
 
     private final ISalaryDeductionTypeService iSalaryDeductionTypeService;
-
+    // 🌟 升级：注入统一分类树服务
+    private final ISalaryCategoryService iSalaryCategoryService;
     @Override
     public PageResult<SalaryArchiveVO> selectArchivePage(ArchiveQueryReqDTO queryReq) {
         // 1. 构造 MyBatis-Plus 的分页参数对象
@@ -114,6 +116,10 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         newArchive.setTaxScheme(req.getTaxScheme());
         // 强制设为 0-待审核状态
         newArchive.setAuditStatus(0);
+        // 🌟 升级：为 V2.0 规则引擎铺垫的 group_id 兜底，如果没有传默认给 0
+        if (newArchive.getSalaryGroupId() == null) {
+            newArchive.setSalaryGroupId(0L);
+        }
         this.save(newArchive);
 
         // 4. 处理并保存明细项 (Items) - 保持你原来完美的比例计算逻辑不变:增强计算严谨性 + 冗余名称填充
@@ -285,8 +291,9 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
                 // 🌟 将字典中的名称填入冗余字段 (请确保 Entity 中有对应的 set 方法)
                 // 如果你的字段名叫 typeName，就用 setItemName
                  item.setTypeName(incomeType.getTypeName());
-                 item.setCategoryName(incomeType.getCategoryName());
-                log.debug("冗余填充-收入项: {}, 分类: {}", incomeType.getTypeName(), incomeType.getCategoryName());
+                // 🌟 升级：从字典里拿到 CategoryId，再去查真实的 CategoryName
+                item.setCategoryName(this.resolveCategoryName(incomeType.getCategoryId()));
+                log.debug("冗余填充-收入项: {}, 分类: {}", incomeType.getTypeName(), item.getCategoryName());
             }
         }
         // 2. 处理扣款项 (itemType = 2)
@@ -294,10 +301,11 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
             // 查扣款字典
             var deductionType = iSalaryDeductionTypeService.getById(item.getTypeId());
             if (deductionType != null) {
-                // 🌟 同理，将扣款字典中的名称填入冗余字段
+                // 同理，将扣款字典中的名称填入冗余字段
                  item.setTypeName(deductionType.getTypeName());
-                 item.setCategoryName(deductionType.getCategoryName());
-                log.debug("冗余填充-扣款项: {}, 分类: {}", deductionType.getTypeName(), deductionType.getCategoryName());
+                // 从字典里拿到 CategoryId，再去查真实的 CategoryName
+                item.setCategoryName(this.resolveCategoryName(deductionType.getCategoryId()));
+                log.debug("冗余填充-扣款项: {}, 分类: {}", item.getTypeName(), item.getCategoryName());
             }
         }
     }
@@ -318,5 +326,16 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
                 item.setFormulaLabel("固定金额");
             }
         }
+    }
+
+    /**
+     * 🌟 升级：抽取私有方法解析分类名称
+     */
+    private String resolveCategoryName(Long categoryId) {
+        if (categoryId == null || categoryId <= 0) {
+            return "未分类";
+        }
+        SalaryCategory category = iSalaryCategoryService.getById(categoryId);
+        return category != null ? category.getCategoryName() : "未分类";
     }
 }

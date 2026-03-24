@@ -52,11 +52,11 @@ public class SalaryIncomeType extends BaseEntity<SalaryIncomeType> {
     @TableField("pinyin_code")
     private String pinyinCode;
     /**
-     * 收入分类
+     * 关联到全新的分类表
      */
-    @Schema(description = "收入分类")
-    @TableField("category_name")
-    private String categoryName;
+    @Schema(description = "关联分类ID")
+    @TableField("category_id")
+    private Long categoryId;
 
     /**
      * 是否纳入个税计税基数: 0-否, 1-是
@@ -64,14 +64,30 @@ public class SalaryIncomeType extends BaseEntity<SalaryIncomeType> {
     @Schema(description = "'是否纳入个税计税基数: 0-否, 1-是")
     @TableField("taxable_flag")
     private Integer taxableFlag;
-
+    /**
+     * 是否纳入个税计税基数: 0-否, 1-是
+     */
+    @Schema(description = "是否计入社保基数: 0-否, 1-是")
+    @TableField("social_base_flag")
+    private Integer socialBaseFlag;
     /**
      * 收入项说明
      */
     @Schema(description = "收入项说明")
     @TableField("description")
     private String description;
-
+    /**
+     * 是否属于奖金类 (用于年终奖独立计税等场景): 0-否, 1-是
+     */
+    @Schema(description = "是否属于奖金类 (用于年终奖独立计税等场景): 0-否, 1-是")
+    @TableField("bonus_flag")
+    private Integer bonusFlag;
+    /**
+     * 是否与考勤强相关 (决定是否按出勤天数折算): 0-否, 1-是
+     */
+    @Schema(description = "是否与考勤强相关 (决定是否按出勤天数折算): 0-否, 1-是")
+    @TableField("attendance_related_flag")
+    private Integer attendanceRelatedFlag;
     /**
      * 排序值 (数值越小越靠前)
      */

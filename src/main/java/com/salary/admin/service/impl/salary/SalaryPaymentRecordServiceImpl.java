@@ -1,7 +1,6 @@
 package com.salary.admin.service.impl.salary;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.common.PageResult;
@@ -11,7 +10,6 @@ import com.salary.admin.model.dto.salary.paymentrecord.PaymentRecordQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryPaymentRecord;
 import com.salary.admin.model.entity.salary.SalarySummary;
 import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
-import com.salary.admin.model.vo.salary.archiveitem.SalaryArchiveItemVO;
 import com.salary.admin.model.vo.salary.paymentrecord.SalaryPaymentRecordVO;
 import com.salary.admin.service.salary.ISalaryPaymentRecordService;
 import com.salary.admin.service.salary.ISalarySummaryService;
@@ -58,7 +56,7 @@ public class SalaryPaymentRecordServiceImpl extends ServiceImpl<SalaryPaymentRec
                     vo.setParsedSnapshot(snapshot);
 
                     // 💡 可选小优化：为了节省网络带宽，既然对象已经解析好了，我们可以把原生的臃肿字符串置空
-                    // vo.setDetailJson(null);
+                     vo.setDetailJson(null);
                 } catch (Exception e) {
                     log.error("解析薪资明细JSON快照失败, recordId: {}", vo.getId(), e);
                 }
@@ -67,7 +65,9 @@ public class SalaryPaymentRecordServiceImpl extends ServiceImpl<SalaryPaymentRec
 
         return PageResult.of(resultPage);
     }
-
+    // ==========================================
+    // 🛑 架构拦截：废弃老旧的本地算薪方法
+    // ==========================================
     /**
      * 根据档案核算单条薪资明细
      * @param summaryId 汇总ID
@@ -76,61 +76,66 @@ public class SalaryPaymentRecordServiceImpl extends ServiceImpl<SalaryPaymentRec
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createByCalculation(Long summaryId, SalaryArchiveVO archive) {
-        log.info("开始系统核算生成结算记录: employee={}, summaryId={}", archive.getEmployeeName(), summaryId);
+        log.error("⚠️ 架构越权警告：严禁调用过时的 createByCalculation 方法！");
+        throw new BusinessException("该接口已废弃！请统一通过 ISalaryCoreEngine 的 executeSettlementByPeriods 进行精准多维核算！");
 
-        SalaryPaymentRecord record = new SalaryPaymentRecord();
-        record.setSummaryId(summaryId);
-        record.setEmployeeId(archive.getEmployeeId());
-        record.setArchiveId(archive.getId());
-        record.setIsManual(0);
 
-        // 1. 设置底薪快照基础薪资抓取
-        BigDecimal baseSalary = archive.getBaseSalary() != null ? archive.getBaseSalary() : BigDecimal.ZERO;
-        record.setBaseSalary(baseSalary);
-
-        // 2. 动态计算明细项 (Items)-统计各项明细
-        BigDecimal incomeTotal = BigDecimal.ZERO;
-        BigDecimal deductionTotal = BigDecimal.ZERO;
-
-        if (CollUtil.isNotEmpty(archive.getItems())) {
-            for (SalaryArchiveItemVO item : archive.getItems()) {
-                BigDecimal amount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
-                // itemType: 1-收入, 2-扣款
-                if (Integer.valueOf(1).equals(item.getItemType())) {
-                    incomeTotal = incomeTotal.add(amount);
-                } else if (Integer.valueOf(2).equals(item.getItemType())) {
-                    deductionTotal = deductionTotal.add(amount);
-                }
-            }
-            // 存入 JSON 快照，保留核算依据
-            record.setDetailJson(JSONUtil.toJsonStr(archive.getItems()));
-        }
-
-        record.setIncomeTotal(incomeTotal);
-        record.setDeductionTotal(deductionTotal);
-
-        // 3. 计算最终总额
-        record.setFinalSalary(baseSalary.add(incomeTotal).subtract(deductionTotal));
-
-        this.save(record);
-        return record.getId();
+//        SalaryPaymentRecord record = new SalaryPaymentRecord();
+//        record.setSummaryId(summaryId);
+//        record.setEmployeeId(archive.getEmployeeId());
+//        record.setArchiveId(archive.getId());
+//        record.setIsManual(0);
+//
+//        // 1. 设置底薪快照基础薪资抓取
+//        BigDecimal baseSalary = archive.getBaseSalary() != null ? archive.getBaseSalary() : BigDecimal.ZERO;
+//        record.setBaseSalary(baseSalary);
+//
+//        // 2. 动态计算明细项 (Items)-统计各项明细
+//        BigDecimal incomeTotal = BigDecimal.ZERO;
+//        BigDecimal deductionTotal = BigDecimal.ZERO;
+//
+//        if (CollUtil.isNotEmpty(archive.getItems())) {
+//            for (SalaryArchiveItemVO item : archive.getItems()) {
+//                BigDecimal amount = item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO;
+//                // itemType: 1-收入, 2-扣款
+//                if (Integer.valueOf(1).equals(item.getItemType())) {
+//                    incomeTotal = incomeTotal.add(amount);
+//                } else if (Integer.valueOf(2).equals(item.getItemType())) {
+//                    deductionTotal = deductionTotal.add(amount);
+//                }
+//            }
+//            // 存入 JSON 快照，保留核算依据
+//            record.setDetailJson(JSONUtil.toJsonStr(archive.getItems()));
+//        }
+//
+//        record.setIncomeTotal(incomeTotal);
+//        record.setDeductionTotal(deductionTotal);
+//
+//        // 3. 计算最终总额
+//        record.setFinalSalary(baseSalary.add(incomeTotal).subtract(deductionTotal));
+//
+//        this.save(record);
+//        return record.getId();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createByManual(Long summaryId, Long employeeId, BigDecimal finalAmount, String remark) {
-        SalaryPaymentRecord record = new SalaryPaymentRecord();
-        record.setSummaryId(summaryId);
-        record.setEmployeeId(employeeId);
-        record.setIsManual(1);
-        record.setFinalSalary(finalAmount != null ? finalAmount : BigDecimal.ZERO);
-        record.setBaseSalary(BigDecimal.ZERO);
-        record.setIncomeTotal(BigDecimal.ZERO);
-        record.setDeductionTotal(BigDecimal.ZERO);
-        record.setRemark(remark);
+        log.error("⚠️ 架构越权警告：严禁调用过时的 createByManual 方法！");
+        throw new BusinessException("该接口已废弃！人工调账请统一调用 ISalaryCoreEngine.createRecordByManual 方法！");
 
-        this.save(record);
-        return record.getId();
+//        SalaryPaymentRecord record = new SalaryPaymentRecord();
+//        record.setSummaryId(summaryId);
+//        record.setEmployeeId(employeeId);
+//        record.setIsManual(1);
+//        record.setFinalSalary(finalAmount != null ? finalAmount : BigDecimal.ZERO);
+//        record.setBaseSalary(BigDecimal.ZERO);
+//        record.setIncomeTotal(BigDecimal.ZERO);
+//        record.setDeductionTotal(BigDecimal.ZERO);
+//        record.setRemark(remark);
+//
+//        this.save(record);
+//        return record.getId();
     }
 
     @Override
@@ -193,12 +198,15 @@ public class SalaryPaymentRecordServiceImpl extends ServiceImpl<SalaryPaymentRec
         BigDecimal finalTotal = BigDecimal.ZERO;     // 最终实发
 
         for (SalaryPaymentRecord r : records) {
-            // 统计收入 (底薪 + 收入明细)
-            subtotal = subtotal.add(r.getBaseSalary()).add(r.getIncomeTotal());
+            // 🌟 核心修复：严禁再次加上 r.getBaseSalary()！
+            // 因为在 SalaryCoreEngineImpl 中，底薪已经被引擎当作第一笔收入压进 incomeTotal 里了。
+            subtotal = subtotal.add(r.getIncomeTotal() != null ? r.getIncomeTotal() : BigDecimal.ZERO);
+
             // 统计扣款
-            deductionTotal = deductionTotal.add(r.getDeductionTotal());
+            deductionTotal = deductionTotal.add(r.getDeductionTotal() != null ? r.getDeductionTotal() : BigDecimal.ZERO);
+
             // 统计实发
-            finalTotal = finalTotal.add(r.getFinalSalary());
+            finalTotal = finalTotal.add(r.getFinalSalary() != null ? r.getFinalSalary() : BigDecimal.ZERO);
         }
 
         // 2. 更新汇总表

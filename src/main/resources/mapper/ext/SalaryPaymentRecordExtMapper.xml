@@ -8,11 +8,25 @@
         <result column="summary_id" property="summaryId" />
         <result column="employee_id" property="employeeId" />
         <result column="archive_id" property="archiveId" />
+
         <result column="base_salary" property="baseSalary" />
         <result column="income_total" property="incomeTotal" />
         <result column="deduction_total" property="deductionTotal" />
         <result column="final_salary" property="finalSalary" />
         <result column="is_manual" property="isManual" />
+
+        <result column="settlement_currency" property="settlementCurrency" />
+        <result column="exchange_rate" property="exchangeRate" />
+        <result column="base_final_salary" property="baseFinalSalary" />
+        <result column="payment_method" property="paymentMethod" />
+        <result column="split_cny_amount" property="splitCnyAmount" />
+        <result column="split_usdt_amount" property="splitUsdtAmount" />
+        <result column="usdt_exchange_rate" property="usdtExchangeRate" />
+        <result column="cny_pay_status" property="cnyPayStatus" />
+        <result column="usdt_pay_status" property="usdtPayStatus" />
+
+        <result column="version" property="version" />
+        <result column="valid_flag" property="validFlag" />
         <result column="detail_json" property="detailJson" />
         <result column="remark" property="remark" />
         <result column="delete_flag" property="deleteFlag" />
@@ -24,7 +38,12 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, summary_id, employee_id, archive_id, base_salary, income_total, deduction_total, final_salary, is_manual, detail_json, remark, delete_flag, create_time, create_by, update_time, update_by
+        id, summary_id, employee_id, archive_id,
+        base_salary, income_total, deduction_total, final_salary, is_manual,
+        settlement_currency, exchange_rate, base_final_salary, payment_method,
+        split_cny_amount, split_usdt_amount, usdt_exchange_rate, cny_pay_status, usdt_pay_status,
+        version, valid_flag, detail_json, remark,
+        delete_flag, create_time, create_by, update_time, update_by
     </sql>
 
 
