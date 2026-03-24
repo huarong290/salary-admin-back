@@ -1,3 +1,5 @@
-INSERT INTO salary_admin.sys_user (username,password,nickname,email,phone,sex,avatar,status,last_login_time,delete_flag,create_by,create_time,update_by,update_time) VALUES
-	 ('admin','$2a$10$4FGmjRDysGbW1t0yPDGxg.99sA3Qf97aHM0yhB6R4vektOZ/d3GFu','超级管理员','admin@example.com','13800138000',1,'',1,'2026-03-24 05:20:26',0,'system','2026-03-09 07:15:13','anonymous','2026-03-24 05:20:26'),
-	 ('test','$2a$10$4FGmjRDysGbW1t0yPDGxg.99sA3Qf97aHM0yhB6R4vektOZ/d3GFu','测试人员','test@example.com','13800138001',1,'',1,'2026-03-10 11:49:56',0,'system','2026-03-09 07:15:13','system','2026-03-10 11:49:56');
+INSERT INTO oa_admin.sys_user (username,password,nickname,email,phone,sex,avatar,status,last_login_time,delete_flag,create_by,create_time,update_by,update_time) VALUES
+	 ('system','$2a$10$4FGmjRDysGbW1t0yPDGxg.99sA3Qf97aHM0yhB6R4vektOZ/d3GFu','超级管理员','system@example.com','13800138000',1,'',1,'2026-03-24 10:23:32',0,'system','2026-03-09 07:15:13','anonymous','2026-03-24 10:23:32'),
+	 ('admin','$2a$10$4FGmjRDysGbW1t0yPDGxg.99sA3Qf97aHM0yhB6R4vektOZ/d3GFu','普通管理员','admin@example.com','13800138001',1,'',1,'2026-03-24 10:22:48',0,'system','2026-03-09 07:15:13','anonymous','2026-03-24 10:22:48'),
+	 ('user','$2a$10$4FGmjRDysGbW1t0yPDGxg.99sA3Qf97aHM0yhB6R4vektOZ/d3GFu','普通用户','user@example.com','13800138002',1,'',1,'1000-01-01 00:00:00',0,'system','2026-03-24 01:00:25','system','2026-03-24 01:01:20'),
+	 ('test','$2a$10$4FGmjRDysGbW1t0yPDGxg.99sA3Qf97aHM0yhB6R4vektOZ/d3GFu','测试用户','test@example.com','13800138003',1,'',1,'1000-01-01 00:00:00',0,'system','2026-03-24 01:01:58','system','2026-03-24 01:02:24');
