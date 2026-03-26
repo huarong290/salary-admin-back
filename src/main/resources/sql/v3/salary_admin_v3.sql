@@ -415,7 +415,7 @@ CREATE TABLE `salary_payment_record`
     `income_total`        DECIMAL(18, 8) NOT NULL DEFAULT '0.00' COMMENT '收入合计',
     `deduction_total`     DECIMAL(18, 8) NOT NULL DEFAULT '0.00' COMMENT '扣款合计',
     `final_salary`        DECIMAL(18, 8) NOT NULL DEFAULT '0.00' COMMENT '最终总计',
-    `is_manual`           TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否手动录入 (1:是,0:否)',
+    `manual_flag`           TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否手动录入 (1:是,0:否)',
     `settlement_currency` VARCHAR(16) NOT NULL DEFAULT 'CNY' COMMENT '结算币种',
     `exchange_rate`       DECIMAL(18,8) NOT NULL DEFAULT '1.00000000' COMMENT '汇率',
     `base_final_salary`   DECIMAL(18, 8) NOT NULL DEFAULT '0.00' COMMENT '折合本位币金额',
