@@ -35,6 +35,33 @@ ADD COLUMN `tax_scheme` TINYINT(4) NOT NULL DEFAULT 1 COMMENT '计税方案: 0-�
 ALTER TABLE `salary_period` ADD COLUMN `currency` VARCHAR(50) DEFAULT 'CNY' COMMENT '结算币种' AFTER `settlement_month`;
 5651.61290323
 
+-- 1. 增加冗余与快照字段
+ALTER TABLE `salary_summary`
+ADD COLUMN `employee_code` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '员工工号(快照)' AFTER `employee_id`,
+ADD COLUMN `employee_name` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '员工姓名(快照)' AFTER `employee_code`,
+ADD COLUMN `period_start_date` DATE DEFAULT NULL COMMENT '周期开始(快照)' AFTER `settlement_month`,
+ADD COLUMN `period_end_date` DATE DEFAULT NULL COMMENT '周期结束(快照)' AFTER `period_start_date`;
+
+-- 2. 核心查询性能优化：添加大盘搜索联合索引 (月份 + 员工)
+-- 如果之前有重复索引建议先 DROP，确保查询走这个高性能索引
+ALTER TABLE `salary_summary` ADD INDEX `idx_summary_month_emp` (`settlement_month`, `employee_id`);
+
+-- 1. 增加冗余结算月份，作为查询和未来分表的片键
+ALTER TABLE `salary_payment_record`
+ADD COLUMN `settlement_month` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '结算月份(冗余快照)' AFTER `archive_id`;
+
+-- 2. 补齐多币种与支付方式的核心财务字段（针对 DECIMAL 8位高精度优化）
+ALTER TABLE `salary_payment_record`
+MODIFY COLUMN `exchange_rate` DECIMAL(18, 8) NOT NULL DEFAULT '1.00000000' COMMENT '核算汇率(相对于本位币)',
+ADD COLUMN `base_final_salary` DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '折合本位币实发金额' AFTER `exchange_rate`,
+ADD COLUMN `payment_method` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '发放方式(银行卡/USDT等)' AFTER `base_final_salary`;
+
+-- 3. 🛡️ 核心防资损锁：防止同一个员工在同一个汇总单下重复生成发薪记录
+ALTER TABLE `salary_payment_record`
+ADD UNIQUE KEY `uk_summary_emp_delete` (`summary_id`, `employee_id`, `delete_flag`);
+
+-- 4. 增加查询索引
+ALTER TABLE `salary_payment_record` ADD INDEX `idx_settlement_month` (`settlement_month`);
 8211.550000
 关于2月的休假：和人事确认2月的月休是3天；然后春节假是从30日到初六，期间有上班就是+1倍工资，如果是选择休息就是带薪。
 

@@ -242,7 +242,7 @@ CREATE TABLE `salary_summary`
     `update_by`              VARCHAR(64)  NOT NULL DEFAULT 'admin' COMMENT '修改者',
     `update_time`            DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY uk_emp_period (employee_id, period_id, delete_flag)
+    UNIQUE KEY uk_emp_period (employee_id, period_id, delete_flag),
     KEY `idx_summary_month_emp` (`settlement_month`, `employee_id`) USING BTREE,
     KEY `idx_currency` (`currency`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资汇总与结算表';
