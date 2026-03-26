@@ -31,6 +31,12 @@ public class PeriodAddReqDTO implements Serializable {
     @Schema(description = "结算月份(格式：YYYYMM)")
     private String settlementMonth;
     /**
+     * 结算币种
+     */
+    @Schema(description = "结算币种")
+    @NotBlank(message = "结算币种不能为空")
+    private String currency;
+    /**
      * 开始日期
      */
     @Schema(description = "开始日期")

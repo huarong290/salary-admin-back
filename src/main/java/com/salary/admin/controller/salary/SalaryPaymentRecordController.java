@@ -37,7 +37,7 @@ public class SalaryPaymentRecordController {
     }
 
     @Operation(summary = "获取单条结算记录详情")
-    @GetMapping("/{id}")
+    @GetMapping("/getById/{id}")
     @Loggable(title = "薪资明细记录-获取单条结算记录详情")
     public ApiResult<SalaryPaymentRecord> getById(@PathVariable Long id) {
         return ApiResult.successResult(paymentRecordService.getById(id));
@@ -51,7 +51,7 @@ public class SalaryPaymentRecordController {
     }
 
     @Operation(summary = "删除单条结算记录", description = "删除后关联的汇总表(Summary)金额会自动递减")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     @Loggable(title = "薪资明细记录-删除单条结算记录")
     public ApiResult<Boolean> delete(@PathVariable Long id) {
         return ApiResult.successResult(paymentRecordService.removeRecord(id));

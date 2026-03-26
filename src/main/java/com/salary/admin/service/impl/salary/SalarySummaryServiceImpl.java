@@ -5,14 +5,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.common.PageResult;
-import com.salary.admin.convert.salary.summary.SummaryConvert;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.mapper.ext.salary.SalarySummaryExtMapper;
 import com.salary.admin.model.dto.salary.summary.SummaryQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalarySummary;
 import com.salary.admin.model.vo.salary.summary.SummaryVO;
-import com.salary.admin.service.salary.ISalaryEmployeeService;
-import com.salary.admin.service.salary.ISalaryPeriodService;
 import com.salary.admin.service.salary.ISalarySummaryService;
 import com.salary.admin.utils.UserContextUtil;
 import jakarta.annotation.Resource;
@@ -36,12 +33,6 @@ public class SalarySummaryServiceImpl extends ServiceImpl<SalarySummaryExtMapper
 
     @Resource
     private SalarySummaryExtMapper salarySummaryExtMapper;
-    @Resource
-    private ISalaryPeriodService periodService;
-    @Resource
-    private ISalaryEmployeeService employeeService;
-    @Resource
-    private SummaryConvert summaryConvert;
 
     @Value("${salary.delete.allow-physical:false}")
     private boolean allowPhysicalDelete;

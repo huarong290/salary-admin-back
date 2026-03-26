@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -39,6 +40,12 @@ public class SummaryVO implements Serializable {
 
     @Schema(description = "结算月份")
     private String settlementMonth;
+
+    @Schema(description = "周期开始")
+    private LocalDate periodStartDate;
+
+    @Schema(description = "周期结束")
+    private LocalDate periodEndDate;
 
     /* ================== 💰 核心财务与多币种数据 ================== */
 

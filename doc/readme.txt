@@ -30,6 +30,9 @@ ADD COLUMN `tax_deductible_flag` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否�
 -- 3. 扩展档案主表：增加计税方案
 ALTER TABLE `salary_archive`
 ADD COLUMN `tax_scheme` TINYINT(4) NOT NULL DEFAULT 1 COMMENT '计税方案: 0-不计税, 1-居民个人所得税, 2-劳务报酬税';
+
+-- 给周期表补充结算币种字段
+ALTER TABLE `salary_period` ADD COLUMN `currency` VARCHAR(50) DEFAULT 'CNY' COMMENT '结算币种' AFTER `settlement_month`;
 5651.61290323
 
 8211.550000

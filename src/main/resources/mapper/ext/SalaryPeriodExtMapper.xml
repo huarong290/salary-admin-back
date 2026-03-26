@@ -8,6 +8,7 @@
         <result column="employee_id" property="employeeId" />
         <result column="work_month" property="workMonth" />
         <result column="settlement_month" property="settlementMonth" />
+        <result column="currency" property="currency" />
         <result column="start_date" property="startDate" />
         <result column="end_date" property="endDate" />
         <result column="month_days" property="monthDays" />
@@ -22,7 +23,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, employee_id, work_month, settlement_month, start_date, end_date, month_days, attendance_days,full_attendance_flag, delete_flag, create_by, create_time, update_by, update_time
+        id, employee_id, work_month, settlement_month,currency, start_date, end_date, month_days, attendance_days,full_attendance_flag, delete_flag, create_by, create_time, update_by, update_time
     </sql>
     <!-- 物理删除：直接删除记录 -->
     <delete id="physicalDeleteById">

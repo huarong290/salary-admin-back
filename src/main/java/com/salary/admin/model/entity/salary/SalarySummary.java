@@ -1,6 +1,9 @@
 package com.salary.admin.model.entity.salary;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.salary.admin.model.entity.base.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -9,6 +12,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -32,12 +36,49 @@ public class SalarySummary extends BaseEntity<SalarySummary> {
     @Schema(description = "汇总ID")
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+
+    /**
+     * 员工ID
+     */
+    @Schema(description = "员工ID")
+    @TableField("employee_id")
+    private Long employeeId;
+    /**
+     * 员工code
+     */
+    @Schema(description = "员工code")
+    @TableField("employee_code")
+    private String employeeCode;
+    /**
+     * 员工姓名
+     */
+    @Schema(description = "员工姓名(快照)")
+    @TableField("employee_name")
+    private String employeeName;
     /**
      * 薪资周期ID
      */
     @Schema(description = "薪资周期ID")
     @TableField("period_id")
     private Long periodId;
+    /**
+     * 结算月份
+     */
+    @Schema(description = "结算月份")
+    @TableField("settlement_month")
+    private String settlementMonth;
+    /**
+     * 结算月份开始日期
+     */
+    @Schema(description = "周期开始(快照)")
+    @TableField("period_start_date")
+    private LocalDate periodStartDate;
+    /**
+     * 结算月份结束日期
+     */
+    @Schema(description = "周期结束(快照)")
+    @TableField("period_end_date")
+    private LocalDate periodEndDate;
     /**
      * 结算币种(CNY/PHP/USDT)
      */

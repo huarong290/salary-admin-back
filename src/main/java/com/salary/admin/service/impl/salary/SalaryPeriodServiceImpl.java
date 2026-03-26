@@ -32,10 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -186,15 +184,11 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
             return p;
         }).collect(Collectors.toList());
 
+
         // ============================
-        // 6. 分批保存，避免一次性 SQL 过大
+        // 6.  优雅批量保存：利用 MP 原生机制，一行代码搞定分批插入 避免一次性 SQL 过大
         // ============================
-        int batchSize = 500;
-        for (int i = 0; i < periods.size(); i += batchSize) {
-            int end = Math.min(i + batchSize, periods.size());
-            List<SalaryPeriod> subList = periods.subList(i, end);
-            this.saveBatch(subList);
-        }
+        this.saveBatch(periods, 500);
         int successCount = periods.size();
         log.info("基础周期表批量初始化成功：新增 {} 条", periods.size());
         // ============================
@@ -205,7 +199,7 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
                 .successCount(successCount)
                 .skipCount(skipCount)
                 .settlementMonth(month)
-                .newPeriodEntities(periods) // 🌟 内部传输载荷
+                .newPeriodEntities(periods) // 内部传输载荷 (包含了员工名字，下游引擎美滋滋)
                 .build();
     }
 

@@ -22,6 +22,12 @@ public class PeriodBatchInitReqDTO implements Serializable {
     @Schema(description = "结算月份(YYYYMM)")
     private String settlementMonth;
     /**
+     * 结算币种
+     */
+    @NotBlank(message = "结算币种不能为空")
+    @Schema(description = "结算币种")
+    private String currency;
+    /**
      * 指定员工ID列表(为空则默认为所有在职员工)
      */
     @Schema(description = "指定员工ID列表(为空则默认为所有在职员工)")

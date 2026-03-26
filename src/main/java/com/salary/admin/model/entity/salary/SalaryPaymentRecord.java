@@ -53,6 +53,12 @@ public class SalaryPaymentRecord extends BaseEntity<SalaryPaymentRecord> {
     @TableField("archive_id")
     private Long archiveId;
     /**
+     * 结算月份
+     */
+    @Schema(description = "结算月份")
+    @TableField("settlement_month")
+    private String settlementMonth;
+    /**
      * 基本工资(系统计算快照)
      */
     @Schema(description = "基本工资(系统计算快照)")

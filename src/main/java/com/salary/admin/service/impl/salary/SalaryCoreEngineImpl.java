@@ -88,12 +88,29 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         if (CollectionUtils.isEmpty(periods)) {
             return;
         }
-
-        // 构造汇总数据（初始金额全部为 0）
+        // 1. 提取本次需要初始化的所有员工ID
+        List<Long> employeeIds = periods.stream()
+                .map(SalaryPeriod::getEmployeeId)
+                .distinct()
+                .collect(Collectors.toList());
+        // 2. 引擎层主动出击：批量获取员工基础信息 (用于快照组装)
+        Map<Long, SalaryEmployee> employeeMap = iSalaryEmployeeService.listByIds(employeeIds).stream()
+                .collect(Collectors.toMap(SalaryEmployee::getId, e -> e));
+        // 3.构造汇总数据（初始金额全部为 0）
         List<SalarySummary> summaries = periods.stream().map(p -> {
             SalarySummary s = new SalarySummary();
+            s.setEmployeeId(p.getEmployeeId());
+            // 获取该周期对应的员工实体
+            SalaryEmployee emp = employeeMap.get(p.getEmployeeId());
+
+            s.setEmployeeCode(emp != null ? emp.getEmployeeCode() : "");
+            s.setEmployeeName(emp != null ? emp.getEmployeeName() : "未知员工");
             s.setPeriodId(p.getId());
-            s.setCurrency("CNY");
+            s.setSettlementMonth(p.getSettlementMonth());
+            s.setPeriodStartDate(p.getStartDate());
+            s.setPeriodEndDate(p.getEndDate());
+            // 汇总大盘的币种，严格继承自对应的薪资周期
+            s.setCurrency(p.getCurrency() != null ? p.getCurrency() : "CNY");
             s.setExchangeRate(BigDecimal.ONE);
             s.setSalarySubtotal(BigDecimal.ZERO);
             s.setSalaryDeductionTotal(BigDecimal.ZERO);
@@ -422,8 +439,10 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             finalSalary = BigDecimal.ZERO;
         }
 
-        //提取外部参数
-        String currency = archive.getCurrency() != null ? archive.getCurrency() : "CNY";
+
+        // 提取外部参数，优先从当前周期表获取币种，档案币种仅作极限兜底
+        String currency = period.getCurrency() != null ? period.getCurrency() :
+                (archive.getCurrency() != null ? archive.getCurrency() : "CNY");
         BigDecimal exchangeRate = BigDecimal.ONE;
         String paymentMethod = "YH转账";
 
@@ -443,6 +462,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         record.setSummaryId(summaryId);
         record.setEmployeeId(archive.getEmployeeId());
         record.setArchiveId(archive.getId());
+        record.setSettlementMonth(period.getSettlementMonth());
         record.setBaseSalary(proratedBaseSalary);
         record.setIncomeTotal(incomeTotal);
         record.setDeductionTotal(deductionTotal);
@@ -480,14 +500,38 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         // ==========================================
         //新增：多币种及支付相关字段填充 (防空兜底)
         // ==========================================
-        // 手动调账时，去查该员工当前生效档案获取基准币种
-        SalaryArchiveVO archive = iSalaryArchiveService.getCurrentArchive(employeeId);
-        String currency = (archive != null && archive.getCurrency() != null) ? archive.getCurrency() : "CNY";
 
+
+        // 手动调账时，通过 summary 找到 period 获取当时锁定的结算币种
+        // ==========================================
+        SalarySummary summary = iSalarySummaryService.getById(summaryId);
+        SalaryPeriod period = summary != null ? iSalaryPeriodService.getById(summary.getPeriodId()) : null;
+
+        String currency = "CNY"; // 终极默认兜底
+        String settlementMonth = ""; // 用于落库分表的冗余片键
+        // 优先级 1：直接取当时的周期快照（最快，没有查档案的 DB 开销）
+        if (period != null) {
+            if (period.getCurrency() != null) {
+                currency = period.getCurrency();
+            }
+            settlementMonth = period.getSettlementMonth();
+        }
+        // 优先级 2：发生脏数据，周期里没币种。此时再去查数据库兜底 (Lazy Evaluation)
+        else if (summary != null) {
+            settlementMonth = summary.getSettlementMonth();
+            // 使用时间切片，精准查找【当时】生效的档案，而不是用 getCurrentArchive 查【现在】的
+            SalaryArchiveVO archive = this.matchArchiveByTimeSlice(employeeId, summary.getSettlementMonth());
+            if (archive != null && archive.getCurrency() != null) {
+                currency = archive.getCurrency();
+            }
+        }
+        record.setSettlementMonth(settlementMonth);
         record.setSettlementCurrency(currency);
         record.setExchangeRate(BigDecimal.ONE);
         record.setBaseFinalSalary(finalAmount);
         record.setPaymentMethod("人工线下结账");
+
+        // 保存发薪明细快照
         iSalaryPaymentRecordService.save(record);
         // 2. 刷新汇总单金额
         this.refreshSummaryAmountBySummaryId(summaryId);
@@ -812,14 +856,19 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         BigDecimal finalSalary = incomeTotal.subtract(deductionTotal);
         if (finalSalary.compareTo(BigDecimal.ZERO) < 0) finalSalary = BigDecimal.ZERO;
 
+        // 预览时，同样从 Period 获取真实币种
+        String currency = period.getCurrency() != null ? period.getCurrency() :
+                (archive.getCurrency() != null ? archive.getCurrency() : "CNY");
         // 9. 组装返回给前端的预览视图 (VO)
         SummaryVO previewVO = new SummaryVO();
+        previewVO.setPeriodId(period.getId()); // 顺手把周期ID传给前端
         previewVO.setEmployeeName(employee != null ? employee.getEmployeeName() : "未知员工");
         previewVO.setSettlementMonth(period.getSettlementMonth());
         previewVO.setSalarySubtotal(incomeTotal);
         previewVO.setSalaryDeductionTotal(deductionTotal);
         previewVO.setSalaryTotal(finalSalary);
-
+        //  将币种注入 VO 返回给前端的预览弹窗
+        previewVO.setCurrency(currency);
         return previewVO;
     }
 

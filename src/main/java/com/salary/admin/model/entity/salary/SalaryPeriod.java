@@ -54,6 +54,12 @@ public class SalaryPeriod extends BaseEntity<SalaryPeriod> {
     @TableField("settlement_month")
     private String settlementMonth;
     /**
+     * 结算币种
+     */
+    @Schema(description = "结算币种")
+    @TableField("currency")
+    private String currency;
+    /**
      * 开始日期
      */
     @Schema(description = "开始日期")
