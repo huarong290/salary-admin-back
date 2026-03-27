@@ -85,7 +85,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
         // 3. DTO 转 DO (复用 MapStruct)
         SysUser sysUser = sysUserConvert.toDO(reqDTO);
         // 4. 处理密码：如果没有传密码，默认设置初始密码为 "123456"
-        String rawPassword = StringUtils.isNotBlank(reqDTO.getPassword()) ? reqDTO.getPassword() : "123456";
+        String rawPassword = StringUtils.isNotBlank(reqDTO.getPassword().trim()) ? reqDTO.getPassword() : "123456";
         sysUser.setPassword(passwordEncoder.encode(rawPassword));
         // 5. 保存到数据库 (此时会触发之前写好的 MybatisPlusHandler，自动填充 createTime/createBy)
         sysUserExtMapper.insert(sysUser);
@@ -213,7 +213,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserExtMapper, SysUser> i
 
         // 覆盖新密码 (使用 Spring Security 加密)
         // 如果没有传新密码，默认设置为 "123456"
-        String rawPassword = StringUtils.isNotBlank(reqDTO.getPassword()) ? reqDTO.getPassword() : "123456";
+        String rawPassword = StringUtils.isNotBlank(reqDTO.getPassword().trim()) ? reqDTO.getPassword() : "123456";
         sysUser.setPassword(passwordEncoder.encode(rawPassword));
 
         // 执行更新 (MybatisPlusHandler 会自动更新 updateTime 和 updateBy)

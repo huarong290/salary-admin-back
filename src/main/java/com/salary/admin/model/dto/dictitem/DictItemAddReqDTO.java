@@ -21,7 +21,7 @@ public class DictItemAddReqDTO {
     @NotBlank(message = "字典项标签不能为空")
     @Size(max = 100, message = "标签长度不能超过100个字符")
     @Schema(description = "字典项标签 (展示用)", example = "泰达币 (USDT)", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String dictItemLabel;
+    private String dictItemName;
 
     @NotBlank(message = "字典项键值不能为空")
     @Size(max = 100, message = "键值长度不能超过100个字符")
@@ -30,7 +30,7 @@ public class DictItemAddReqDTO {
 
     @NotNull(message = "显示顺序不能为空")
     @Schema(description = "排序值 (越小越靠前)", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer sort;
+    private Integer dictItemSort;
 
     @NotNull(message = "状态不能为空")
     @Schema(description = "状态 (1:启用 0:停用)", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)

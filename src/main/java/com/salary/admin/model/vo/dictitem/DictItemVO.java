@@ -32,27 +32,27 @@ public class DictItemVO implements Serializable {
     private String dictTypeCode;
 
     /**
-     * 字典项标签 (展示用，如：泰达币)
-     */
-    @Schema(description = "字典项标签 (展示用，如：泰达币)")
-    private String dictItemLabel;
-
-    /**
      * 字典项值 (存库用，如：USDT)
      */
     @Schema(description = "字典项值 (存库用，如：USDT)")
     private String dictItemValue;
 
     /**
+     * 字典项标签 (展示用，如：泰达币)
+     */
+    @Schema(description = "字典项标签 (展示用，如：泰达币)")
+    private String dictItemLabel;
+
+    /**
      * 排序值 (数值越小越靠前)
      */
     @Schema(description = "排序值 (数值越小越靠前)")
-    private Integer sort;
+    private Integer dictItemSort;
 
     /**
-     * 是否启用: 1-启用, 0-停用
+     * 状态 (1:正常, 0:禁用)
      */
-    @Schema(description = "是否启用: 1-启用, 0-停用")
+    @Schema(description = "状态 (1:正常, 0:禁用)")
     private Integer status;
 
     /**

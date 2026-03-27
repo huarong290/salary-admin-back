@@ -93,6 +93,17 @@ public interface IRedisService {
     <T> T get(String key, Class<T> clazz);
 
     /**
+     * 获取列表并反序列化为指定类型的集合
+     * 解决泛型擦除导致的 List<LinkedHashMap> 问题
+     *
+     * @param key   Redis key
+     * @param clazz 集合中元素的类型
+     * @param <T>   泛型
+     * @return 元素列表
+     */
+    <T> List<T> getList(String key, Class<T> clazz);
+
+    /**
      * 批量设置多个 key-value
      */
     void mSet(Map<String, Object> map);

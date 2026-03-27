@@ -27,6 +27,9 @@ public class DictTypeQueryReqDTO extends PageQueryDTO {
     @Schema(description = "字典类型编码 (支持模糊查询)", example = "currency")
     private String dictTypeCode;
 
+    @Schema(description = "类别", example = "income/deduction/other")
+    private String dictCategory;
+
     @Schema(description = "状态 (0:启用 1:停用)", example = "0")
     private Integer status;
 }

@@ -34,17 +34,11 @@ public class SysDictItem extends BaseEntity<SysDictItem> {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
-     * 所属字典类型code
+     * 字典类型编码
      */
     @Schema(description = "所属字典类型code")
     @TableField("dict_type_code")
     private String dictTypeCode;
-    /**
-     * 字典项标签（如 男、女）
-     */
-    @Schema(description = "字典项标签（如 男、女）")
-    @TableField("dict_item_label")
-    private String dictItemLabel;
     /**
      * 字典项值（如 1、0）
      */
@@ -52,15 +46,21 @@ public class SysDictItem extends BaseEntity<SysDictItem> {
     @TableField("dict_item_value")
     private String dictItemValue;
     /**
+     * 字典类型名称（如 男、女）
+     */
+    @Schema(description = "字典项标签（如 男、女）")
+    @TableField("dict_item_label")
+    private String dictItemLabel;
+    /**
      * 排序值，越小越靠前
      */
     @Schema(description = "排序值，越小越靠前")
-    @TableField("sort")
-    private Integer sort;
+    @TableField("dict_item_sort")
+    private Integer dictItemSort;
     /**
-     * 是否启用，0表示启用
+     * 状态 (1:正常, 0:禁用)
      */
-    @Schema(description = "是否启用，0表示启用")
+    @Schema(description = "状态 (1:正常, 0:禁用)")
     @TableField("status")
     private Integer status;
     /**

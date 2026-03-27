@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.salary.admin.mapper.ext.SalaryArchiveExtMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.salary.SalaryArchive">
+        <id column="id" property="id" />
+        <result column="employee_id" property="employeeId" />
+        <result column="version" property="version" />
+        <result column="latest_flag" property="latestFlag" />
+        <result column="effective_date" property="effectiveDate" />
+        <result column="expiry_date" property="expiryDate" />
+        <result column="audit_status" property="auditStatus" />
+        <result column="base_salary" property="baseSalary" />
+        <result column="full_attendance_bonus" property="fullAttendanceBonus" />
+        <result column="probation_base_salary" property="probationBaseSalary" />
+        <result column="currency" property="currency" />
+        <result column="change_reason" property="changeReason" />
+        <result column="tax_rule_code" property="taxRuleCode" />
+        <result column="remark" property="remark" />
+        <result column="delete_flag" property="deleteFlag" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, employee_id, version, latest_flag, effective_date, expiry_date, audit_status, base_salary, full_attendance_bonus, probation_base_salary, currency, change_reason, tax_rule_code, remark, delete_flag, create_by, create_time, update_by, update_time
+    </sql>
+
+</mapper>

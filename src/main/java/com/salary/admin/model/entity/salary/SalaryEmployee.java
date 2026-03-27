@@ -17,7 +17,7 @@ import java.time.LocalDate;
  * 员工基本信息表
  *
  * @author system
- * @since 2026-03-11
+ * @since 2026-03-27
  */
 @Schema(name = "SalaryEmployee", description = "员工基本信息表")
 @Data
@@ -59,31 +59,29 @@ public class SalaryEmployee extends BaseEntity<SalaryEmployee> {
     @TableField("department")
     private String department;
     /**
-     * 在职状态: 0-离职, 1-在职
+     * 在职状态: 1-在职, 0-离职
      */
-    @Schema(description = "在职状态: 0-离职, 1-在职")
+    @Schema(description = "在职状态: 1-在职, 0-离职")
     @TableField("employment_status")
-    private Integer employmentStatus;
+    private Boolean employmentStatus;
     /**
-     * 是否转岗: 0-否, 1-是
+     * 是否转岗: 1-是, 0-否
      */
-    @Schema(description = "是否转岗: 0-否, 1-是")
+    @Schema(description = "是否转岗: 1-是, 0-否")
     @TableField("transfer_flag")
-    private Integer transferFlag;
+    private Boolean transferFlag;
     /**
-     * 住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴'
+     * 住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴
      */
-    @Schema(description = "住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴'")
+    @Schema(description = "住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴")
     @TableField("accommodation_status")
-    private Integer accommodationStatus;
-
+    private Boolean accommodationStatus;
     /**
      * 入职日期
      */
     @Schema(description = "入职日期")
     @TableField("entry_date")
     private LocalDate entryDate;
-
     @Override
     public Serializable pkVal() {
         return this.id;

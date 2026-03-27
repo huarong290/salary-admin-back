@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.salary.admin.mapper.ext.SalaryItemDetailExtMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.salary.SalaryItemDetail">
+        <id column="id" property="id" />
+        <result column="employee_id" property="employeeId" />
+        <result column="period_id" property="periodId" />
+        <result column="summary_id" property="summaryId" />
+        <result column="item_type" property="itemType" />
+        <result column="item_config_id" property="itemConfigId" />
+        <result column="item_code" property="itemCode" />
+        <result column="item_name" property="itemName" />
+        <result column="category_dict_value" property="categoryDictValue" />
+        <result column="source_type" property="sourceType" />
+        <result column="archive_id" property="archiveId" />
+        <result column="archive_item_id" property="archiveItemId" />
+        <result column="rule_code" property="ruleCode" />
+        <result column="original_currency" property="originalCurrency" />
+        <result column="original_amount" property="originalAmount" />
+        <result column="exchange_rate" property="exchangeRate" />
+        <result column="settlement_amount" property="settlementAmount" />
+        <result column="settlement_currency" property="settlementCurrency" />
+        <result column="calc_priority" property="calcPriority" />
+        <result column="calc_snapshot" property="calcSnapshot" />
+        <result column="remark" property="remark" />
+        <result column="delete_flag" property="deleteFlag" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, employee_id, period_id, summary_id, item_type, item_config_id, item_code, item_name, category_dict_value, source_type, archive_id, archive_item_id, rule_code, original_currency, original_amount, exchange_rate, settlement_amount, settlement_currency, calc_priority, calc_snapshot, remark, delete_flag, create_by, create_time, update_by, update_time
+    </sql>
+
+</mapper>

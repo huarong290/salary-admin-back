@@ -24,6 +24,9 @@ public class DictTypeAddReqDTO {
     @Schema(description = "字典类型名称", example = "币种类型", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictTypeName;
 
+    @Schema(description = "类别", example = "income/deduction/other")
+    private String dictCategory;
+
     @NotNull(message = "状态不能为空")
     @Schema(description = "状态 (0:启用 1:停用)", example = "0", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer status;

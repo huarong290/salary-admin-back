@@ -65,7 +65,7 @@ spring:
 # ------------------------------------------------------
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
-  type-aliases-package: com.salary.admin.entity
+  type-aliases-package: com.salary.admin.model.entity
   configuration:
     map-underscore-to-camel-case: true # 开启下划线转驼峰
     cache-enabled: false               # 手撸系统建议先关闭二级缓存，避免数据不一致
@@ -73,7 +73,7 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto                    # 主键策略：数据库自增
-      logic-delete-field: deleted      # 逻辑删除字段（需在数据库对应字段默认值为0）
+      logic-delete-field: deleteFlag      # 逻辑删除字段（需在数据库对应字段默认值为0）
       logic-delete-value: 1            # 已删除状态值
       logic-not-delete-value: 0        # 未删除状态值
 
@@ -121,7 +121,7 @@ logging:
     org.springframework.security: INFO
 
 # ------------------------------------------------------
-# 8. 验证码配置属性
+# 9. 验证码配置属性
 # ------------------------------------------------------
 salary:
   security:

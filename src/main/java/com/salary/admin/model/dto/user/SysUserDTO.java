@@ -34,6 +34,10 @@ public class SysUserDTO {
     // 注意：修改用户信息时前端通常不传密码（或传空），因此这里不加 @NotBlank，由 Service 层根据是新增还是修改做动态校验
     private String password;
 
+    @Schema(description = "密码盐值", example = "123456")
+    // 注意：修改用户信息时前端通常不传密码（或传空），因此这里不加 @NotBlank，由 Service 层根据是新增还是修改做动态校验
+    private String salt;
+
     @Schema(description = "用户昵称", requiredMode = Schema.RequiredMode.REQUIRED, example = "张三")
     @NotBlank(message = "用户昵称不能为空")
     @Size(max = 30, message = "用户昵称长度不能超过 30 个字符")

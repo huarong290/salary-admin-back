@@ -1,9 +1,6 @@
 package com.salary.admin.model.entity.salary;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.salary.admin.model.entity.base.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -13,13 +10,12 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * 薪资汇总与结算表
  *
  * @author system
- * @since 2026-03-11
+ * @since 2026-03-27
  */
 @Schema(name = "SalarySummary", description = "薪资汇总与结算表")
 @Data
@@ -36,7 +32,6 @@ public class SalarySummary extends BaseEntity<SalarySummary> {
     @Schema(description = "汇总ID")
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-
     /**
      * 员工ID
      */
@@ -44,15 +39,15 @@ public class SalarySummary extends BaseEntity<SalarySummary> {
     @TableField("employee_id")
     private Long employeeId;
     /**
-     * 员工code
+     * 员工编号快照
      */
-    @Schema(description = "员工code")
+    @Schema(description = "员工编号快照")
     @TableField("employee_code")
     private String employeeCode;
     /**
-     * 员工姓名
+     * 员工姓名快照
      */
-    @Schema(description = "员工姓名(快照)")
+    @Schema(description = "员工姓名快照")
     @TableField("employee_name")
     private String employeeName;
     /**
@@ -62,89 +57,84 @@ public class SalarySummary extends BaseEntity<SalarySummary> {
     @TableField("period_id")
     private Long periodId;
     /**
-     * 结算月份
+     * 结算月份 (YYYYMM)
      */
-    @Schema(description = "结算月份")
+    @Schema(description = "结算月份 (YYYYMM)")
     @TableField("settlement_month")
     private String settlementMonth;
     /**
-     * 结算月份开始日期
+     * 周期开始快照
      */
-    @Schema(description = "周期开始(快照)")
+    @Schema(description = "周期开始快照")
     @TableField("period_start_date")
     private LocalDate periodStartDate;
     /**
-     * 结算月份结束日期
+     * 周期结束快照
      */
-    @Schema(description = "周期结束(快照)")
+    @Schema(description = "周期结束快照")
     @TableField("period_end_date")
     private LocalDate periodEndDate;
     /**
-     * 结算币种(CNY/PHP/USDT)
+     * 收入合计（item_type=1）
      */
-    @Schema(description = "结算币种(CNY/PHP/USDT)")
-    @TableField("currency")
-    private String currency;
+    @Schema(description = "收入合计（item_type=1）")
+    @TableField("income_total")
+    private BigDecimal incomeTotal;
     /**
-     * 汇率(1本币兑X目标币快照)
+     * 扣款合计（item_type=2）
      */
-    @Schema(description = "汇率(1本币兑X目标币快照)")
-    @TableField("exchange_rate")
-    private BigDecimal exchangeRate;
+    @Schema(description = "扣款合计（item_type=2）")
+    @TableField("deduction_total")
+    private BigDecimal deductionTotal;
     /**
-     * 应发小计(本币)
+     * 税费合计（item_type=3）
      */
-    @Schema(description = "应发小计(本币)")
-    @TableField("salary_subtotal")
-    private BigDecimal salarySubtotal;
+    @Schema(description = "税费合计（item_type=3）")
+    @TableField("tax_total")
+    private BigDecimal taxTotal;
     /**
-     * 扣款小计(本币)
+     * 应发工资（税前）通常 = income_total
      */
-    @Schema(description = "扣款小计(本币)")
-    @TableField("salary_deduction_total")
-    private BigDecimal salaryDeductionTotal;
+    @Schema(description = "应发工资（税前）通常 = income_total")
+    @TableField("gross_salary")
+    private BigDecimal grossSalary;
     /**
-     * 最终结算薪资(本币)
+     * 实发工资（最终） net = income - deduction - tax
      */
-    @Schema(description = "最终结算薪资(本币)")
-    @TableField("salary_total")
-    private BigDecimal salaryTotal;
+    @Schema(description = "实发工资（最终） net = income - deduction - tax")
+    @TableField("net_salary")
+    private BigDecimal netSalary;
     /**
-     * 实发金额(目标币)
+     * 计算版本号(用于重算/历史追溯)
      */
-    @Schema(description = "实发金额(目标币)")
-    @TableField("salary_converted")
-    private BigDecimal salaryConverted;
+    @Schema(description = "计算版本号(用于重算/历史追溯)")
+    @Version
+    @TableField("calc_version")
+    private Integer calcVersion;
     /**
-     * 折合人民币(存档)
+     *  计算状态:0-未计算 1-成功 2-失败
      */
-    @Schema(description = "折合人民币(存档)")
-    @TableField("salary_rmb")
-    private BigDecimal salaryRmb;
+    @Schema(description = " 计算状态:0-未计算 1-成功 2-失败")
+    @TableField("calc_status")
+    private Byte calcStatus;
     /**
-     * 折合USDT(存档)
+     * 发放状态：0-未支付 1-已支付 2-支付失败
      */
-    @Schema(description = "折合USDT(存档)")
-    @TableField("salary_usdt")
-    private BigDecimal salaryUsdt;
-    /**
-     * 发放账号/钱包地址(快照)
-     */
-    @Schema(description = "发放账号/钱包地址(快照)")
-    @TableField("target_account")
-    private String targetAccount;
-    /**
-     * 支付状态(0未支付 1已支付 2失败 3锁定)
-     */
-    @Schema(description = "支付状态(0未支付 1已支付 2失败 3锁定)")
+    @Schema(description = "发放状态：0-未支付 1-已支付 2-支付失败")
     @TableField("payment_status")
-    private Integer paymentStatus;
+    private Byte paymentStatus;
     /**
-     * 实际发放/确认时间
+     * 是否锁定(1:锁定, 0:未锁定, 发放后锁定不可重算)
      */
-    @Schema(description = "实际发放/确认时间")
-    @TableField("pay_time")
-    private LocalDateTime payTime;
+    @Schema(description = "是否锁定(1:锁定, 0:未锁定, 发放后锁定不可重算)")
+    @TableField("lock_flag")
+    private Byte lockFlag;
+    /**
+     * 汇总快照(用于展示工资单):{\"income\": [...],\"deduction\": [...],\"tax\": [...]}
+     */
+    @Schema(description = "汇总快照(用于展示工资单):{\"income\": [...],\"deduction\": [...],\"tax\": [...]}")
+    @TableField("detail_json")
+    private String detailJson;
     /**
      * 备注
      */

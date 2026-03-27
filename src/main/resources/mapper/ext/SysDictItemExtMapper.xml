@@ -6,9 +6,9 @@
     <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.sys.SysDictItem">
         <id column="id" property="id" />
         <result column="dict_type_code" property="dictTypeCode" />
-        <result column="dict_item_label" property="dictItemLabel" />
         <result column="dict_item_value" property="dictItemValue" />
-        <result column="sort" property="sort" />
+        <result column="dict_item_label" property="dictItemLabel" />
+        <result column="dict_item_sort" property="dictItemSort" />
         <result column="status" property="status" />
         <result column="remark" property="remark" />
         <result column="delete_flag" property="deleteFlag" />
@@ -20,7 +20,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, dict_type_code, dict_item_label, dict_item_value, sort, status, remark, delete_flag, create_by, create_time, update_by, update_time
+        id, dict_type_code, dict_item_value,dict_item_label, dict_item_sort, status, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 </mapper>

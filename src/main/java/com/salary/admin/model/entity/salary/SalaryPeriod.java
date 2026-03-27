@@ -18,7 +18,7 @@ import java.time.LocalDate;
  * 薪资周期信息表
  *
  * @author system
- * @since 2026-03-11
+ * @since 2026-03-27
  */
 @Schema(name = "SalaryPeriod", description = "薪资周期信息表")
 @Data
@@ -42,23 +42,17 @@ public class SalaryPeriod extends BaseEntity<SalaryPeriod> {
     @TableField("employee_id")
     private Long employeeId;
     /**
-     * 在岗月份
+     * 在岗月份 (YYYYMM)
      */
-    @Schema(description = "在岗月份")
+    @Schema(description = "在岗月份 (YYYYMM)")
     @TableField("work_month")
     private String workMonth;
     /**
-     * 结算月份（格式：YYYYMM）
+     * 结算月份 (YYYYMM)
      */
-    @Schema(description = "结算月份（格式：YYYYMM）")
+    @Schema(description = "结算月份 (YYYYMM)")
     @TableField("settlement_month")
     private String settlementMonth;
-    /**
-     * 结算币种
-     */
-    @Schema(description = "结算币种")
-    @TableField("currency")
-    private String currency;
     /**
      * 开始日期
      */
@@ -83,13 +77,16 @@ public class SalaryPeriod extends BaseEntity<SalaryPeriod> {
     @Schema(description = "出勤天数")
     @TableField("attendance_days")
     private BigDecimal attendanceDays;
-
     /**
      * 是否满勤 (1:是, 0:否)
      */
     @Schema(description = "是否满勤 (1:是, 0:否)")
     @TableField("full_attendance_flag")
-    private Integer fullAttendanceFlag;
+    private Boolean fullAttendanceFlag;
+    /**
+     * 删除标识
+     */
+    @Schema(description = "删除标识")
 
     @Override
     public Serializable pkVal() {

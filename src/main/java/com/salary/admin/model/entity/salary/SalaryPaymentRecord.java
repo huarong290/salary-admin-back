@@ -12,12 +12,13 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 薪资结算明细记录表
  *
  * @author system
- * @since 2026-03-15
+ * @since 2026-03-27
  */
 @Schema(name = "SalaryPaymentRecord", description = "薪资结算明细记录表")
 @Data
@@ -28,16 +29,12 @@ public class SalaryPaymentRecord extends BaseEntity<SalaryPaymentRecord> {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 记录ID
-     */
-    @Schema(description = "记录ID")
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
-     * 关联汇总ID
+     * 汇总ID
      */
-    @Schema(description = "关联汇总ID")
+    @Schema(description = "汇总ID")
     @TableField("summary_id")
     private Long summaryId;
     /**
@@ -47,82 +44,75 @@ public class SalaryPaymentRecord extends BaseEntity<SalaryPaymentRecord> {
     @TableField("employee_id")
     private Long employeeId;
     /**
-     * 关联薪资档案版本ID(系统计算必填)
+     * 支付流水号/批次号
      */
-    @Schema(description = "关联薪资档案版本ID(系统计算必填)")
-    @TableField("archive_id")
-    private Long archiveId;
+    @Schema(description = "支付流水号/批次号")
+    @TableField("transaction_no")
+    private String transactionNo;
     /**
-     * 结算月份
+     * 本次核销本位币金额
      */
-    @Schema(description = "结算月份")
-    @TableField("settlement_month")
-    private String settlementMonth;
+    @Schema(description = "本次核销本位币金额")
+    @TableField("base_amount")
+    private BigDecimal baseAmount;
     /**
-     * 基本工资(系统计算快照)
+     * 结算币种
      */
-    @Schema(description = "基本工资(系统计算快照)")
-    @TableField("base_salary")
-    private BigDecimal baseSalary;
-    /**
-     * 收入合计
-     */
-    @Schema(description = "收入合计")
-    @TableField("income_total")
-    private BigDecimal incomeTotal;
-    /**
-     * 扣款合计
-     */
-    @Schema(description = "扣款合计")
-    @TableField("deduction_total")
-    private BigDecimal deductionTotal;
-    /**
-     * 最终总计(无论是计算还是手动录入)
-     */
-    @Schema(description = "最终总计(无论是计算还是手动录入)")
-    @TableField("final_salary")
-    private BigDecimal finalSalary;
-    /**
-     * 是否手动录入总额(0系统计算 1手动录入)
-     */
-    @Schema(description = "是否手动录入总额(0系统计算 1手动录入)")
-    @TableField("is_manual")
-    private Integer isManual;
-    /**
-     * 结算币种(CNY/USD/PHP等)
-     */
-    @Schema(description = "结算币种(CNY/USD/PHP等)")
+    @Schema(description = "结算币种")
     @TableField("settlement_currency")
     private String settlementCurrency;
-
     /**
-     * 核算汇率(相对于系统本位币)
+     * 汇率
      */
-    @Schema(description = "核算汇率(相对于系统本位币)")
+    @Schema(description = "汇率")
     @TableField("exchange_rate")
     private BigDecimal exchangeRate;
     /**
-     * 折合本位币实发金额(用于汇总报表)
+     * 实际到账金额 (base_amount * exchange_rate)
      */
-    @Schema(description = "折合本位币实发金额(用于汇总报表)")
-    @TableField("base_final_salary")
-    private BigDecimal baseFinalSalary;
+    @Schema(description = "实际到账金额 (base_amount * exchange_rate)")
+    @TableField("actual_amount")
+    private BigDecimal actualAmount;
     /**
-     * 发放方式(银行卡/USDT地址/现金)
+     * 支付方式
      */
-    @Schema(description = "发放方式(银行卡/USDT地址/现金)")
+    @Schema(description = "支付方式")
     @TableField("payment_method")
     private String paymentMethod;
     /**
-     * 计算详情快照(存储当时所有income/deduction的JSON)
+     * 支付渠道/银行名称
      */
-    @Schema(description = "计算详情快照(存储当时所有income/deduction的JSON)")
-    @TableField("detail_json")
-    private String detailJson;
+    @Schema(description = "支付渠道/银行名称")
+    @TableField("payment_channel")
+    private String paymentChannel;
     /**
-     * 备注
+     * 收款账号/钱包地址
      */
-    @Schema(description = "备注")
+    @Schema(description = "收款账号/钱包地址")
+    @TableField("target_account")
+    private String targetAccount;
+    /**
+     * 支付单状态: 0-待处理, 1-支付中, 2-支付成功, 3-支付失败
+     */
+    @Schema(description = "支付单状态: 0-待处理, 1-支付中, 2-支付成功, 3-支付失败")
+    @TableField("payment_status")
+    private Byte paymentStatus;
+    /**
+     * 实际打款/到账时间
+     */
+    @Schema(description = "实际打款/到账时间")
+    @TableField("payment_time")
+    private LocalDateTime paymentTime;
+    /**
+     * 支付失败原因
+     */
+    @Schema(description = "支付失败原因")
+    @TableField("error_msg")
+    private String errorMsg;
+    /**
+     * 财务备注
+     */
+    @Schema(description = "财务备注")
     @TableField("remark")
     private String remark;
 

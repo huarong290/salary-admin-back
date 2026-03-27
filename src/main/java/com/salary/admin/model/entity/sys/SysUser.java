@@ -1,19 +1,15 @@
 package com.salary.admin.model.entity.sys;
 
-import com.salary.admin.model.entity.base.BaseEntity;
-import io.swagger.v3.oas.annotations.media.Schema;
-import com.baomidou.mybatisplus.annotation.*;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.salary.admin.model.entity.base.BaseEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -50,6 +46,12 @@ public class SysUser extends BaseEntity<SysUser> {
     @Schema(description = "加密密码")
     @TableField("password")
     private String password;
+    /**
+     * 密码盐值
+     */
+    @Schema(description = "加密密码")
+    @TableField("salt")
+    private String salt;
     /**
      * 用户昵称
      */

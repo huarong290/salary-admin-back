@@ -17,7 +17,7 @@ import java.math.BigDecimal;
  * 薪资档案固定项明细表
  *
  * @author system
- * @since 2026-03-13
+ * @since 2026-03-27
  */
 @Schema(name = "SalaryArchiveItem", description = "薪资档案固定项明细表")
 @Data
@@ -31,9 +31,9 @@ public class SalaryArchiveItem extends BaseEntity<SalaryArchiveItem> {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
-     * 关联具体的某一个版本的档案ID
+     * 档案ID
      */
-    @Schema(description = "关联具体的某一个版本的档案ID")
+    @Schema(description = "档案ID")
     @TableField("archive_id")
     private Long archiveId;
     /**
@@ -41,50 +41,37 @@ public class SalaryArchiveItem extends BaseEntity<SalaryArchiveItem> {
      */
     @Schema(description = "项目类型: 1-收入项, 2-扣款项")
     @TableField("item_type")
-    private Integer itemType;
+    private Boolean itemType;
     /**
-     * 对应的收入/扣款类型ID
+     * 关联salary_item_config.id
      */
-    @Schema(description = "对应的收入/扣款类型ID")
-    @TableField("type_id")
-    private Long typeId;
+    @Schema(description = "关联salary_item_config.id")
+    @TableField("item_config_id")
+    private Long itemConfigId;
     /**
-     * 收入/扣款项名称快照 (如：基本工资、养老保险)
+     * 项目名称快照
      */
-    @Schema(description = "收入/扣款项名称快照")
+    @Schema(description = "项目名称快照")
     @TableField("type_name")
     private String typeName;
     /**
-     * 分类名称快照 (如：津贴补贴、五险一金)
+     * 分类字典值快照
      */
-    @Schema(description = "分类名称快照")
-    @TableField("category_name")
-    private String categoryName;
+    @Schema(description = "分类字典值快照")
+    @TableField("category_dict_value")
+    private String categoryDictValue;
     /**
-     * 计算方式: 1-固定金额, 2-按基数比例
+     * 表达式脚本
      */
-    @Schema(description = "计算方式: 1-固定金额, 2-按基数比例")
-    @TableField("calc_type")
-    private Integer calcType;
+    @Schema(description = "表达式脚本")
+    @TableField("rule_script")
+    private String ruleScript;
     /**
-     * 计算基数 (为空则默认取主表base_salary)
+     * 固定金额
      */
-    @Schema(description = "计算基数 (为空则默认取主表base_salary)")
-    @TableField("base_amount")
-    private BigDecimal baseAmount;
-    /**
-     * 固定金额 (若为比例计算，此字段可作为计算结果缓存)
-     */
-    @Schema(description = "固定金额 (若为比例计算，此字段可作为计算结果缓存)")
+    @Schema(description = "固定金额")
     @TableField("amount")
     private BigDecimal amount;
-    /**
-     * 计算比例 (如 0.0800 代表 8%)
-     */
-    @Schema(description = "计算比例 (如 0.0800 代表 8%)")
-    @TableField("ratio")
-    private BigDecimal ratio;
-
 
     @Override
     public Serializable pkVal() {

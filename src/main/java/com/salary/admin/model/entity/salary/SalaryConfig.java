@@ -16,7 +16,7 @@ import java.io.Serializable;
  * 薪资系统全局配置表
  *
  * @author system
- * @since 2026-03-20
+ * @since 2026-03-27
  */
 @Schema(name = "SalaryConfig", description = "薪资系统全局配置表")
 @Data
@@ -30,29 +30,41 @@ public class SalaryConfig extends BaseEntity<SalaryConfig> {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
-     * 配置键:如 SETTLEMENT_CURRENCY
+     * 配置键
      */
-    @Schema(description = "配置键:如 SETTLEMENT_CURRENCY")
+    @Schema(description = "配置键")
     @TableField("config_key")
     private String configKey;
     /**
-     * 配置值:如 USDT
+     * 配置值
      */
-    @Schema(description = "配置值:如 USDT")
+    @Schema(description = "配置值")
     @TableField("config_value")
     private String configValue;
     /**
-     * 配置名称:如 默认结算币种
+     * 配置名称
      */
-    @Schema(description = "配置名称:如 默认结算币种")
+    @Schema(description = "配置名称")
     @TableField("config_name")
     private String configName;
     /**
-     * 是否激活: 1-是, 0-否
+     * 值类型: string, number, boolean, json
      */
-    @Schema(description = "是否激活: 1-是, 0-否")
+    @Schema(description = "值类型: string, number, boolean, json")
+    @TableField("config_type")
+    private String configType;
+    /**
+     * 配置分组 (如: calc_rule, notification)
+     */
+    @Schema(description = "配置分组 (如: calc_rule, notification)")
+    @TableField("config_group")
+    private String configGroup;
+    /**
+     * 是否激活 (1:是,0:否)
+     */
+    @Schema(description = "是否激活 (1:是,0:否)")
     @TableField("active_flag")
-    private Integer activeFlag;
+    private Boolean activeFlag;
     /**
      * 备注
      */

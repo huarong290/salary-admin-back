@@ -1,14 +1,7 @@
 package com.salary.admin.service.salary;
 
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.salary.admin.common.PageResult;
-import com.salary.admin.model.dto.salary.archive.ArchiveAddReqDTO;
-import com.salary.admin.model.dto.salary.archive.ArchiveAuditDTO;
-import com.salary.admin.model.dto.salary.archive.ArchiveQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryArchive;
-import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
-
-import java.util.List;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
  * <p>
@@ -16,52 +9,8 @@ import java.util.List;
  * </p>
  *
  * @author system
- * @since 2026-03-13
+ * @since 2026-03-27
  */
-
 public interface ISalaryArchiveService extends IService<SalaryArchive> {
 
-    /**
-     * 分页查询员工薪资档案列表
-     * 通常需要关联 salary_employee 表获取员工姓名和工号
-     */
-    PageResult<SalaryArchiveVO> selectArchivePage(ArchiveQueryReqDTO queryReq);
-
-    /**
-     * 提交定薪/调薪方案 (核心业务)
-     * 包含：闭合旧版本、生成新版本、保存动态明细项
-     * @param saveReq 包含主表及明细项的请求对象
-     */
-    boolean createNewSalaryVersion(ArchiveAddReqDTO saveReq);
-
-    /**
-     * 获取员工当前正在生效的薪资档案详情
-     * @param employeeId 员工ID
-     */
-    SalaryArchiveVO getCurrentArchive(Long employeeId);
-
-    /**
-     * 获取指定版本的档案详情（含明细项列表）
-     * @param archiveId 档案主键ID
-     */
-    SalaryArchiveVO getArchiveDetail(Long archiveId);
-
-    /**
-     * 撤销/删除最新版本 (仅限最新版本且未被核算引用时)
-     */
-    boolean revokeLatestVersion(Long employeeId);
-
-    /**
-     * 审核薪资档案方案
-     * 包含：通过后切换版本状态、驳回后记录原因
-     * @param auditDTO 审核请求对象（含ID、结果状态、备注）
-     * @return 是否操作成功
-     */
-    boolean auditArchive(ArchiveAuditDTO auditDTO);
-
-    /**
-     * 🌟 新增：批量获取所有在职员工的最新生效档案
-     * 用于 SalaryCoreEngine 全员核算引擎，一次性拉取所有待发薪人员的核算基准
-     */
-    List<SalaryArchiveVO> listActiveEmployeeArchives();
 }

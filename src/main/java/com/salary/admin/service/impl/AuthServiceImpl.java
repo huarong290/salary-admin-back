@@ -64,7 +64,7 @@ public class AuthServiceImpl implements IAuthService {
         iCaptchaService.validateCaptcha(dto.getCaptchaId(), dto.getCaptchaCode());
         //2. 获取用户信息并校验
         SysUser sysUser = iSysUserService.selectUserByUsername(dto.getUsername());
-        if (sysUser == null || !passwordEncoder.matches(dto.getPassword(), sysUser.getPassword())) {
+        if (sysUser == null || !passwordEncoder.matches(dto.getPassword().trim(), sysUser.getPassword())) {
             // 生产建议：返回模糊错误信息，防止账号嗅探
             throw new BusinessException("用户名或密码错误");
         }

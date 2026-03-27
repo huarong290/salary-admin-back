@@ -46,9 +46,15 @@ public class SysDictType extends BaseEntity<SysDictType> {
     @TableField("dict_type_name")
     private String dictTypeName;
     /**
-     * 是否启用,0 表示启用
+     * 类别（如 income/deduction/other）
      */
-    @Schema(description = "是否启用,0 表示启用")
+    @Schema(description = "类别（如 income/deduction/other）")
+    @TableField("dict_category")
+    private String dictCategory;
+    /**
+     * 状态 (1:正常, 0:禁用)
+     */
+    @Schema(description = "状态 (1:正常, 0:禁用)")
     @TableField("status")
     private Integer status;
     /**

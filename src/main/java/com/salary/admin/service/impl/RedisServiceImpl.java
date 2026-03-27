@@ -2,12 +2,10 @@ package com.salary.admin.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.salary.admin.service.IRedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.connection.ReturnType;
-import org.springframework.data.redis.core.RedisCallback;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -152,6 +150,10 @@ public class RedisServiceImpl implements IRedisService {
     @Override
     public Boolean setEx(String key, Object value, long timeout, TimeUnit unit) {
         try {
+            String json = toJson(value);
+            if (json == null) {
+                return false;
+            }
             // opsForValue().set 如果没有配置特殊的监听，通常不会返回 null
             redisTemplate.opsForValue().set(key, toJson(value), timeout, unit);
             return true;
@@ -167,6 +169,25 @@ public class RedisServiceImpl implements IRedisService {
     @Override
     public <T> T get(String key, Class<T> clazz) {
         return fromJson(redisTemplate.opsForValue().get(key), clazz);
+    }
+
+    /**
+     * 获取列表并反序列化为指定类型的集合
+     */
+    @Override
+    public <T> List<T> getList(String key, Class<T> clazz) {
+        String json = redisTemplate.opsForValue().get(key);
+        if (StringUtils.isBlank(json)) {
+            return Collections.emptyList();
+        }
+        try {
+            // 🌟 核心逻辑：使用 TypeFactory 构造 List<T> 类型
+            return objectMapper.readValue(json,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, clazz));
+        } catch (JsonProcessingException e) {
+            log.error("Redis getList 反序列化失败: key={}", key, e);
+            return Collections.emptyList();
+        }
     }
 
     /**
