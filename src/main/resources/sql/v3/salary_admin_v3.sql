@@ -119,7 +119,7 @@ CREATE TABLE `sys_dict_type`
     `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `dict_type_code` VARCHAR(50)  NOT NULL COMMENT '字典类型编码',
     `dict_type_name` VARCHAR(100) NOT NULL COMMENT '字典类型名称',
-    `dict_category`  VARCHAR(50)  NOT NULL COMMENT '类别：income/deduction/other',
+    `dict_category` VARCHAR(50) NOT NULL DEFAULT 'common' COMMENT '所属业务模块：如 system(系统), hr(人事), salary(薪资), finance(财务)',
     `status`         TINYINT UNSIGNED NOT NULL DEFAULT '1' COMMENT '状态 (1:启用, 0:禁用)',
     `remark`         VARCHAR(255) NOT NULL DEFAULT '' COMMENT '备注说明',
     `delete_flag`    BIGINT UNSIGNED NOT NULL DEFAULT '0' COMMENT '删除标识',

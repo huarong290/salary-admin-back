@@ -135,18 +135,19 @@ VALUES (4, 10, 'system'),
 -- ==========================================================
 -- 初始化字典类型数据
 -- ==========================================================
-INSERT INTO `sys_dict_type` (`dict_type_code`, `dict_type_name`, `dict_category`, `status`, `remark`, `create_by`)
-VALUES
--- 收入类类别 (income)
-('income_type', '收入项类型', 'income', 1, '薪资组成中的收入项目', 'system'),
+INSERT INTO `sys_dict_type` (`dict_type_code`, `dict_type_name`, `dict_category`, `remark`, `create_by`) VALUES
+-- 薪资模块 (salary)
+('salary_income_type', '薪资收入二级分类', 'salary', '用于工资条收入模块的分组展示', 'system'),
+('salary_deduction_type', '薪资扣款二级分类', 'salary', '用于工资条扣款模块的分组展示', 'system'),
+('salary_tax_social_type', '税费与社保二级分类', 'salary', '用于个人代扣税费的分组展示', 'system'),
+('salary_company_expense_type', '公司统筹支出分类', 'salary', '用于财务成本核算，不在工资条展示', 'system'),
 
--- 扣款类类别 (deduction)
-('deduction_type', '扣款项类型', 'deduction', 1, '薪资组成中的扣款项目', 'system'),
+-- 财务模块 (finance)
+('payment_channel', '支付打款渠道', 'finance', '出纳打款的资金渠道', 'system'),
+('settlement_currency', '结算本位币种', 'finance', '用于薪资计算和发放的币种', 'system'),
 
--- 其他系统类别 (other)
-('currency_type', '结算币种', 'other', 1, '薪资结算使用的币种', 'system'),
-('payment_status', '支付状态', 'other', 1, '薪资发放单据状态', 'system'),
-('sys_user_sex', '性别', 'other', 1, '用户性别', 'system');
+-- 人事模块 (hr)
+('employment_status', '员工在职状态', 'hr', '影响薪资周期计算的状态', 'system');
 
 -- ==========================================================
 -- 7. 字典项明细表 (sys_dict_item) - 严格对应你调整后的字段 dict_item_label
@@ -154,38 +155,66 @@ VALUES
 -- ==========================================================
 -- 初始化字典明细项数据
 -- ==========================================================
-INSERT INTO `sys_dict_item` (`dict_type_code`, `dict_item_value`, `dict_item_label`, `dict_item_sort`, `status`, `create_by`)
-VALUES
--- 1. 收入项类型 (income_type)
-('income_type', 'BASIC_SALARY', '基本工资', 1, 1, 'system'),
-('income_type', 'HOUSING_SUB', '住房补贴', 2, 1, 'system'),
-('income_type', 'MEAL_SUB', '餐补', 3, 1, 'system'),
-('income_type', 'OVERTIME_PAY', '加班费', 4, 1, 'system'),
+INSERT INTO `sys_dict_item` (`dict_type_code`, `dict_item_value`, `dict_item_name`, `dict_item_sort`, `create_by`) VALUES
 
--- 2. 扣款项类型 (deduction_type)
-('deduction_type', 'ABSENCE', '缺勤扣款', 1, 1, 'system'),
-('deduction_type', 'SSS', '菲律宾社保(SSS)', 2, 1, 'system'),
-('deduction_type', 'PHILHEALTH', '菲律宾医保', 3, 1, 'system'),
-('deduction_type', 'PAGIBIG', '住房公积金(Pag-IBIG)', 4, 1, 'system'),
-('deduction_type', 'TAX', '个人所得税', 5, 1, 'system'),
+-- ==========================================
+-- 1. 薪资收入大类 (对应 item_category = 1)
+-- ==========================================
+('salary_income_type', 'base_pay', '固定工资', 10, 'system'),
+('salary_income_type', 'performance_bonus', '绩效奖金', 20, 'system'),
+('salary_income_type', 'allowance_subsidy', '津贴福利', 30, 'system'),
+('salary_income_type', 'attendance_income', '考勤相关', 40, 'system'),
+('salary_income_type', 'annual_bonus', '年终奖金类', 50, 'system'),
+('salary_income_type', 'special_award', '专项奖金', 60, 'system'),
+('salary_income_type', 'salary_adjustment', '薪资调整', 70, 'system'),
 
--- 3. 结算币种 (currency_type)
-('currency_type', 'CNY', '人民币', 1, 1, 'system'),
-('currency_type', 'PHP', '菲律宾比索', 2, 1, 'system'),
-('currency_type', 'USDT', '泰达币', 3, 1, 'system'),
-('currency_type', 'USD', '美元', 4, 1, 'system'),
+-- ==========================================
+-- 2. 薪资扣款大类 (对应 item_category = 2)
+-- ==========================================
+('salary_deduction_type', 'attendance_deduct', '考勤相关', 10, 'system'),
+('salary_deduction_type', 'administrative_penalty', '行政罚款及押金', 20, 'system'),
+('salary_deduction_type', 'other_deduct', '其他代扣款项', 30, 'system'),
 
--- 4. 支付状态 (payment_status)
-('payment_status', '0', '待审核', 1, 1, 'system'),
-('payment_status', '1', '已确认', 2, 1, 'system'),
-('payment_status', '2', '支付中', 3, 1, 'system'),
-('payment_status', '3', '支付成功', 4, 1, 'system'),
-('payment_status', '4', '支付失败', 5, 1, 'system'),
+-- ==========================================
+-- 3. 税费与社保大类 (对应 item_category = 3)
+-- ==========================================
+('salary_tax_social_type', 'social_security_personal', '社保代扣(个人部分)', 10, 'system'),
+('salary_tax_social_type', 'provident_fund_personal', '公积金代扣(个人部分)', 20, 'system'),
+('salary_tax_social_type', 'individual_income_tax', '个人所得税(含预扣预缴)', 30, 'system'),
 
--- 5. 用户性别 (sys_user_sex)
-('sys_user_sex', '0', '未知', 1, 1, 'system'),
-('sys_user_sex', '1', '男', 2, 1, 'system'),
-('sys_user_sex', '2', '女', 3, 1, 'system');
+-- ==========================================
+-- 4. 公司统筹支出大类 (对应 item_category = 4)
+-- ==========================================
+('salary_company_expense_type', 'social_security_company', '社保统筹(公司部分)', 10, 'system'),
+('salary_company_expense_type', 'provident_fund_company', '公积金统筹(公司部分)', 20, 'system'),
+('salary_company_expense_type', 'commercial_insurance', '商业补充险(公司承担)', 30, 'system'),
+
+-- ==========================================
+-- 5. 支付打款渠道
+-- ==========================================
+('payment_channel', 'bank_transfer_cmb', '招商银行企业代发', 10, 'system'),
+('payment_channel', 'bank_transfer_icbc', '工商银行企业代发', 20, 'system'),
+('payment_channel', 'bank_transfer_bdo', 'BDO Unibank', 30, 'system'),
+('payment_channel', 'wallet_gcash', 'GCash 企业转账', 40, 'system'),
+('payment_channel', 'alipay_batch', '支付宝批量代发', 50, 'system'),
+('payment_channel', 'overseas_swift', '跨境电汇(SWIFT)', 60, 'system'),
+
+-- ==========================================
+-- 6. 结算本位币种
+-- ==========================================
+('settlement_currency', 'CNY', '人民币 (CNY)', 10, 'system'),
+('settlement_currency', 'PHP', '菲律宾比索 (PHP)', 20, 'system'),
+('settlement_currency', 'USDT', '泰达币(USDT)', 30, 'system'),
+('settlement_currency', 'USD', '美元 (USD)', 40, 'system'),
+
+-- ==========================================
+-- 7. 员工在职状态
+-- ==========================================
+('employment_status', 'regular', '正式员工', 10, 'system'),
+('employment_status', 'probation', '试用期员工', 20, 'system'),
+('employment_status', 'intern', '实习生', 30, 'system'),
+('employment_status', 'part_time', '兼职/外包', 40, 'system'),
+('employment_status', 'resigned', '已离职', 50, 'system');
 
 
 

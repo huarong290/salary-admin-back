@@ -38,6 +38,12 @@ public class DictTypeVO implements Serializable {
     private String dictTypeName;
 
     /**
+     * 类别（如 income/deduction/other）
+     */
+    @Schema(description = "类别（如 income/deduction/other）")
+    private String dictCategory;
+
+    /**
      * 是否启用: 0-启用, 1-停用
      */
     @Schema(description = "是否启用: 0-启用, 1-停用")
