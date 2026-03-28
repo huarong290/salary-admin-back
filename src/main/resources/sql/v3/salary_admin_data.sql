@@ -155,7 +155,7 @@ INSERT INTO `sys_dict_type` (`dict_type_code`, `dict_type_name`, `dict_category`
 -- ==========================================================
 -- 初始化字典明细项数据
 -- ==========================================================
-INSERT INTO `sys_dict_item` (`dict_type_code`, `dict_item_value`, `dict_item_name`, `dict_item_sort`, `create_by`) VALUES
+INSERT INTO `sys_dict_item` (`dict_type_code`, `dict_item_value`, `dict_item_label`, `dict_item_sort`, `create_by`) VALUES
 
 -- ==========================================
 -- 1. 薪资收入大类 (对应 item_category = 1)

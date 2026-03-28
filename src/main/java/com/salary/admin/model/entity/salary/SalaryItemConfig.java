@@ -50,7 +50,7 @@ public class SalaryItemConfig extends BaseEntity<SalaryItemConfig> {
      */
     @Schema(description = "项目分类: 1-收入, 2-扣款, 3-税费, 4-公司支出/补贴")
     @TableField("item_category")
-    private Byte itemCategory;
+    private Integer itemCategory;
     /**
      * 引擎上下文变量名
      */
@@ -80,19 +80,19 @@ public class SalaryItemConfig extends BaseEntity<SalaryItemConfig> {
      */
     @Schema(description = "是否计税 (仅对收入有效)")
     @TableField("taxable_flag")
-    private Byte taxableFlag;
+    private Integer taxableFlag;
     /**
      * 是否税前扣除 (仅对扣款有效)
      */
     @Schema(description = "是否税前扣除 (仅对扣款有效)")
     @TableField("tax_deductible_flag")
-    private Byte taxDeductibleFlag;
+    private Integer taxDeductibleFlag;
     /**
      * 是否固定项
      */
     @Schema(description = "是否固定项")
     @TableField("fixed_flag")
-    private Byte fixedFlag;
+    private Integer fixedFlag;
     /**
      * 拼音缩写
      */
@@ -110,7 +110,7 @@ public class SalaryItemConfig extends BaseEntity<SalaryItemConfig> {
      */
     @Schema(description = "状态 (1:启用, 0:禁用)")
     @TableField("status")
-    private Byte status;
+    private Integer status;
     /**
      * 备注
      */

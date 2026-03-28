@@ -46,7 +46,7 @@ public class SalaryArchive extends BaseEntity<SalaryArchive> {
      */
     @Schema(description = "是否最新版本 (1:是,0:否)")
     @TableField("latest_flag")
-    private Boolean latestFlag;
+    private Integer latestFlag;
     /**
      * 生效日期
      */
@@ -64,7 +64,7 @@ public class SalaryArchive extends BaseEntity<SalaryArchive> {
      */
     @Schema(description = "审核状态 (0:草稿,1:已生效,2:驳回)")
     @TableField("audit_status")
-    private Boolean auditStatus;
+    private Integer auditStatus;
     /**
      * 基本工资
      */

@@ -46,7 +46,7 @@ public class SalaryCalcRule extends BaseEntity<SalaryCalcRule> {
      */
     @Schema(description = "规则类型 (1:公式,2:函数)")
     @TableField("rule_type")
-    private Boolean ruleType;
+    private Integer ruleType;
     /**
      * 表达式脚本
      */
@@ -70,7 +70,7 @@ public class SalaryCalcRule extends BaseEntity<SalaryCalcRule> {
      */
     @Schema(description = "状态 (1:启用,0:停用)")
     @TableField("status")
-    private Boolean status;
+    private Integer status;
     /**
      * 依赖变量
      */

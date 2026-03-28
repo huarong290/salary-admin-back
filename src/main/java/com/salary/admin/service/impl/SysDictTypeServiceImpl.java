@@ -2,6 +2,7 @@ package com.salary.admin.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.common.PageResult;
@@ -14,9 +15,11 @@ import com.salary.admin.model.dto.dicttype.DictTypeUpdateReqDTO;
 import com.salary.admin.model.entity.sys.SysDictItem;
 import com.salary.admin.model.entity.sys.SysDictType;
 import com.salary.admin.model.vo.dicttype.DictTypeVO;
+import com.salary.admin.service.IRedisService;
 import com.salary.admin.service.ISysDictItemService;
 import com.salary.admin.service.ISysDictTypeService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,13 +35,20 @@ import java.util.stream.Collectors;
  * @since 2026-03-20
  */
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeExtMapper, SysDictType> implements ISysDictTypeService {
 
-    @Autowired
-    private DictTypeConvert dictTypeConvert;
 
-    @Autowired
-    private ISysDictItemService dictItemService;
+    private final DictTypeConvert dictTypeConvert;
+
+
+    private final  ISysDictItemService dictItemService;
+
+    private final  IRedisService iRedisService;
+
+    // 缓存前缀
+    private static final String DICT_CACHE_KEY = "sys:dict:list:";
 
     @Override
     public PageResult<DictTypeVO> selectDictTypePage(DictTypeQueryReqDTO reqDTO) {
@@ -78,20 +88,31 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeExtMapper, Sy
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean editDictType(DictTypeUpdateReqDTO reqDTO) { // 🌟 入参变更为 UpdateReqDTO
+    public boolean editDictType(DictTypeUpdateReqDTO reqDTO) {
         SysDictType existing = this.getById(reqDTO.getId());
         if (existing == null) {
             throw new BusinessException("待修改的字典类型不存在");
         }
+        String oldTypeCode = existing.getDictTypeCode();
+        String newTypeCode = reqDTO.getDictTypeCode();
 
-        // 🌟 核心防坑：校验修改后的编码是否与【其他】字典冲突 (排除自己)
+        // 1. 唯一性校验：校验修改后的编码是否与【其他】字典冲突 (排除自己)
         long count = this.count(new LambdaQueryWrapper<SysDictType>()
-                .eq(SysDictType::getDictTypeCode, reqDTO.getDictTypeCode())
+                .eq(SysDictType::getDictTypeCode, newTypeCode)
                 .ne(SysDictType::getId, reqDTO.getId())); // 排除当前 ID
         if (count > 0) {
             throw new BusinessException("字典类型编码已被其他字典使用，请更换");
         }
+        // 2.级联更新字典项的 TypeCode
+        if (!StrUtil.equals(oldTypeCode, newTypeCode)) {
+            // 同步更新所有关联的明细项，防止明细项“孤儿化”
+            dictItemService.update(new LambdaUpdateWrapper<SysDictItem>()
+                    .set(SysDictItem::getDictTypeCode, newTypeCode)
+                    .eq(SysDictItem::getDictTypeCode, oldTypeCode));
 
+            // 同时清理旧编码的 Redis 缓存
+            iRedisService.del(DICT_CACHE_KEY + oldTypeCode);
+        }
         SysDictType entity = dictTypeConvert.toEntity(reqDTO);
         entity.setId(reqDTO.getId()); // 确保 ID 赋值
         return this.updateById(entity);
@@ -104,7 +125,7 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeExtMapper, Sy
             return false;
         }
 
-        // 🌟 核心校验：检查该类型下是否已有字典项
+        //检查该类型下是否已有字典项
         long count = dictItemService.count(new LambdaQueryWrapper<SysDictItem>()
                 .eq(SysDictItem::getDictTypeCode, type.getDictTypeCode()));
 

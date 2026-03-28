@@ -96,7 +96,7 @@ public class SalaryPaymentRecord extends BaseEntity<SalaryPaymentRecord> {
      */
     @Schema(description = "支付单状态: 0-待处理, 1-支付中, 2-支付成功, 3-支付失败")
     @TableField("payment_status")
-    private Byte paymentStatus;
+    private Integer paymentStatus;
     /**
      * 实际打款/到账时间
      */

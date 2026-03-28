@@ -64,7 +64,7 @@ public class SalaryConfig extends BaseEntity<SalaryConfig> {
      */
     @Schema(description = "是否激活 (1:是,0:否)")
     @TableField("active_flag")
-    private Boolean activeFlag;
+    private Integer activeFlag;
     /**
      * 备注
      */

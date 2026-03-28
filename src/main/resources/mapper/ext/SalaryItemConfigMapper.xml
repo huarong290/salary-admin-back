@@ -31,4 +31,47 @@
         id, item_code, item_name, item_category, env_var_name, default_rule_script, calc_priority, category_dict_value, taxable_flag, tax_deductible_flag, fixed_flag, pinyin_code, sort_value, status, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
+    <!--
+        分页查询薪资项目配置
+        功能说明：
+        - 自动关联字典表获取分类标签 (categoryLabel)
+        - 支持模糊搜索 (itemName, itemCode, pinyinCode)
+        - 按 calc_priority 和 sort_value 升序排序
+        - 过滤逻辑删除数据 (delete_flag = 0)
+
+        参数：
+        - page: MyBatis-Plus 分页对象
+        - req: 查询条件封装对象 (ItemConfigQueryReqDTO)
+
+        返回：
+        - SalaryItemConfigVO 列表，包含字典标签信息
+    -->
+    <select id="selectItemConfigPage" resultType="com.salary.admin.model.vo.salary.itemconfig.SalaryItemConfigVO">
+        SELECT
+        t.*,
+        d.dict_item_label AS categoryLabel
+        FROM salary_item_config t
+        -- 核心：直接关联统一的字典类型，性能最优，逻辑最简
+        LEFT JOIN sys_dict_item d ON d.dict_type_code = 'salary_item_sub_type'
+        AND d.dict_item_value = t.category_dict_value
+        AND d.delete_flag = 0
+        <where>
+            t.delete_flag = 0
+            <if test="req.searchText != null and req.searchText != ''">
+                AND (
+                t.item_name LIKE CONCAT('%', #{req.searchText}, '%')
+                OR t.item_code LIKE CONCAT('%', #{req.searchText}, '%')
+                OR t.pinyin_code LIKE CONCAT('%', #{req.searchText}, '%')
+                )
+            </if>
+            <if test="req.itemCategory != null">
+                AND t.item_category = #{req.itemCategory}
+            </if>
+            <if test="req.status != null">
+                AND t.status = #{req.status}
+            </if>
+        </where>
+        -- 遵循：计算优先级第一，显示排序第二
+        ORDER BY t.calc_priority ASC, t.sort_value ASC
+    </select>
 </mapper>

@@ -63,19 +63,19 @@ public class SalaryEmployee extends BaseEntity<SalaryEmployee> {
      */
     @Schema(description = "在职状态: 1-在职, 0-离职")
     @TableField("employment_status")
-    private Boolean employmentStatus;
+    private Integer employmentStatus;
     /**
      * 是否转岗: 1-是, 0-否
      */
     @Schema(description = "是否转岗: 1-是, 0-否")
     @TableField("transfer_flag")
-    private Boolean transferFlag;
+    private Integer transferFlag;
     /**
      * 住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴
      */
     @Schema(description = "住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴")
     @TableField("accommodation_status")
-    private Boolean accommodationStatus;
+    private Integer accommodationStatus;
     /**
      * 入职日期
      */

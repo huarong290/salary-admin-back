@@ -68,7 +68,7 @@ public class SalaryCalcPipeline extends BaseEntity<SalaryCalcPipeline> {
      */
     @Schema(description = "状态 (1启用 0停用)")
     @TableField("status")
-    private Byte status;
+    private Integer status;
 
     @Override
     public Serializable pkVal() {

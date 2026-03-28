@@ -57,7 +57,7 @@ public class SalaryItemDetail extends BaseEntity<SalaryItemDetail> {
      */
     @Schema(description = "项目分类: 1-收入, 2-扣款, 3-税费, 4-公司支出/补贴")
     @TableField("item_type")
-    private Byte itemType;
+    private Integer itemType;
     /**
      * 项目配置ID(关联salary_item_config.id)
      */
@@ -87,7 +87,7 @@ public class SalaryItemDetail extends BaseEntity<SalaryItemDetail> {
      */
     @Schema(description = "数据来源类型：1-薪资档案 2-引擎计算 3-手动调整 4-外部导入")
     @TableField("source_type")
-    private Byte sourceType;
+    private Integer sourceType;
     /**
      * 来源档案ID
      */

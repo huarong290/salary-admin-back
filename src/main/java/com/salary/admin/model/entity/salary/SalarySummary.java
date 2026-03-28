@@ -116,19 +116,19 @@ public class SalarySummary extends BaseEntity<SalarySummary> {
      */
     @Schema(description = " 计算状态:0-未计算 1-成功 2-失败")
     @TableField("calc_status")
-    private Byte calcStatus;
+    private Integer calcStatus;
     /**
      * 发放状态：0-未支付 1-已支付 2-支付失败
      */
     @Schema(description = "发放状态：0-未支付 1-已支付 2-支付失败")
     @TableField("payment_status")
-    private Byte paymentStatus;
+    private Integer paymentStatus;
     /**
      * 是否锁定(1:锁定, 0:未锁定, 发放后锁定不可重算)
      */
     @Schema(description = "是否锁定(1:锁定, 0:未锁定, 发放后锁定不可重算)")
     @TableField("lock_flag")
-    private Byte lockFlag;
+    private Integer lockFlag;
     /**
      * 汇总快照(用于展示工资单):{\"income\": [...],\"deduction\": [...],\"tax\": [...]}
      */

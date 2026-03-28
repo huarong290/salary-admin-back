@@ -82,7 +82,7 @@ public class SalaryPeriod extends BaseEntity<SalaryPeriod> {
      */
     @Schema(description = "是否满勤 (1:是, 0:否)")
     @TableField("full_attendance_flag")
-    private Boolean fullAttendanceFlag;
+    private Integer fullAttendanceFlag;
     /**
      * 删除标识
      */

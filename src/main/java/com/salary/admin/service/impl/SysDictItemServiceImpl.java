@@ -13,6 +13,7 @@ import com.salary.admin.model.entity.sys.SysDictItem;
 import com.salary.admin.model.vo.dictitem.DictItemVO;
 import com.salary.admin.service.IRedisService;
 import com.salary.admin.service.ISysDictItemService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * @since 2026-03-20
  */
 @Service
+@Slf4j
 public class SysDictItemServiceImpl extends ServiceImpl<SysDictItemExtMapper, SysDictItem> implements ISysDictItemService {
 
     @Autowired
@@ -57,32 +59,48 @@ public class SysDictItemServiceImpl extends ServiceImpl<SysDictItemExtMapper, Sy
         }
 
         String cacheKey = DICT_CACHE_KEY + dictTypeCode;
+
         // 1. 优先从 Redis 获取列表
         List<DictItemVO> cacheList = redisService.getList(cacheKey, DictItemVO.class);
-        // 只要缓存列表为空（包含空集合），就去查一遍数据库（或者明确区分“空值缓存”）
+
+        // 💡 优化：判断非空且非空集合直接返回
         if (cacheList != null && !cacheList.isEmpty()) {
             return cacheList;
         }
 
-        // 2. 缓存不存在，查询数据库
-        List<SysDictItem> entities = this.list(new LambdaQueryWrapper<SysDictItem>()
-                .eq(SysDictItem::getDictTypeCode, dictTypeCode)
-                .eq(SysDictItem::getStatus, 1) // 只查启用的
-                .orderByAsc(SysDictItem::getDictItemSort));
+        // 🚀 核心优化：引入双重检查锁 (Double-Check Locking) 机制
+        // 使用 dictTypeCode 的 intern() 作为锁对象，确保相同类型的字典查询在并发时排队
+        synchronized (dictTypeCode.intern()) {
+            // 再次从 Redis 获取，防止在等待锁的过程中，前一个线程已经把数据存入缓存
+            cacheList = redisService.getList(cacheKey, DictItemVO.class);
+            if (cacheList != null && !cacheList.isEmpty()) {
+                return cacheList;
+            }
 
-        List<DictItemVO> voList = entities.stream()
-                .map(dictItemConvert::toVO)
-                .collect(Collectors.toList());
+            // 2. 缓存不存在，查询数据库
+            // 💡 增加日志，便于生产环境监控缓存击穿情况
+            log.info("🚀 缓存失效，正在从数据库加载字典: [{}]", dictTypeCode);
 
-        // 3. 存入 Redis (不设置过期时间，由增删改主动触发删除)
-        if(CollectionUtils.isEmpty(voList)){
-            // 防止缓存击穿：存入空列表并设置短期过期
-            redisService.setEx(cacheKey, Collections.emptyList(), EMPTY_CACHE_EXPIRE,SECONDS);
-        }else{
-            // 正常存入，不设过期时间，由增删改主动失效
-            redisService.set(cacheKey, voList);
+            List<SysDictItem> entities = this.list(new LambdaQueryWrapper<SysDictItem>()
+                    .eq(SysDictItem::getDictTypeCode, dictTypeCode)
+                    .eq(SysDictItem::getStatus, 1) // 只查启用的
+                    .orderByAsc(SysDictItem::getDictItemSort));
+
+            List<DictItemVO> voList = entities.stream()
+                    .map(dictItemConvert::toVO)
+                    .collect(Collectors.toList());
+
+            // 3. 存入 Redis (不设置过期时间，由增删改主动触发删除)
+            if (CollectionUtils.isEmpty(voList)) {
+                //  防止缓存穿透：即便数据库没数据，也存入一个空集合并设置短期过期 (300s)
+                // 这样短时间内相同的恶意请求不会再次穿透到 DB
+                redisService.setEx(cacheKey, Collections.emptyList(), EMPTY_CACHE_EXPIRE, SECONDS);
+            } else {
+                // 正常存入，不设过期时间，由 add/edit/delete 方法通过 cleanCacheAfterCommit 主动失效
+                redisService.set(cacheKey, voList);
+            }
+            return voList;
         }
-        return voList;
     }
 
     @Override

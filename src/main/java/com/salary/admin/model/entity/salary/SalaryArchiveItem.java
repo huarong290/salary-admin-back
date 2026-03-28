@@ -41,7 +41,7 @@ public class SalaryArchiveItem extends BaseEntity<SalaryArchiveItem> {
      */
     @Schema(description = "项目类型: 1-收入项, 2-扣款项")
     @TableField("item_type")
-    private Boolean itemType;
+    private Integer itemType;
     /**
      * 关联salary_item_config.id
      */

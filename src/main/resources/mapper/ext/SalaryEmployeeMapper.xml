@@ -25,4 +25,17 @@
         id, employee_code, employee_name, company_name, department, employment_status, transfer_flag, accommodation_status, entry_date, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
+    <!-- 物理删除：直接删除记录 -->
+    <delete id="physicalDeleteById">
+        DELETE FROM salary_employee WHERE id = #{id}
+    </delete>
+
+    <!-- 批量物理删除 -->
+    <delete id="physicalDeleteByIds">
+        DELETE FROM salary_employee
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>
