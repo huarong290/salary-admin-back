@@ -59,6 +59,12 @@ public class SalaryEmployee extends BaseEntity<SalaryEmployee> {
     @TableField("department")
     private String department;
     /**
+     * 岗位名称/职级
+     */
+    @Schema(description = "岗位名称/职级")
+    @TableField("job_title")
+    private String jobTitle;
+    /**
      * 在职状态: 1-在职, 0-离职
      */
     @Schema(description = "在职状态: 1-在职, 0-离职")
@@ -82,6 +88,18 @@ public class SalaryEmployee extends BaseEntity<SalaryEmployee> {
     @Schema(description = "入职日期")
     @TableField("entry_date")
     private LocalDate entryDate;
+    /**
+     * 预计转正日期
+     */
+    @Schema(description = "预计转正日期")
+    @TableField("probation_end_date")
+    private LocalDate probationEndDate;
+    /**
+     * 实际离职日期
+     */
+    @Schema(description = "实际离职日期")
+    @TableField("actual_leave_date")
+    private LocalDate actualLeaveDate;
     @Override
     public Serializable pkVal() {
         return this.id;

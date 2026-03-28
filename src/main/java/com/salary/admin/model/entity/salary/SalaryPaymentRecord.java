@@ -80,17 +80,32 @@ public class SalaryPaymentRecord extends BaseEntity<SalaryPaymentRecord> {
     @TableField("payment_method")
     private String paymentMethod;
     /**
-     * 支付渠道/银行名称
+     * 渠道编码: 如 BDO, GCASH, ICBC
      */
-    @Schema(description = "支付渠道/银行名称")
-    @TableField("payment_channel")
-    private String paymentChannel;
+    @Schema(description = "渠道编码")
+    @TableField("channel_code")
+    private String channelCode;
+
     /**
-     * 收款账号/钱包地址
+     * 渠道名称快照: 如 BDO Unibank
      */
-    @Schema(description = "收款账号/钱包地址")
+    @Schema(description = "渠道名称快照")
+    @TableField("channel_name")
+    private String channelName;
+
+    /**
+     * 收款账号/卡号/钱包ID
+     */
+    @Schema(description = "收款账号")
     @TableField("target_account")
     private String targetAccount;
+
+    /**
+     * 收款人户名快照
+     */
+    @Schema(description = "收款人户名快照")
+    @TableField("target_account_name")
+    private String targetAccountName;
     /**
      * 支付单状态: 0-待处理, 1-支付中, 2-支付成功, 3-支付失败
      */

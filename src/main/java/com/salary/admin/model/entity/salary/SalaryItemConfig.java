@@ -75,6 +75,20 @@ public class SalaryItemConfig extends BaseEntity<SalaryItemConfig> {
     @Schema(description = "业务分类字典值 (如: allowance, insurance)")
     @TableField("category_dict_value")
     private String categoryDictValue;
+
+    /**
+     * 保留小数位数
+     */
+    @Schema(description = "保留小数位数")
+    @TableField("decimal_places")
+    private Integer decimalPlaces;
+
+    /**
+     * 舍入规则: HALF_UP(四舍五入), DOWN(截断), UP(向上进位)
+     */
+    @Schema(description = "舍入规则")
+    @TableField("rounding_mode")
+    private String roundingMode;
     /**
      * 是否计税 (仅对收入有效)
      */

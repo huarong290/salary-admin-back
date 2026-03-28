@@ -41,4 +41,58 @@ INSERT INTO `sys_dict_item` (`dict_type_code`, `dict_item_value`, `dict_item_lab
                                                                                                            ('salary_item_sub_type', 'TAX_INCOME', '个人所得税', 200),
                                                                                                            ('salary_item_sub_type', 'SI_PENSION', '养老保险(个人)', 210),
                                                                                                            ('salary_item_sub_type', 'SI_MED', '医疗保险(个人)', 220),
-                                                                                                           ('salary_item_sub_type', 'PHP_SSS', 'SSS (菲律宾社保)', 230); -- 扩展例子
+                                                                                                           ('salary_item_sub_type', 'PHP_SSS', 'SSS (菲律宾社保)', 230);
+
+
+
+-- 1. 薪资管理 (父级目录)
+INSERT INTO `sys_menu`
+(`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`)
+VALUES
+    (150, '薪资管理', 'salary_manage', '/salary', 'Layout', 'Money', '', 1, 0, 10);
+
+-- 2. 薪资项目配置 (子菜单)
+-- 注意：menu_component 对应你项目的实际文件路径：views/salary/itemconfig/ItemConfigPage
+INSERT INTO `sys_menu`
+(`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`)
+VALUES
+    (151, '薪资项目配置', 'salary_item_config', 'itemconfig', 'salary/itemconfig/ItemConfigPage', 'Setting', 'salary:item_config:list', 2, 150, 1);
+
+-- 3. 功能按钮 (权限控制)
+-- 对应代码中的 v-hasPerm="['salary:item_config:add']" 等
+INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`) VALUES
+                                                                                                                           (152, '新增项目', 'salary_item_add', 'salary:item_config:add', 3, 151, 1),
+                                                                                                                           (153, '修改项目', 'salary_item_edit', 'salary:item_config:edit', 3, 151, 2),
+                                                                                                                           (154, '删除项目', 'salary_item_del', 'salary:item_config:del', 3, 151, 3),
+                                                                                                                           (155, '同步配置', 'salary_item_refresh', 'salary:item_config:refresh', 3, 151, 4);
+
+
+-- ====================================================================
+-- 📌 菜单脚本：薪资档案管理 (ArchivePage)
+-- 功能：包含入职定薪、调薪申请、调薪审批、查看详情等权限控制
+-- ====================================================================
+
+-- 1. 薪资档案管理 (子菜单)
+-- 对应文件路径：src/views/salary/archive/ArchivePage.vue
+INSERT INTO `sys_menu`
+(`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`)
+VALUES
+    (160, '薪资档案管理', 'salary_archive', 'archive', 'salary/archive/ArchivePage', 'Document', 'salary:archive:list', 2, 150, 2);
+
+-- 2. 功能按钮 (权限控制)
+-- 对应代码中的 v-hasPerm 权限点
+INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`) VALUES
+                                                                                                                           -- [定薪权限] 对应 handleInit 方法
+                                                                                                                           (161, '新员工定薪', 'salary_archive_init', 'salary:archive:init', 3, 160, 1),
+
+                                                                                                                           -- [调薪权限] 对应 handleAdjust 方法
+                                                                                                                           (162, '调薪申请', 'salary_archive_adjust', 'salary:archive:adjust', 3, 160, 2),
+
+                                                                                                                           -- [审批权限] 对应 handleOpenAudit 方法
+                                                                                                                           (163, '调薪审批', 'salary_archive_audit', 'salary:archive:audit', 3, 160, 3),
+
+                                                                                                                           -- [查询详情权限] 对应 handleDetail 方法
+                                                                                                                           (164, '查看详情', 'salary_archive_detail', 'salary:archive:detail', 3, 160, 4),
+
+                                                                                                                           -- [导出权限] (预留，通常档案管理需要导出 Excel)
+                                                                                                                           (165, '导出档案', 'salary_archive_export', 'salary:archive:export', 3, 160, 5);
