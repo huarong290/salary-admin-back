@@ -243,7 +243,6 @@ CREATE TABLE `salary_archive`
     `expiry_date`           DATE           NOT NULL DEFAULT '9999-12-31' COMMENT '失效日期',
     `audit_status`          TINYINT(1) NOT NULL DEFAULT 0 COMMENT '审核状态 (0:草稿,1:已生效,2:驳回)',
     `base_salary`           DECIMAL(18, 8) NOT NULL DEFAULT '0.00' COMMENT '基本工资',
-    `full_attendance_bonus` DECIMAL(18, 8) NOT NULL DEFAULT '0.00' COMMENT '全勤奖标准',
     `probation_base_salary` DECIMAL(18, 8) NOT NULL DEFAULT '0.00' COMMENT '试用期底薪',
     `currency`              VARCHAR(16)    NOT NULL DEFAULT 'CNY' COMMENT '结算币种',
     `change_reason`         VARCHAR(255)   NOT NULL DEFAULT '' COMMENT '调薪原因',

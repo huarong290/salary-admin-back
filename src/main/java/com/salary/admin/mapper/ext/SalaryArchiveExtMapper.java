@@ -1,7 +1,11 @@
 package com.salary.admin.mapper.ext;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.salary.admin.mapper.auto.SalaryArchiveMapper;
+import com.salary.admin.model.dto.salary.archive.ArchiveQueryReqDTO;
+import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -13,4 +17,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface SalaryArchiveExtMapper extends SalaryArchiveMapper {
+
+    IPage<SalaryArchiveVO> selectArchivePage(IPage<SalaryArchiveVO> page, @Param("req") ArchiveQueryReqDTO reqDTO);
 }

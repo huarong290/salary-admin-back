@@ -15,10 +15,10 @@ public class ArchiveQueryReqDTO extends PageQueryDTO {
     @Schema(description = "员工姓名/编号关键字")
     private String keyword;
 
-    @Schema(description = "是否仅看当前最新版本")
-    private Integer isLatest = 1;
 
-    // 🌟 核心补全：加上审核状态，打通前后端状态筛选链路
+    @Schema(description = "是否仅看当前最新版本: 1-是, 0-否")
+    private Integer latestFlag = 1;
+
     @Schema(description = "审核状态: 0-待审核, 1-已生效, 2-被驳回")
     private Integer auditStatus;
 }

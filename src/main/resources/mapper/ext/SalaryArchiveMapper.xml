@@ -12,7 +12,6 @@
         <result column="expiry_date" property="expiryDate" />
         <result column="audit_status" property="auditStatus" />
         <result column="base_salary" property="baseSalary" />
-        <result column="full_attendance_bonus" property="fullAttendanceBonus" />
         <result column="probation_base_salary" property="probationBaseSalary" />
         <result column="currency" property="currency" />
         <result column="change_reason" property="changeReason" />
@@ -27,7 +26,43 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, employee_id, version, latest_flag, effective_date, expiry_date, audit_status, base_salary, full_attendance_bonus, probation_base_salary, currency, change_reason, tax_rule_code, remark, delete_flag, create_by, create_time, update_by, update_time
+        id, employee_id, version, latest_flag, effective_date, expiry_date, audit_status, base_salary, probation_base_salary, currency, change_reason, tax_rule_code, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
+    <select id="selectArchivePage" resultType="com.salary.admin.model.vo.salary.archive.SalaryArchiveVO">
+        SELECT
+        a.id,
+        a.employee_id,
+        a.version,
+        a.latest_flag,
+        a.effective_date,
+        a.expiry_date,
+        a.audit_status,
+        a.base_salary,
+        a.probation_base_salary,
+        a.full_attendance_bonus,
+        a.currency,
+        a.change_reason,
+        a.tax_rule_code,
+        a.remark,
+        e.employee_name,
+        e.employee_code
+        FROM salary_archive a
+        LEFT JOIN salary_employee e ON a.employee_id = e.id
+        <where>
+            a.delete_flag = 0
+            AND e.delete_flag = 0
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (e.employee_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR e.employee_code LIKE CONCAT('%', #{req.keyword}, '%'))
+            </if>
+            <if test="req.auditStatus != null">
+                AND a.audit_status = #{req.auditStatus}
+            </if>
+            <if test="req.latestFlag != null">
+                AND a.latest_flag = #{req.latestFlag}
+            </if>
+        </where>
+        ORDER BY a.audit_status ASC, a.update_time DESC
+    </select>
 </mapper>
