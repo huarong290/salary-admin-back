@@ -41,47 +41,86 @@ VALUES (1, 1, 'system'), -- system -> 超级管理员
 -- 菜单类型 (1:目录, 2:菜单, 3:按钮)
 -- ==========================================================
 TRUNCATE TABLE `sys_menu`;
-INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_redirect`, `menu_icon`,
-                        `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`, `menu_visible`, `menu_status`)
+
+INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_redirect`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`, `menu_visible`, `menu_status`)
 VALUES
--- 工作台模块
+-- ==========================================================
+-- 模块 A：工作台与系统基础管理
+-- ==========================================================
 (1, '工作台', 'dashboard_dir', '/dashboard', 'Layout', '/dashboard/index', 'Odometer', '', 1, 0, 1, 1, 1),
 (2, '工作台面板', 'dashboard_index', 'index', 'dashboard/index', '', 'DataBoard', '', 2, 1, 1, 1, 1),
 
--- 系统管理目录
 (10, '系统管理', 'sys_dir', '/system', 'Layout', '', 'Setting', '', 1, 0, 2, 1, 1),
-
--- 用户管理及其按钮
+-- 用户管理
 (100, '用户管理', 'sys_user', 'user', 'system/user/UserPage', '', 'User', 'sys:user:list', 2, 10, 1, 1, 1),
 (101, '用户查询', 'sys_user_query', '', '', '', '', 'sys:user:query', 3, 100, 1, 1, 1),
 (102, '用户新增', 'sys_user_add', '', '', '', '', 'sys:user:add', 3, 100, 2, 1, 1),
 (103, '用户修改', 'sys_user_edit', '', '', '', '', 'sys:user:edit', 3, 100, 3, 1, 1),
 (104, '用户删除', 'sys_user_del', '', '', '', '', 'sys:user:del', 3, 100, 4, 1, 1),
 (105, '分配角色', 'sys_user_assign', '', '', '', '', 'sys:user:assign', 3, 100, 5, 1, 1),
-
--- 角色管理及其按钮
+-- 角色管理
 (110, '角色管理', 'sys_role', 'role', 'system/role/RolePage', '', 'Avatar', 'sys:role:list', 2, 10, 2, 1, 1),
 (111, '角色查询', 'sys_role_query', '', '', '', '', 'sys:role:query', 3, 110, 1, 1, 1),
 (112, '角色新增', 'sys_role_add', '', '', '', '', 'sys:role:add', 3, 110, 2, 1, 1),
 (113, '角色修改', 'sys_role_edit', '', '', '', '', 'sys:role:edit', 3, 110, 3, 1, 1),
 (114, '角色删除', 'sys_role_del', '', '', '', '', 'sys:role:del', 3, 110, 4, 1, 1),
 (115, '分配权限', 'sys_role_assign', '', '', '', '', 'sys:role:assign', 3, 110, 5, 1, 1),
-
--- 菜单管理及其按钮
+-- 菜单管理
 (120, '菜单管理', 'sys_menu', 'menu', 'system/menu/MenuPage', '', 'Menu', 'sys:menu:list', 2, 10, 3, 1, 1),
 (121, '菜单查询', 'sys_menu_query', '', '', '', '', 'sys:menu:query', 3, 120, 1, 1, 1),
 (122, '菜单新增', 'sys_menu_add', '', '', '', '', 'sys:menu:add', 3, 120, 2, 1, 1),
 (123, '菜单修改', 'sys_menu_edit', '', '', '', '', 'sys:menu:edit', 3, 120, 3, 1, 1),
 (124, '菜单删除', 'sys_menu_del', '', '', '', '', 'sys:menu:del', 3, 120, 4, 1, 1),
-
--- 字典管理目录 (挂在系统管理下)
-
+-- 字典管理
 (130, '字典管理', 'sys_dict', 'dict', 'system/dict/DictPage', '', 'Collection', 'sys:dict:list', 2, 10, 4, 1, 1),
 (131, '字典查询', 'sys_dict_query', '', '', '', '', 'sys:dict:query', 3, 130, 1, 1, 1),
 (132, '字典新增', 'sys_dict_add', '', '', '', '', 'sys:dict:add', 3, 130, 2, 1, 1),
 (133, '字典修改', 'sys_dict_edit', '', '', '', '', 'sys:dict:edit', 3, 130, 3, 1, 1),
 (134, '字典删除', 'sys_dict_del', '', '', '', '', 'sys:dict:del', 3, 130, 4, 1, 1),
-(135, '字典刷新缓存', 'sys_dict_refresh', '', '', '', '', 'sys:dict:refresh', 3, 130, 5, 1, 1);
+(135, '字典刷新缓存', 'sys_dict_refresh', '', '', '', '', 'sys:dict:refresh', 3, 130, 5, 1, 1),
+
+
+-- ====================================================================
+-- 模块 B：薪资核心业务模块 (按业务流转顺序与号段严格编排)
+-- ====================================================================
+
+-- 【0】薪资管理 (父级目录)
+(150, '薪资管理', 'salary_manage', '/salary', 'Layout', '', 'Money', '', 1, 0, 10, 1, 1),
+
+
+-- 【1】员工基础档案 (子菜单，Sort = 1，160号段)
+(160, '员工基础档案', 'salary_employee', 'employee', 'salary/employee/EmployeePage', '', 'User', 'salary:employee:list', 2, 150, 1, 1, 1),
+(161, '查看员工列表', 'salary_employee_query', '', '', '', '', 'salary:employee:query', 3, 160, 1, 1, 1),
+(162, '新增员工档案', 'salary_employee_add', '', '', '', '', 'salary:employee:add', 3, 160, 2, 1, 1),
+(163, '修改员工档案', 'salary_employee_edit', '', '', '', '', 'salary:employee:edit', 3, 160, 3, 1, 1),
+(164, '销毁员工档案', 'salary_employee_del', '', '', '', '', 'salary:employee:del', 3, 160, 4, 1, 1),
+(165, '查看档案详情', 'salary_employee_detail', '', '', '', '', 'salary:employee:detail', 3, 160, 5, 1, 1),
+
+
+-- 【2】薪资周期管理 (子菜单，Sort = 2，170号段)
+(170, '薪资周期管理', 'salary_period', 'period', 'salary/period/PeriodPage', '', 'Calendar', 'salary:period:list', 2, 150, 2, 1, 1),
+(171, '查看周期列表', 'salary_period_query', '', '', '', '', 'salary:period:query', 3, 170, 1, 1, 1),
+(172, '新增/开启周期', 'salary_period_add', '', '', '', '', 'salary:period:add', 3, 170, 2, 1, 1),
+(173, '修改周期数据', 'salary_period_edit', '', '', '', '', 'salary:period:edit', 3, 170, 3, 1, 1),
+(174, '批量初始化周期', 'salary_period_init', '', '', '', '', 'salary:period:init', 3, 170, 4, 1, 1),
+(175, '删除/销毁周期', 'salary_period_del', '', '', '', '', 'salary:period:del', 3, 170, 5, 1, 1),
+
+
+-- 【3】薪资项目配置 (子菜单，Sort = 3，180号段)
+(180, '薪资项目配置', 'salary_item_config', 'itemconfig', 'salary/itemconfig/ItemConfigPage', '', 'Setting', 'salary:item_config:list', 2, 150, 3, 1, 1),
+(181, '新增项目', 'salary_item_add', '', '', '', '', 'salary:item_config:add', 3, 180, 1, 1, 1),
+(182, '修改项目', 'salary_item_edit', '', '', '', '', 'salary:item_config:edit', 3, 180, 2, 1, 1),
+(183, '删除项目', 'salary_item_del', '', '', '', '', 'salary:item_config:del', 3, 180, 3, 1, 1),
+(184, '同步配置', 'salary_item_refresh', '', '', '', '', 'salary:item_config:refresh', 3, 180, 4, 1, 1),
+
+
+-- 【4】薪资档案管理 (子菜单，Sort = 4，190号段)
+(190, '薪资档案管理', 'salary_archive', 'archive', 'salary/archive/ArchivePage', '', 'Document', 'salary:archive:list', 2, 150, 4, 1, 1),
+(191, '新员工定薪', 'salary_archive_init', '', '', '', '', 'salary:archive:init', 3, 190, 1, 1, 1),
+(192, '调薪申请', 'salary_archive_adjust', '', '', '', '', 'salary:archive:adjust', 3, 190, 2, 1, 1),
+(193, '调薪审批', 'salary_archive_audit', '', '', '', '', 'salary:archive:audit', 3, 190, 3, 1, 1),
+(194, '查看详情', 'salary_archive_detail', '', '', '', '', 'salary:archive:detail', 3, 190, 4, 1, 1),
+(195, '导出档案', 'salary_archive_export', '', '', '', '', 'salary:archive:export', 3, 190, 5, 1, 1);
 -- ==========================================================
 -- 5. 初始化角色菜单关联 (sys_role_menu)
 -- ==========================================================
@@ -137,10 +176,6 @@ VALUES (4, 10, 'system'),
 -- ==========================================================
 INSERT INTO `sys_dict_type` (`dict_type_code`, `dict_type_name`, `dict_category`, `remark`, `create_by`) VALUES
 -- 薪资模块 (salary)
-('salary_income_type', '薪资收入二级分类', 'salary', '用于工资条收入模块的分组展示', 'system'),
-('salary_deduction_type', '薪资扣款二级分类', 'salary', '用于工资条扣款模块的分组展示', 'system'),
-('salary_tax_social_type', '税费与社保二级分类', 'salary', '用于个人代扣税费的分组展示', 'system'),
-('salary_company_expense_type', '公司统筹支出分类', 'salary', '用于财务成本核算，不在工资条展示', 'system'),
 
 -- 财务模块 (finance)
 ('payment_channel', '支付打款渠道', 'finance', '出纳打款的资金渠道', 'system'),

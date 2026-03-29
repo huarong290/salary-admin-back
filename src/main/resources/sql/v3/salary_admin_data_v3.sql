@@ -96,3 +96,29 @@ INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_permission`, `menu
 
                                                                                                                            -- [导出权限] (预留，通常档案管理需要导出 Excel)
                                                                                                                            (165, '导出档案', 'salary_archive_export', 'salary:archive:export', 3, 160, 5);
+
+-- 1. 员工基础档案 (子菜单)
+-- 对应文件路径：src/views/salary/employee/EmployeePage.vue
+-- 🌟 [标注]: 起始 ID 严格从 170 开始，父菜单 ID 假设为 150 (薪资管理)
+INSERT INTO `sys_menu`
+(`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`)
+VALUES
+    (170, '员工基础档案', 'salary_employee', 'employee', 'salary/employee/EmployeePage', 'User', 'salary:employee:list', 2, 150, 1);
+
+-- 2. 功能按钮 (权限控制)
+-- 对应代码中的 v-hasPerm 权限点，ID 从 171 开始顺延
+INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`) VALUES
+-- [查看权限] 对应 getList 方法及页面初始加载权限
+(171, '查看员工列表', 'salary_employee_query', 'salary:employee:query', 3, 170, 1),
+
+-- [新增权限] 对应页面 handleAdd 方法
+(172, '新增员工档案', 'salary_employee_add', 'salary:employee:add', 3, 170, 2),
+
+-- [修改权限] 对应页面 handleUpdate 方法
+(173, '修改员工档案', 'salary_employee_edit', 'salary:employee:edit', 3, 170, 3),
+
+-- [删除权限] 对应 handleDelete 和 handleBatchDelete 方法
+(174, '销毁员工档案', 'salary_employee_del', 'salary:employee:del', 3, 170, 4),
+
+-- [详情权限] 对应 getEmployeeDetailApi
+(175, '查看档案详情', 'salary_employee_detail', 'salary:employee:detail', 3, 170, 5);

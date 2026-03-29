@@ -16,20 +16,33 @@ import java.time.LocalDate;
 //架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EmployeeAddReqDTO implements Serializable {
+    /**
+     * 员工编号
+     */
     @NotBlank(message = "员工编号不能为空")
     @Schema(description = "员工编号")
     private String employeeCode;
-
+    /**
+     * 姓名
+     */
     @NotBlank(message = "姓名不能为空")
     @Schema(description = "姓名")
     private String employeeName;
-
+    /**
+     * 所属公司
+     */
     @Schema(description = "所属公司")
     private String companyName;
-
+    /**
+     * 部门
+     */
     @Schema(description = "部门")
     private String department;
-
+    /**
+     * 岗位名称/职级
+     */
+    @Schema(description = "岗位名称/职级")
+    private String jobTitle;
     /**
      * 在职状态: 0-离职, 1-在职
      */

@@ -42,11 +42,11 @@ public class SalaryPeriod extends BaseEntity<SalaryPeriod> {
     @TableField("employee_id")
     private Long employeeId;
     /**
-     * 在岗月份 (YYYYMM)
+     * 累计在岗月份计数 (入职首月为1, 递增)
      */
-    @Schema(description = "在岗月份 (YYYYMM)")
+    @Schema(description = "累计在岗月份计数 (入职首月为1, 递增))")
     @TableField("work_month")
-    private String workMonth;
+    private Integer workMonth;
     /**
      * 结算月份 (YYYYMM)
      */

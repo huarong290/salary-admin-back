@@ -71,7 +71,7 @@ public class SalaryEmployeeController {
         return ApiResult.successResult(employeeService.deleteEmployeeById(id, logicalDelete));
     }
 
-    @PostMapping("/delete-batch")
+    @PostMapping("/deleteBatch")
     @Operation(summary = "批量删除员工档案")
     @Loggable(title = "员工档案-批量删除")
     public ApiResult<Boolean> deleteEmployeeBatch(
@@ -80,7 +80,7 @@ public class SalaryEmployeeController {
         return ApiResult.successResult(employeeService.deleteEmployeeByIds(ids, logicalDelete));
     }
 
-    @GetMapping("/list-options")
+    @GetMapping("/listOption")
     @Operation(summary = "获取在职员工简易列表", description = "用于下拉选择框 (仅限在职员工)")
     public ApiResult<List<EmployeeOptionVO>> listOptions(
             @Parameter(description = "姓名或工号关键字") @RequestParam(required = false) String keyword) {

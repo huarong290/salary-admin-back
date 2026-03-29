@@ -31,12 +31,6 @@ public class PeriodAddReqDTO implements Serializable {
     @Schema(description = "结算月份(格式：YYYYMM)")
     private String settlementMonth;
     /**
-     * 结算币种
-     */
-    @Schema(description = "结算币种")
-    @NotBlank(message = "结算币种不能为空")
-    private String currency;
-    /**
      * 开始日期
      */
     @Schema(description = "开始日期")
@@ -64,11 +58,10 @@ public class PeriodAddReqDTO implements Serializable {
     @Schema(description = "是否满勤 (1:是, 0:否)")
     private Integer fullAttendanceFlag;
     /**
-     * 在岗月份 (前端传来的字符串数字)
-     * 🌟 必须确保字段名完全匹配 "workMonth"
+     * 累计在岗月份计数 (入职首月为1, 递增)
      */
-    @Schema(description = " 在岗月份 (前端传来的字符串数字)")
-    private String workMonth;
+    @Schema(description = "累计在岗月份计数 (入职首月为1, 递增)")
+    private Integer workMonth;
 }
 
 

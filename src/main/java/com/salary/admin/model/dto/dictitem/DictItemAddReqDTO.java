@@ -18,15 +18,15 @@ public class DictItemAddReqDTO {
     @Schema(description = "字典类型编码", example = "currency_type", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictTypeCode;
 
-    @NotBlank(message = "字典项标签不能为空")
-    @Size(max = 100, message = "标签长度不能超过100个字符")
-    @Schema(description = "字典项标签 (展示用)", example = "泰达币 (USDT)", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String dictItemName;
-
     @NotBlank(message = "字典项键值不能为空")
     @Size(max = 100, message = "键值长度不能超过100个字符")
     @Schema(description = "字典项键值 (存库用)", example = "USDT", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictItemValue;
+
+    @NotBlank(message = "字典项标签不能为空")
+    @Size(max = 100, message = "标签长度不能超过100个字符")
+    @Schema(description = "字典项标签 (展示用)", example = "泰达币 (USDT)", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String dictItemLabel;
 
     @NotNull(message = "显示顺序不能为空")
     @Schema(description = "排序值 (越小越靠前)", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)

@@ -20,7 +20,7 @@ public class PeriodOptionVO implements Serializable {
     private String settlementMonth;
 
     @Schema(description = "在岗月份 (格式：2026-03)")
-    private String workMonth;
+    private Integer workMonth;
 
     @Schema(description = "开始日期 (YYYY-MM-DD)")
     private String startDate;

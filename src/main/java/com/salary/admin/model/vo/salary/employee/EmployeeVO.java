@@ -108,8 +108,8 @@ public class EmployeeVO implements Serializable {
     private LocalDateTime updateTime;
 
     /**
-     * 在职状态: 0-离职, 1-在职
+     * 在职状态: 1-正式, 2-试用, 3-实习, 4-兼职/外包, 0-离职
      */
-    @Schema(description = "在职状态: 0-离职, 1-在职")
+    @Schema(description = "在职状态: 1-正式, 2-试用, 3-实习, 4-兼职/外包, 0-离职")
     private String employmentStatusLabel;
 }

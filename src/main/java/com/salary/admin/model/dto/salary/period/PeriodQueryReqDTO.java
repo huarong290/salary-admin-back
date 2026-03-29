@@ -36,10 +36,10 @@ public class PeriodQueryReqDTO extends PageQueryDTO {
     private String settlementMonth;
 
     /**
-     * 在岗月份
+     * 累计在岗月份计数 (入职首月为1, 递增)
      */
-    @Schema(description = "在岗月份 (如：2026-03)")
-    private String workMonth;
+    @Schema(description = "累计在岗月份计数 (入职首月为1, 递增)")
+    private Integer workMonth;
 
     /**
      * 部门

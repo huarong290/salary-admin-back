@@ -37,18 +37,13 @@ public class PeriodVO implements Serializable {
      * 在岗月份 (如：2026-03)
      */
     @Schema(description = "在岗月份")
-    private String workMonth;
+    private Integer workMonth;
 
     /**
      * 结算月份 (格式：YYYYMM)
      */
     @Schema(description = "结算月份 (YYYYMM)")
     private String settlementMonth;
-    /**
-     * 结算币种
-     */
-    @Schema(description = "结算币种")
-    private String currency;
 
     /**
      * 开始日期

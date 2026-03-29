@@ -385,7 +385,7 @@ CREATE TABLE `salary_period`
 (
     `id`                   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '周期ID',
     `employee_id`          BIGINT UNSIGNED NOT NULL COMMENT '员工ID',
-    `work_month`           CHAR(6)       NOT NULL COMMENT '在岗月份 (YYYYMM)',
+    `work_month`           INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '累计在岗月份计数 (入职首月为1, 递增)',
     `settlement_month`     CHAR(6)       NOT NULL COMMENT '结算月份 (YYYYMM)',
     `start_date`           DATE                   DEFAULT NULL COMMENT '开始日期',
     `end_date`             DATE                   DEFAULT NULL COMMENT '结束日期',

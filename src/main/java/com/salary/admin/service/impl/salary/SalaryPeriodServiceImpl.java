@@ -1,7 +1,6 @@
 package com.salary.admin.service.impl.salary;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -59,7 +58,7 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
     // 注入转换器
     private final PeriodConvert periodConvert;
 
-    private ISalaryEmployeeService employeeService;
+    private final ISalaryEmployeeService iSalaryEmployeeService;
 
     @Value("${salary.delete.allow-physical:false}")
     private boolean allowPhysicalDelete;
@@ -74,8 +73,9 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
 
         // 2. 转换实体并补全在岗月份格式 (例如 202603 -> 2026-03)
         SalaryPeriod entity = periodConvert.toEntity(reqDTO);
+        //动态计算在岗月份 (整型累计数)
         fillWorkMonth(entity);
-        // 🌟 兜底优化：如果前端没传满勤开关，默认给 0 (非满勤)
+        // 3.兜底优化：如果前端没传满勤开关，默认给 0 (非满勤)
         if (entity.getFullAttendanceFlag() == null) {
             entity.setFullAttendanceFlag(0);
         }
@@ -106,7 +106,7 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         // ============================
         if (CollUtil.isEmpty(targetEmpIds)) {
             // 默认加载所有在职员工（employmentStatus=1，deleteFlag=0）
-            targetEmpIds = employeeService.list(new LambdaQueryWrapper<SalaryEmployee>()
+            targetEmpIds = iSalaryEmployeeService.list(new LambdaQueryWrapper<SalaryEmployee>()
                             .eq(SalaryEmployee::getEmploymentStatus, 1)
                             .eq(SalaryEmployee::getDeleteFlag, 0))
                     .stream().map(SalaryEmployee::getId).collect(Collectors.toList());
@@ -141,7 +141,7 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         // ============================
         // 3. 批量查出员工入职日期
         // ============================
-        Map<Long, SalaryEmployee> empMap = employeeService.listByIds(readyIds).stream()
+        Map<Long, SalaryEmployee> empMap = iSalaryEmployeeService.listByIds(readyIds).stream()
                 .collect(Collectors.toMap(SalaryEmployee::getId, e -> e));
 
         // ============================
@@ -208,34 +208,14 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
      */
     @Override
     public PageResult<PeriodVO> selectPeriodPage(PeriodQueryReqDTO reqDTO) {
-        Page<SalaryPeriod> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
-        LambdaQueryWrapper<SalaryPeriod> wrapper = new LambdaQueryWrapper<>();
+        // 1. 构造 MyBatis-Plus 分页对象
+        Page<PeriodVO> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
 
-        // 条件过滤
-        wrapper.eq(reqDTO.getEmployeeId() != null, SalaryPeriod::getEmployeeId, reqDTO.getEmployeeId());
-        wrapper.eq(StrUtil.isNotBlank(reqDTO.getSettlementMonth()), SalaryPeriod::getSettlementMonth, reqDTO.getSettlementMonth());
+        // 2. 调用自定义 XML 连表查询
+        IPage<PeriodVO> resultPage = baseMapper.selectPeriodPage(page, reqDTO);
 
-        wrapper.orderByDesc(SalaryPeriod::getSettlementMonth).orderByDesc(SalaryPeriod::getCreateTime);
-
-        IPage<SalaryPeriod> resultPage = this.page(page, wrapper);
-        List<PeriodVO> voList = periodConvert.toVOList(resultPage.getRecords());
-
-        // 批量填充员工基本信息，减少数据库交互
-        if (CollUtil.isNotEmpty(voList)) {
-            List<Long> employeeIds = voList.stream().map(PeriodVO::getEmployeeId).distinct().collect(Collectors.toList());
-            Map<Long, SalaryEmployee> empMap = employeeService.listByIds(employeeIds).stream()
-                    .collect(Collectors.toMap(SalaryEmployee::getId, e -> e));
-
-            voList.forEach(vo -> {
-                SalaryEmployee emp = empMap.get(vo.getEmployeeId());
-                if (emp != null) {
-                    vo.setEmployeeName(emp.getEmployeeName());
-                    // 如果 VO 扩展了工号/部门等字段，可在此处填充
-                }
-            });
-        }
-
-        return PageResult.of(resultPage, voList);
+        // 3. 直接封装返回 (因为 XML 里的 resultType 已经是 PeriodVO，自带员工姓名了)
+        return PageResult.of(resultPage);
     }
 
     @Override
@@ -257,7 +237,7 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         if (entity == null) return null;
 
         PeriodVO vo = periodConvert.toVO(entity);
-        SalaryEmployee employee = employeeService.getById(vo.getEmployeeId());
+        SalaryEmployee employee = iSalaryEmployeeService.getById(vo.getEmployeeId());
         if (employee != null) vo.setEmployeeName(employee.getEmployeeName());
         return vo;
     }
@@ -286,11 +266,9 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         // 1. 增加 startDate 和 endDate 的查询，确保转换器能拿到数据
         List<SalaryPeriod> list = this.list(new LambdaQueryWrapper<SalaryPeriod>()
                 .select(SalaryPeriod::getSettlementMonth,
-                        SalaryPeriod::getWorkMonth,
                         SalaryPeriod::getStartDate,
                         SalaryPeriod::getEndDate)
                 .groupBy(SalaryPeriod::getSettlementMonth,
-                        SalaryPeriod::getWorkMonth,
                         SalaryPeriod::getStartDate,
                         SalaryPeriod::getEndDate)
                 .orderByDesc(SalaryPeriod::getSettlementMonth));
@@ -330,12 +308,16 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
         }
     }
 
+
     /**
-     * 填充在岗月份展示字段
+     * 智能填充在岗月数 (整型)
+     * 如果前端没有传，或者传了无效值，则自动去员工库查入职日期进行计算
      */
     private void fillWorkMonth(SalaryPeriod entity) {
-        if (StrUtil.isBlank(entity.getWorkMonth()) && StrUtil.length(entity.getSettlementMonth()) == 6) {
-            entity.setWorkMonth(entity.getSettlementMonth().substring(0, 4) + "-" + entity.getSettlementMonth().substring(4));
+        if (entity.getWorkMonth() == null || entity.getWorkMonth() <= 0) {
+            // 根据员工ID查询员工档案，获取入职日期
+            SalaryEmployee emp = iSalaryEmployeeService.getById(entity.getEmployeeId());
+            entity.setWorkMonth(calculateWorkMonthNum(emp, entity.getSettlementMonth()));
         }
     }
 
@@ -349,37 +331,41 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
     }
 
     /**
-     * 辅助方法：计算员工在岗月数（返回字符串，兼容数据库设计）
-     * <p>
-     * 特性：
-     * 1. 支持结算月份格式：yyyyMM 或 yyyy-MM
-     * 2. 自动归一化到每月 1 号，保证计算准确
-     * 3. 异常兜底返回 "1"，避免流程中断
+     * 计算员工在岗月数（返回 Integer，对应数据库新设计）
+     * 逻辑：入职当月算第 1 个月，次月算第 2 个月。
      *
      * @param emp             员工对象（必须包含入职日期）
      * @param settlementMonth 结算月份（格式：yyyyMM）
-     * @return 在岗月数字符串（最小值为 "1"）
+     * @return 累计在岗月数（最小值为 1）
      */
-    private String calculateWorkMonthNum(SalaryEmployee emp, String settlementMonth) {
-
-        // 1. 增加结算月份的非空和长度校验
+    private Integer calculateWorkMonthNum(SalaryEmployee emp, String settlementMonth) {
         if (emp == null || emp.getEntryDate() == null || StringUtils.isBlank(settlementMonth)) {
-            log.warn("员工 {} 缺失入职日期，workMonth 默认设置为 1", emp != null ? emp.getId() : "未知");
-            return "1";
+            log.warn("员工 {} 缺失入职日期或月份为空，workMonth 默认设置为 1", emp != null ? emp.getId() : "未知");
+            return 1;
         }
         try {
-            // 🌟 增强：兼容 2024-02 或 202402 两种格式
-            String cleanMonth = settlementMonth.replace("-", "");
-            // 2. 归一化计算：全部对齐到 1 号
+            //：利用正则把所有 "非数字" 字符全部替换掉
+            // 完美兼容: "2026-03", "2026/03", "2026.03", "2026_03", "2026年03月" -> "202603"
+            String cleanMonth = settlementMonth.replaceAll("\\D", "");
+
+            // 安全校验：清理后如果不是 6 位数字，说明数据畸形
+            if (cleanMonth.length() != 6) {
+                log.warn("结算月份提取异常，原始数据: {}, 清理后: {}", settlementMonth, cleanMonth);
+                return 1;
+            }
+
+            // 归一化计算：全部对齐到 1 号
             LocalDate current = LocalDate.parse(cleanMonth + "01", DateTimeFormatter.ofPattern("yyyyMMdd"));
             LocalDate entry = emp.getEntryDate().withDayOfMonth(1);
-            // 3. 计算月差 + 1
+
+            // 计算月差 + 1 (入职当月算第1个月)
             long months = ChronoUnit.MONTHS.between(entry, current) + 1;
-            // 4. 返回字符串结果
-            return String.valueOf(Math.max(1, months));
+
+            // 返回整型结果，最低保障为 1
+            return (int) Math.max(1, months);
         } catch (Exception e) {
             log.error("计算员工 {} 在岗月数异常: {}", emp.getId(), e.getMessage(), e);
-            return "1";
+            return 1;
         }
     }
 }
