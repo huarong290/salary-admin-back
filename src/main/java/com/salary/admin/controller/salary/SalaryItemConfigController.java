@@ -6,6 +6,7 @@ import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.itemconfig.ItemConfigAddReqDTO;
 import com.salary.admin.model.dto.salary.itemconfig.ItemConfigEditReqDTO;
 import com.salary.admin.model.dto.salary.itemconfig.ItemConfigQueryReqDTO;
+import com.salary.admin.model.vo.salary.itemconfig.ItemConfigOptionVO;
 import com.salary.admin.model.vo.salary.itemconfig.SalaryItemConfigVO;
 import com.salary.admin.service.salary.ISalaryItemConfigService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * <p>
@@ -69,6 +72,11 @@ public class SalaryItemConfigController {
         return ApiResult.successResult(itemConfigService.getItemConfigDetail(id));
     }
 
+    @GetMapping("/listOptions")
+    @Operation(summary = "获取薪资项目下拉列表", description = "用于前端业务页面的动态级联选择")
+    public ApiResult<List<ItemConfigOptionVO>> listOptions() {
+        return ApiResult.successResult(itemConfigService.listOptions());
+    }
     @PostMapping("/refresh-cache")
     @Operation(summary = "手动清理计算引擎缓存", description = "当手动调整数据库脚本后使用")
     @Loggable(title = "薪资配置-刷新缓存")

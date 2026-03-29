@@ -6,6 +6,7 @@ import com.salary.admin.model.dto.salary.itemconfig.ItemConfigAddReqDTO;
 import com.salary.admin.model.dto.salary.itemconfig.ItemConfigEditReqDTO;
 import com.salary.admin.model.dto.salary.itemconfig.ItemConfigQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryItemConfig;
+import com.salary.admin.model.vo.salary.itemconfig.ItemConfigOptionVO;
 import com.salary.admin.model.vo.salary.itemconfig.SalaryItemConfigVO;
 
 import java.util.List;
@@ -68,7 +69,11 @@ public interface ISalaryItemConfigService extends IService<SalaryItemConfig> {
      * 用于计算引擎上下文（Context）的变量注入
      */
     Map<String, SalaryItemConfig> getEnvVarMap();
-
+    /**
+     * 获取薪资配置项下拉列表
+     * @return 启用的配置选项列表
+     */
+    List<ItemConfigOptionVO> listOptions();
     /**
      * 强制刷新/清除配置缓存
      */

@@ -14,6 +14,7 @@ import com.salary.admin.model.dto.salary.itemconfig.ItemConfigAddReqDTO;
 import com.salary.admin.model.dto.salary.itemconfig.ItemConfigEditReqDTO;
 import com.salary.admin.model.dto.salary.itemconfig.ItemConfigQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryItemConfig;
+import com.salary.admin.model.vo.salary.itemconfig.ItemConfigOptionVO;
 import com.salary.admin.model.vo.salary.itemconfig.SalaryItemConfigVO;
 import com.salary.admin.service.IRedisService;
 import com.salary.admin.service.ISysDictItemService;
@@ -205,7 +206,23 @@ public class SalaryItemConfigServiceImpl extends ServiceImpl<SalaryItemConfigExt
         return listActiveConfigsSorted().stream()
                 .collect(Collectors.toMap(SalaryItemConfig::getEnvVarName, Function.identity(), (k1, k2) -> k1));
     }
+    @Override
+    public List<ItemConfigOptionVO> listOptions() {
+        // 1. 查询所有启用的配置项 (优先利用我们前面写好的按计算优先级排序的缓存方法)
+        List<SalaryItemConfig> activeConfigs = this.listActiveConfigsSorted();
 
+        // 2. 映射为轻量级的 OptionVO
+        return activeConfigs.stream().map(entity -> {
+            ItemConfigOptionVO vo = new ItemConfigOptionVO();
+            vo.setId(entity.getId());
+            vo.setItemCode(entity.getItemCode());
+            vo.setItemName(entity.getItemName());
+            vo.setItemCategory(entity.getItemCategory());
+            vo.setCategoryDictValue(entity.getCategoryDictValue());
+            vo.setEnvVarName(entity.getEnvVarName());
+            return vo;
+        }).collect(Collectors.toList());
+    }
     @Override
     public void clearCache() {
         redisService.del(CACHE_KEY_LIST);
