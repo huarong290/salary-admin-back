@@ -33,6 +33,7 @@
         <mysql-connector-j.version>9.5.0</mysql-connector-j.version>
         <freemarker.version>2.3.34</freemarker.version>
         <commons-pool2.version>2.13.1</commons-pool2.version>
+        <jpinyin.version>1.1.8</jpinyin.version>
     </properties>
 
     <dependencies>
@@ -179,6 +180,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
             <version>${commons-pool2.version}</version>
+        </dependency>
+        <!-- jpinyin 拼音依赖 -->
+        <dependency>
+            <groupId>com.github.stuxuhai</groupId>
+            <artifactId>jpinyin</artifactId>
+            <version>${jpinyin.version}</version>
         </dependency>
 
     </dependencies>
