@@ -49,11 +49,16 @@ public class EmployeeVO implements Serializable {
      */
     @Schema(description = "部门")
     private String department;
+    /**
+     * 岗位名称/职级
+     */
+    @Schema(description = "岗位名称/职级")
+    private String jobTitle;
 
     /**
-     * 在职状态: 0-离职, 1-在职
+     * 在职状态: 1-正式, 2-试用, 3-实习, 4-兼职/外包, 0-离职
      */
-    @Schema(description = "在职状态: 0-离职, 1-在职")
+    @Schema(description = "在职状态: 1-正式, 2-试用, 3-实习, 4-兼职/外包, 0-离职")
     private Integer employmentStatus;
 
     /**
@@ -73,6 +78,16 @@ public class EmployeeVO implements Serializable {
      */
     @Schema(description = "入职日期")
     private LocalDate entryDate;
+    /**
+     * 预计转正日期
+     */
+    @Schema(description = "预计转正日期")
+    private LocalDate probationEndDate;
+    /**
+     * 实际离职日期
+     */
+    @Schema(description = "实际离职日期")
+    private LocalDate actualLeaveDate;
 
     /**
      * 创建者

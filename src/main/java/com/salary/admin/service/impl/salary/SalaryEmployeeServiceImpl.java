@@ -81,13 +81,28 @@ public class SalaryEmployeeServiceImpl extends ServiceImpl<SalaryEmployeeExtMapp
                 throw new BusinessException("员工编号已存在，修改失败");
             }
         }
-        // 3. 核心防呆：如果员工从“在职”改为“离职”，建议检查是否有未结清的工资
-        if (existEmployee.getEmploymentStatus() == 1 && reqDTO.getEmploymentStatus() == 0) {
-            // TODO: 未来接入结算模块后，在这里检查 salary_summary 是否有处于 payment_status = 0 (未支付) 的账单
-            log.warn("注意：员工 [{}] 状态被修改为离职", existEmployee.getEmployeeName());
+        // 防呆前置准备：记录修改【前】的在职状态
+        Integer oldStatus = existEmployee.getEmploymentStatus();
+        // 3. DTO 转 Entity：让 MapStruct 先完成所有基础字段的覆盖
+        employeeCovert.updateEntity(reqDTO, existEmployee);
+
+        // 4. 定义语义化布尔值 (基于 Entity 状态)
+        boolean isTurningToLeave = (oldStatus != 0 && reqDTO.getEmploymentStatus() == 0);
+        boolean isReturningToWork = (oldStatus == 0 && reqDTO.getEmploymentStatus() != 0);
+
+        // 5. 离职状态机自动化拦截 (此时修改的是拷贝后的 existEmployee) 如果员工从“在职”改为“离职”，建议检查是否有未结清的工资
+        if (isTurningToLeave) {
+            // 如果 DTO 没传离职日期，默认当天
+            if (reqDTO.getActualLeaveDate() == null) {
+                existEmployee.setActualLeaveDate(java.time.LocalDate.now());
+            }
+            log.warn("注意：员工 [{}] 状态被修改为离职，生效日期: {}", existEmployee.getEmployeeName(), existEmployee.getActualLeaveDate());
+            // TODO: 未来接入结算模块后，在这里检查 salary_summary 是否有未支付账单
+        } else if (isReturningToWork) {
+            // 撤销离职(恢复在职)：如果从离职状态改回在职，清空离职日期
+            existEmployee.setActualLeaveDate(null);
+            log.info("员工 [{}] 已从离职状态恢复为在职", existEmployee.getEmployeeName());
         }
-        // 3. DTO 转 Entity 并更新
-        employeeCovert.toEntity(reqDTO);
         return this.updateById(existEmployee);
     }
 

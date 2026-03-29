@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.salary.admin.mapper.auto.SalaryItemConfigMapper">
+
+
+<!-- 通用查询映射结果 -->
+<resultMap id="BaseResultMap" type="com.salary.admin.model.entity.salary.SalaryItemConfig">
+    <id column="id" property="id" />
+    <result column="item_code" property="itemCode" />
+    <result column="item_name" property="itemName" />
+    <result column="item_category" property="itemCategory" />
+    <result column="env_var_name" property="envVarName" />
+    <result column="default_rule_script" property="defaultRuleScript" />
+    <result column="calc_priority" property="calcPriority" />
+    <result column="category_dict_value" property="categoryDictValue" />
+    <result column="decimal_places" property="decimalPlaces" />
+    <result column="rounding_mode" property="roundingMode" />
+    <result column="taxable_flag" property="taxableFlag" />
+    <result column="tax_deductible_flag" property="taxDeductibleFlag" />
+    <result column="fixed_flag" property="fixedFlag" />
+    <result column="pinyin_code" property="pinyinCode" />
+    <result column="sort_value" property="sortValue" />
+    <result column="status" property="status" />
+    <result column="remark" property="remark" />
+    <result column="delete_flag" property="deleteFlag" />
+    <result column="create_by" property="createBy" />
+    <result column="create_time" property="createTime" />
+    <result column="update_by" property="updateBy" />
+    <result column="update_time" property="updateTime" />
+</resultMap>
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, item_code, item_name, item_category, env_var_name, default_rule_script,
+        calc_priority, category_dict_value, decimal_places, rounding_mode,
+        taxable_flag, tax_deductible_flag, fixed_flag, pinyin_code, sort_value,
+        status, remark, delete_flag, create_by, create_time, update_by, update_time
+    </sql>
+</mapper>

@@ -38,6 +38,9 @@ public class ArchiveInitReqDTO {
     @DecimalMin(value = "0.00", inclusive = true, message = "baseSalary 必须 >= 0")
     private BigDecimal baseSalary;
 
+    @Schema(description = "当前岗位/职级 (保存时同步更新员工档案)")
+    private String jobTitle;
+
     @Schema(description = "生效日期(通常为入职日期 YYY-MM-DD 默认当天")
     private LocalDate effectiveDate;
 

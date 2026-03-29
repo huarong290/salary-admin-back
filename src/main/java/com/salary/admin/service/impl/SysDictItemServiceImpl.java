@@ -178,12 +178,15 @@ public class SysDictItemServiceImpl extends ServiceImpl<SysDictItemExtMapper, Sy
     @Override
     public String getDictLabel(String dictTypeCode, String dictItemValue) {
         // 💡 这里的 Perfect 处理是利用 selectDictItemsByTypeCode 的缓存机制
-        // 这样即使多次调用获取 Label，也只会触发一次 Redis/DB 查询
-        return this.selectDictItemsByTypeCode(dictTypeCode).stream()
+        // 1. 获取该类型下的所有项 (走 Redis 缓存)
+        List<DictItemVO> items = this.selectDictItemsByTypeCode(dictTypeCode);
+
+        // 2. 查找匹配项 这样即使多次调用获取 Label，也只会触发一次 Redis/DB 查询
+        return items.stream()
                 .filter(item -> StrUtil.equals(item.getDictItemValue(), dictItemValue))
                 .map(DictItemVO::getDictItemLabel)
                 .findFirst()
-                .orElse(dictItemValue); // 找不到则返回原 Value
+                .orElse(dictItemValue); // 找不到返回原值，方便排查数据问题
     }
 
     @Transactional(rollbackFor = Exception.class)

@@ -15,6 +15,8 @@ public class ArchiveQueryReqDTO extends PageQueryDTO {
     @Schema(description = "员工姓名/编号关键字")
     private String keyword;
 
+    @Schema(description = "部门名称")
+    private String department;
 
     @Schema(description = "是否仅看当前最新版本: 1-是, 0-否")
     private Integer latestFlag = 1;

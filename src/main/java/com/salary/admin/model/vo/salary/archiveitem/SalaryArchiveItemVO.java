@@ -59,6 +59,17 @@ public class SalaryArchiveItemVO implements Serializable {
     @Schema(description = "项目名称快照 (如：餐补、全勤奖)", example = "餐补")
     private String typeName;
     /**
+     * 保留小数位数 (来源于配置表快照)
+     */
+    @Schema(description = "保留小数位数")
+    private Integer decimalPlaces;
+
+    /**
+     * 舍入规则 (来源于配置表快照)
+     */
+    @Schema(description = "舍入规则: HALF_UP, DOWN, UP")
+    private String roundingMode;
+    /**
      * 分类字典值快照
      */
     @Schema(description = "分类字典值快照 (如：INC_BASE, DED_ABSENT)", example = "INC_MEAL")

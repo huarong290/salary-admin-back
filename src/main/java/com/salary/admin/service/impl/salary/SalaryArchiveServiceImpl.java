@@ -29,9 +29,11 @@ import com.salary.admin.service.salary.ISalaryEmployeeService;
 import com.salary.admin.service.salary.ISalaryItemConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -71,8 +73,9 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         if (count > 0) {
             throw new BusinessException("该员工已存在薪资档案，请走调薪流程");
         }
-
-        // 2. 转换为实体并初始化拉链表属性
+        //2. 增强：同步更新员工岗位信息 (定薪时确定的岗位)
+        updateEmployeeJobInfo(reqDTO.getEmployeeId(), reqDTO.getChangeReason());
+        // 3. 转换为实体并初始化拉链表属性
         SalaryArchive archive = archiveConvert.initToEntity(reqDTO);
         archive.setVersion(1);                   // 初始版本 V1
         archive.setLatestFlag(1);                // 标记为最新版本
@@ -86,7 +89,7 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
 
         this.save(archive);
 
-        // 3. 级联保存明细项 (暗箱防伪造逻辑)
+        // 4. 级联保存明细项 (暗箱防伪造逻辑)
         saveArchiveItemsSecurely(archive.getId(), reqDTO.getArchiveItems());
 
         log.info("员工 [{}] 入职定薪成功，档案ID: {}", reqDTO.getEmployeeId(), archive.getId());
@@ -156,8 +159,7 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         if (draftArchive.getAuditStatus() != 0) {
             throw new BusinessException("该申请已处理（当前状态：" + draftArchive.getAuditStatus() + "），请刷新页面");
         }
-        boolean isPass = (auditStatus == 1);
-        if (isPass) {
+        if (auditStatus == 1) {
             // 3. 校验生效日期：不能早于上一个版本的生效日期
             SalaryArchive previous = this.getOne(new LambdaQueryWrapper<SalaryArchive>()
                     .eq(SalaryArchive::getEmployeeId, draftArchive.getEmployeeId())
@@ -293,11 +295,20 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
             SalaryArchiveItem item = archiveItemConvert.toEntity(dto);
             item.setArchiveId(archiveId);
 
-            // 🛡️ 强制覆盖：用后端的权威数据填充快照，彻底防止前端越权篡改！
+            // 🛡️ 1.强制覆盖：用后端的权威数据填充快照，彻底防止前端越权篡改！
             item.setItemType(config.getItemCategory());
             item.setTypeName(config.getItemName());
             item.setCategoryDictValue(config.getCategoryDictValue());
+            // 2. 关键：固化精度逻辑（假设实体类已增加这两个字段）
+            // 如果配置表没有定义精度，默认保留2位；如果没有定义规则，默认四舍五入
+            int precision = (config.getDecimalPlaces() != null) ? config.getDecimalPlaces() : 2;
+            //使用 commons-lang3 提供的安全默认值方法
+            String modeStr = StringUtils.defaultIfBlank(config.getRoundingMode(), "HALF_UP");
 
+            if (item.getAmount() != null) {
+                // 根据配置规则强制截断/舍入金额
+                item.setAmount(item.getAmount().setScale(precision, RoundingMode.valueOf(modeStr)));
+            }
             return item;
         }).collect(Collectors.toList());
 
@@ -316,6 +327,8 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         if (employee != null) {
             vo.setEmployeeName(employee.getEmployeeName());
             vo.setEmployeeCode(employee.getEmployeeCode());
+            vo.setProbationEndDate(employee.getProbationEndDate()); // VO新增字段
+            vo.setJobTitle(employee.getJobTitle()); // VO新增字段
         }
 
         // 2. 字典翻译：结算币种 (如 CNY -> 人民币)
@@ -339,7 +352,13 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
 
         return vo;
     }
-
+    private void updateEmployeeJobInfo(Long employeeId, String jobTitle) {
+        if (StrUtil.isBlank(jobTitle)) return;
+        employeeService.updateById(SalaryEmployee.builder()
+                .id(employeeId)
+                .jobTitle(jobTitle)
+                .build());
+    }
     /**
      * 辅助方法：大类映射
      */

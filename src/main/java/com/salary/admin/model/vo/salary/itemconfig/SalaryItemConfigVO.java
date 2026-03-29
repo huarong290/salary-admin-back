@@ -59,6 +59,16 @@ public class SalaryItemConfigVO implements Serializable {
     @Schema(description = "业务分类字典值 (关联业务字典，如: allowance, insurance)")
     private String categoryDictValue;
     /**
+     * 保留小数位数
+     */
+    @Schema(description = "保留小数位数")
+    private Integer decimalPlaces;
+    /**
+     * 舍入规则: HALF_UP(四舍五入), DOWN(截断), UP(向上进位)
+     */
+    @Schema(description = "舍入规则: HALF_UP(四舍五入), DOWN(截断), UP(向上进位)")
+    private String roundingMode;
+    /**
      * 计税标识: 0-不计税, 1-计入个税基数 (仅对收入类有效)
      */
     @Schema(description = "计税标识: 0-不计税, 1-计入个税基数 (仅对收入类有效)")

@@ -6,8 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.salary.admin.model.entity.base.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
@@ -24,6 +23,9 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
 @TableName("salary_employee")
+@Builder
+@NoArgsConstructor    // 必须加上
+@AllArgsConstructor   // 必须加上
 public class SalaryEmployee extends BaseEntity<SalaryEmployee> {
 
     private static final long serialVersionUID = 1L;
@@ -65,9 +67,9 @@ public class SalaryEmployee extends BaseEntity<SalaryEmployee> {
     @TableField("job_title")
     private String jobTitle;
     /**
-     * 在职状态: 1-在职, 0-离职
+     * 在职状态: 1-正式, 2-试用, 3-实习, 4-兼职/外包, 0-离职
      */
-    @Schema(description = "在职状态: 1-在职, 0-离职")
+    @Schema(description = "在职状态: 1-正式, 2-试用, 3-实习, 4-兼职/外包, 0-离职")
     @TableField("employment_status")
     private Integer employmentStatus;
     /**

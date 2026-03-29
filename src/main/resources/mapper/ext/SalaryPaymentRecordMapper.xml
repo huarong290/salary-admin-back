@@ -13,8 +13,10 @@
         <result column="exchange_rate" property="exchangeRate" />
         <result column="actual_amount" property="actualAmount" />
         <result column="payment_method" property="paymentMethod" />
-        <result column="payment_channel" property="paymentChannel" />
+        <result column="channel_code" property="channelCode" />
+        <result column="channel_name" property="channelName" />
         <result column="target_account" property="targetAccount" />
+        <result column="target_account_name" property="targetAccountName" />
         <result column="payment_status" property="paymentStatus" />
         <result column="payment_time" property="paymentTime" />
         <result column="error_msg" property="errorMsg" />
@@ -28,7 +30,10 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, summary_id, employee_id, transaction_no, base_amount, settlement_currency, exchange_rate, actual_amount, payment_method, payment_channel, target_account, payment_status, payment_time, error_msg, remark, delete_flag, create_by, create_time, update_by, update_time
+        id, summary_id, employee_id, transaction_no, base_amount, settlement_currency,
+        exchange_rate, actual_amount, payment_method, channel_code, channel_name,
+        target_account, target_account_name, payment_status, payment_time,
+        error_msg, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 </mapper>

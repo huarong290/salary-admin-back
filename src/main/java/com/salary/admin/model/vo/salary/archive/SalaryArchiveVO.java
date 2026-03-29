@@ -47,6 +47,18 @@ public class SalaryArchiveVO implements Serializable {
     @Schema(description = "版本号 (每次调薪递增)")
     private Integer version;
     /**
+     * 转正日期 (快照/关联)
+     * 逻辑：从员工表关联获取，前端据此展示“预计薪资切换点”
+     */
+    @Schema(description = "员工预计转正日期")
+    private LocalDate probationEndDate;
+
+    /**
+     * 岗位名称/职级
+     */
+    @Schema(description = "岗位名称/职级快照")
+    private String jobTitle;
+    /**
      * 审核状态: 0-草稿/待审, 1-已生效, 2-驳回
      */
     @Schema(description = "审核状态: 0-草稿/待审, 1-已生效, 2-驳回 ")

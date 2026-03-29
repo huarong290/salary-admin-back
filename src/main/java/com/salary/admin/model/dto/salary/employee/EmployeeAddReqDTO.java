@@ -1,6 +1,5 @@
 package com.salary.admin.model.dto.salary.employee;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -52,4 +51,16 @@ public class EmployeeAddReqDTO implements Serializable {
      */
     @Schema(description = "入职日期")
     private LocalDate entryDate;
+
+    /**
+     * 预计转正日期
+     */
+    @Schema(description = "预计转正日期")
+    private LocalDate probationEndDate;
+
+    /**
+     * 实际离职日期
+     */
+    @Schema(description = "实际离职日期")
+    private LocalDate actualLeaveDate;
 }
