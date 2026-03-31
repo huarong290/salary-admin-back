@@ -2,6 +2,7 @@ package com.salary.admin.model.dto.salary.snapshot;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,37 +21,52 @@ import java.math.BigDecimal;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SalaryDetailItemDTO {
     /**
-     * 项目字典ID (如果是底薪/个税等系统内置项，可为空或设为特定负数)
-     * 作用：避免 HR 修改了字典名称后，历史快照无法被精准分类聚合
+     * 项目编码 (如: BASE_SALARY, 代替极易变动的 ID)
      */
-    private Long typeId;
+    @Schema(description = "项目编码 (如: BASE_SALARY, 代替极易变动的 ID)")
+    private String itemCode;
     /**
-     * 项目名称 (如：基本工资、住房补贴、养老保险)
+     * 项目名称 (如: 基本工资)
      */
+    @Schema(description = "项目名称 (如: 基本工资)")
     private String itemName;
     /**
-     * 金额
+     * 计算结果金额
      */
-    private BigDecimal amount;
+    @Schema(description = "计算结果金额")
+    private BigDecimal settlementAmount;
     /**
-     * 1-收入项，2-扣款项
+     * 原始金额
      */
-    private Integer itemType;
+    @Schema(description = "原始金额 (换算前)")
+    private BigDecimal originalAmount;
+    /**
+     * 原始币种
+     */
+    @Schema(description = "原始币种 (如 CNY)")
+    private String originalCurrency;
+    /**
+     * 业务分类字典值
+     */
+    @Schema(description = "业务分类字典值 (如: allowance, bonus)")
+    private String categoryDictValue;
 
-    /**
-     * 业务分类 (对应具体的收入/扣款类型名称)
-     *  例如：津贴、补贴、奖金、社保、公积金、考勤扣款
-     */
-    private String category;
 
     /**
      * 来源标识 (Source)
      * BASE-底薪计算, FIXED-档案固定, VARIABLE-月度变动, MANUAL-人工干预，SYSTEM_CALC-系统算税/全勤
      */
     private String source;
-
     /**
-     * 计算快照:计算逻辑描述 (如：基数5000 * 比例0.08)
+     *计算过程快照/公式日志
+     *
      */
-    private String formula;
+    @Schema(description = "计算过程快照/公式日志 (如: 15000 * (21.5 / 21.75))")
+    private String calcLog;
+    /**
+     *排序号
+     *
+     */
+    @Schema(description = "展示排序号 (决定工资单上的显示顺序)")
+    private Integer sort;
 }

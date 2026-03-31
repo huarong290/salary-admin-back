@@ -139,3 +139,18 @@ INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_permission`, `menu
 
 -- [详情权限] 对应 getEmployeeDetailApi
 (175, '查看档案详情', 'salary_employee_detail', 'salary:employee:detail', 3, 170, 5);
+
+
+
+
+INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_redirect`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`, `menu_visible`, `menu_status`)
+VALUES
+-- ==========================================================
+-- 【5】薪资汇总与发薪管理 (子菜单，Sort = 5，200号段)
+-- 包含：发薪台展示、工资条快照查看、锁定防篡改、触发核算等核心财务权限
+-- ==========================================================
+(200, '薪资汇总与发薪', 'salary_summary', 'summary', 'salary/summary/SummaryPage', '', 'Wallet', 'salary:summary:list', 2, 150, 5, 1, 1),
+(201, '查看汇总列表', 'salary_summary_query', '', '', '', '', 'salary:summary:query', 3, 200, 1, 1, 1),
+(202, '查看工资条明细', 'salary_summary_detail', '', '', '', '', 'salary:summary:detail', 3, 200, 2, 1, 1),
+(203, '锁定与解锁单据', 'salary_summary_lock', '', '', '', '', 'salary:summary:lock', 3, 200, 3, 1, 1),
+(204, '执行薪资引擎核算', 'salary_summary_calc', '', '', '', '', 'salary:summary:calc', 3, 200, 4, 1, 1);
