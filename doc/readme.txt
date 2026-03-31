@@ -9,3 +9,11 @@ rule_script + pipeline + context
 salary_item_detail   ←（你新加的）
 salary_summary
 salary_payment_record
+
+
+
+假设当前计算的只有下面这些
+每月底薪  5840
+KPI      A继续 50%  B绩效20%  C0%
+房补     300
+全勤奖    70

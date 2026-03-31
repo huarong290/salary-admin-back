@@ -34,6 +34,7 @@
         <freemarker.version>2.3.34</freemarker.version>
         <commons-pool2.version>2.13.1</commons-pool2.version>
         <jpinyin.version>1.1.8</jpinyin.version>
+        <aviator.version>5.4.3</aviator.version>
     </properties>
 
     <dependencies>
@@ -188,6 +189,12 @@
             <version>${jpinyin.version}</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>com.googlecode.aviator</groupId>
+            <artifactId>aviator</artifactId>
+            <version>${aviator.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

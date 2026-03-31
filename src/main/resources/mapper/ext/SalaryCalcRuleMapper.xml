@@ -28,4 +28,17 @@
         id, rule_code, rule_name, rule_type, rule_script, return_type, sort_value, status, depends_on, param_json, stage, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
+    <!-- 物理删除：直接删除记录 -->
+    <delete id="physicalDeleteById">
+        DELETE FROM salary_calc_rule WHERE id = #{id}
+    </delete>
+
+    <!-- 批量物理删除 -->
+    <delete id="physicalDeleteByIds">
+        DELETE FROM salary_calc_rule
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>
