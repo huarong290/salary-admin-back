@@ -154,3 +154,19 @@ VALUES
 (202, '查看工资条明细', 'salary_summary_detail', '', '', '', '', 'salary:summary:detail', 3, 200, 2, 1, 1),
 (203, '锁定与解锁单据', 'salary_summary_lock', '', '', '', '', 'salary:summary:lock', 3, 200, 3, 1, 1),
 (204, '执行薪资引擎核算', 'salary_summary_calc', '', '', '', '', 'salary:summary:calc', 3, 200, 4, 1, 1);
+
+
+INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_redirect`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`, `menu_visible`, `menu_status`)
+VALUES
+-- ==========================================================
+-- 【6】薪资引擎配置 (子菜单，Sort = 6，210号段)
+-- 包含：计算规则库(Rule)的维护、瀑布流管道(Pipeline)的编排与一键发布权限
+-- ==========================================================salary_calc_pipeline
+(210, '薪资引擎配置', 'salary_engine', 'engine', 'salary/engine/EngineConfigPage', '', 'Operation', 'salary:engine:list', 2, 150, 6, 1, 1),
+
+-- --- 按钮级权限 (归属在 210 菜单下) ---
+(211, '查看规则与管道', 'salary_engine_query', '', '', '', '', 'salary:engine:query', 3, 210, 1, 1, 1),
+(212, '新增计算规则', 'salary_calc_rule_add', '', '', '', '', 'salary:calc_rule:add', 3, 210, 2, 1, 1),
+(213, '修改计算规则', 'salary_calc_rule_edit', '', '', '', '', 'salary:calc_rule:edit', 3, 210, 3, 1, 1),
+(214, '删除计算规则', 'salary_calc_rule_del', '', '', '', '', 'salary:calc_rule:del', 3, 210, 4, 1, 1),
+(215, '发布管道编排', 'salary_calc_pipeline_save', '', '', '', '', 'salary:calc_pipeline:save', 3, 210, 5, 1, 1);

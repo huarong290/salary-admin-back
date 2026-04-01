@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.calcpipeline.CalcPipelineAddReqDTO;
 import com.salary.admin.model.dto.calcpipeline.CalcPipelineEditReqDTO;
+import com.salary.admin.model.dto.calcpipeline.CalcPipelineItemDTO;
 import com.salary.admin.model.dto.calcpipeline.CalcPipelineQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcPipeline;
 import com.salary.admin.model.vo.calcpipeline.CalcPipelineVO;
@@ -27,6 +28,15 @@ public interface ISalaryCalcPipelineService extends IService<SalaryCalcPipeline>
      * @return 新生成的管道ID
      */
     Long addPipeline(CalcPipelineAddReqDTO reqDTO);
+
+    /**
+     * 批量全量保存/重排流程管道 (用于前端拖拽排序后的一键保存)
+     *
+     * @param pipelineCode 管道编码
+     * @param pipelines    最新的全量管道步骤列表
+     * @return 是否成功
+     */
+    boolean savePipelineBatchMode(String pipelineCode, List<CalcPipelineItemDTO> pipelines);
     // ======================== 2. 删除操作 (Delete) ========================
     /**
      * 删除流程管道 (逻辑/物理双模式)
