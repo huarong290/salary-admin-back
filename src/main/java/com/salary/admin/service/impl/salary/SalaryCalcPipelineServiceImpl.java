@@ -1,7 +1,6 @@
 package com.salary.admin.service.impl.salary;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.common.PageResult;
@@ -123,18 +122,14 @@ public class SalaryCalcPipelineServiceImpl extends ServiceImpl<SalaryCalcPipelin
     // ======================== 4. 查询操作 (Read) ========================
     @Override
     public PageResult<CalcPipelineVO> getPipelinePage(CalcPipelineQueryReqDTO reqDTO) {
-        Page<SalaryCalcPipeline> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
-        LambdaQueryWrapper<SalaryCalcPipeline> wrapper = new LambdaQueryWrapper<>();
+        // 1. 构造 MyBatis-Plus 分页参数
+        Page<CalcPipelineVO> pageParam = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
 
-        // 业务筛选：按管道编码或状态
-        wrapper.eq(reqDTO.getPipelineCode() != null, SalaryCalcPipeline::getPipelineCode, reqDTO.getPipelineCode())
-                .eq(reqDTO.getStatus() != null, SalaryCalcPipeline::getStatus, reqDTO.getStatus());
+        // 2. 🌟 直接调用我们写好的自定义 SQL Mapper
+        Page<CalcPipelineVO> pageResult = baseMapper.selectPipelineAggPage(pageParam, reqDTO);
 
-        // 核心优化：多级排序。先按 Stage (计算阶段) 排序，再按 SortOrder (阶段内顺序) 排序
-        wrapper.orderByAsc(SalaryCalcPipeline::getStage, SalaryCalcPipeline::getSortOrder);
-
-        IPage<SalaryCalcPipeline> resultPage = this.page(page, wrapper);
-        return PageResult.of(resultPage, calcPipelineConvert.toVOList(resultPage.getRecords()));
+        // 3. 封装并返回你统一的 PageResult
+        return PageResult.of(pageResult);
     }
 
     @Override

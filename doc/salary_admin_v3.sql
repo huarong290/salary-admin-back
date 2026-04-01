@@ -305,7 +305,7 @@ CREATE TABLE `salary_calc_rule`
     `param_json`  JSON                 DEFAULT NULL COMMENT '参数配置',
     `stage`       INT         NOT NULL DEFAULT 1 COMMENT '所属阶段',
     `remark`      VARCHAR(255)         DEFAULT NULL COMMENT '备注',
-    `delete_flag` BIGINT UNSIGNED NOT NULL DEFAULT '0' COMMENT '逻辑删除标识',
+    `delete_flag` BIGINT UNSIGNED NOT NULL DEFAULT '0',
     `create_by`   VARCHAR(64) NOT NULL DEFAULT 'admin',
     `create_time` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_by`   VARCHAR(64) NOT NULL DEFAULT 'admin',
@@ -316,16 +316,38 @@ CREATE TABLE `salary_calc_rule`
 -- ==========================================================
 -- 14. 薪资计算流程管道表
 -- ==========================================================
+CREATE TABLE `salary_calc_pipeline`
+(
+    `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `pipeline_code` VARCHAR(64)  NOT NULL COMMENT '流程编码（如：DEFAULT_PIPELINE）',
+    `pipeline_name` VARCHAR(128) NOT NULL COMMENT '流程名称',
+    `stage`         INT          NOT NULL COMMENT '阶段（1基础 2补贴 3扣款 4税 5汇总）',
+    `rule_code`     VARCHAR(64)  NOT NULL COMMENT '规则编码（关联 salary_calc_rule）',
+    `sort_order`    INT          NOT NULL DEFAULT 0 COMMENT '执行顺序',
+    `status`        TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 COMMENT '状态 (1启用 0停用)',
+    `delete_flag`   BIGINT UNSIGNED NOT NULL DEFAULT '0',
+    `create_by`     VARCHAR(64)  NOT NULL DEFAULT 'admin',
+    `create_time`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_by`     VARCHAR(64)  NOT NULL DEFAULT 'admin',
+    `update_time`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_pipeline_stage_rule` (`pipeline_code`, `stage`, `rule_code`, `delete_flag`),
+    KEY             `idx_pipeline_stage` (`pipeline_code`, `stage`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资计算流程管道表';
+
 CREATE TABLE `salary_calc_pipeline_info`
 (
     `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `pipeline_code` VARCHAR(64)  NOT NULL COMMENT '唯一编码',
     `pipeline_name` VARCHAR(128) NOT NULL COMMENT '流程名称',
+
     `version`       INT          NOT NULL DEFAULT 1 COMMENT '版本号',
-    `default_flag`    TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否默认流程',
+    `is_default`    TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否默认流程',
+
     `status`        TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '状态(1启用 0停用)',
     `remark`        VARCHAR(255) DEFAULT NULL,
-    `delete_flag`   BIGINT UNSIGNED NOT NULL DEFAULT '0' COMMENT '逻辑删除标识',
+
+    `delete_flag`   BIGINT UNSIGNED NOT NULL DEFAULT '0',
     `create_by`     VARCHAR(64)  NOT NULL DEFAULT 'admin',
     `create_time`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_by`     VARCHAR(64)  NOT NULL DEFAULT 'admin',
@@ -334,34 +356,36 @@ CREATE TABLE `salary_calc_pipeline_info`
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_pipeline_code_ver` (`pipeline_code`, `version`, `delete_flag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资计算管道-主表';
--- ==========================================================
--- 15. 薪资计算管道步骤
--- ==========================================================
+
 CREATE TABLE `salary_calc_pipeline_step`
 (
     `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+
     `pipeline_code` VARCHAR(64) NOT NULL COMMENT '所属管道编码',
     `pipeline_version` INT NOT NULL DEFAULT 1 COMMENT '管道版本',
+
     `rule_code`     VARCHAR(64) NOT NULL COMMENT '规则编码',
-    `rule_name` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '规则名称快照',
-    `rule_type` TINYINT(1) DEFAULT NULL COMMENT '规则类型快照',
-    `condition_script` TEXT COMMENT '执行条件表达式',
+
     `stage`         TINYINT NOT NULL COMMENT '阶段(1基础 2补贴 3扣款 4税 5汇总)',
     `sort_order`    INT     NOT NULL COMMENT '执行顺序',
+
     `block_flag`      TINYINT(1) NOT NULL DEFAULT 1 COMMENT '失败是否阻断',
     `skip_if_null`  TINYINT(1) NOT NULL DEFAULT 0 COMMENT '结果为空是否跳过',
-    `status` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
-    `delete_flag`   BIGINT UNSIGNED NOT NULL DEFAULT '0' COMMENT '逻辑删除标识',
+
+    `delete_flag`   BIGINT UNSIGNED NOT NULL DEFAULT '0',
     `create_by`     VARCHAR(64)  NOT NULL DEFAULT 'admin',
     `create_time`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_by`     VARCHAR(64)  NOT NULL DEFAULT 'admin',
     `update_time`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
     PRIMARY KEY (`id`),
+
     UNIQUE KEY `uk_pipeline_step` (`pipeline_code`, `pipeline_version`, `rule_code`, `delete_flag`),
-    KEY `idx_pipeline_exec` (`pipeline_code`, `pipeline_version`, `status`, `stage`, `sort_order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资计算管道步骤-明细表';
+
+    KEY `idx_pipeline` (`pipeline_code`, `pipeline_version`, `stage`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资计算管道步骤';
 -- ==========================================================
--- 16. 薪资计算上下文快照表
+-- 15. 薪资计算上下文快照表
 -- ==========================================================
 CREATE TABLE `salary_calc_context`
 (
@@ -379,7 +403,7 @@ CREATE TABLE `salary_calc_context`
     UNIQUE KEY `uk_emp_period_ver` (`employee_id`, `period_id`, `version`, `delete_flag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资计算上下文快照表';
 -- ==========================================================
--- 17. 薪资计算日志表
+-- 16. 薪资计算日志表
 -- ==========================================================
 CREATE TABLE `salary_calc_log`
 (
@@ -405,7 +429,7 @@ CREATE TABLE `salary_calc_log`
 -- 第四部分：薪资周期与交易明细 (Transactional Data)
 -- ==========================================================
 -- ==========================================================
--- 18. 薪资周期信息表 salary_period
+-- 17. 薪资周期信息表 salary_period
 -- ==========================================================
 CREATE TABLE `salary_period`
 (
@@ -430,7 +454,7 @@ CREATE TABLE `salary_period`
 
 
 -- ==========================================================
--- 19. 薪资汇总与结算表 salary_summary
+-- 18. 薪资汇总与结算表 salary_summary
 -- ==========================================================
 CREATE TABLE `salary_summary`
 (
@@ -464,7 +488,7 @@ CREATE TABLE `salary_summary`
     KEY                 `idx_payment_status_month` (`payment_status`, `settlement_month`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资汇总与结算表';
 -- ==========================================================
--- 20. 统一收支明细表 salary_item_detail
+-- 19. 统一收支明细表 salary_item_detail
 -- ==========================================================
 CREATE TABLE `salary_item_detail`
 (
@@ -503,7 +527,7 @@ CREATE TABLE `salary_item_detail`
     KEY                   `idx_archive_trace` (`archive_id`, `archive_item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='统一收支明细表';
 -- ==========================================================
--- 21. 薪资计算结果快照表 salary_payment_record
+-- 20. 薪资计算结果快照表 salary_payment_record
 -- ==========================================================
 CREATE TABLE `salary_payment_record`
 (

@@ -1,6 +1,9 @@
 package com.salary.admin.mapper.ext;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.salary.admin.mapper.auto.SalaryCalcPipelineMapper;
+import com.salary.admin.model.dto.calcpipeline.CalcPipelineQueryReqDTO;
+import com.salary.admin.model.vo.calcpipeline.CalcPipelineVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -16,6 +19,10 @@ import java.util.List;
  */
 @Mapper
 public interface SalaryCalcPipelineExtMapper extends SalaryCalcPipelineMapper {
+    /**
+     *  自定义聚合查询：按流程编码分组，并统计步骤数
+     */
+    Page<CalcPipelineVO> selectPipelineAggPage(Page<CalcPipelineVO> page, @Param("req") CalcPipelineQueryReqDTO reqDTO);
     /**
      * 物理删除：直接删除记录
      */

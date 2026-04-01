@@ -23,6 +23,30 @@
         id, pipeline_code, pipeline_name, stage, rule_code, sort_order, status, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
+    <select id="selectPipelineAggPage" resultType="com.salary.admin.model.vo.calcpipeline.CalcPipelineVO">
+        SELECT
+        MAX(id) AS id,
+        pipeline_code,
+        MAX(pipeline_name) AS pipeline_name,
+        MAX(status) AS status,
+        COUNT(rule_code) AS step_count,
+        MAX(update_time) AS update_time
+        FROM salary_calc_pipeline
+        <where>
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (
+                pipeline_code LIKE CONCAT('%', #{req.keyword}, '%')
+                OR pipeline_name LIKE CONCAT('%', #{req.keyword}, '%')
+                )
+            </if>
+            <if test="req.status != null">
+                AND status = #{req.status}
+            </if>
+        </where>
+        GROUP BY pipeline_code
+        ORDER BY MAX(update_time) DESC
+    </select>
+
     <!-- 物理删除：直接删除记录 -->
     <delete id="physicalDeleteById">
         DELETE FROM salary_calc_pipeline WHERE id = #{id}

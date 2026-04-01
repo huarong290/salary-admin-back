@@ -1,5 +1,6 @@
 package com.salary.admin.model.dto.calcpipeline;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +13,8 @@ import lombok.Data;
  */
 @Data
 @Schema(description = "薪资流程管道-批量保存明细项请求参数")
+//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CalcPipelineItemDTO {
 
     @Schema(description = "流程编码（如：DEFAULT_PIPELINE）")
