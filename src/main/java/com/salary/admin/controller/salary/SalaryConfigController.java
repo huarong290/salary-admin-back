@@ -14,5 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/salary-config")
 public class SalaryConfigController {
+    // ======================== 1. 查询操作 (Read) ========================
 
+    // ======================== 2. 删除操作 (Delete) ========================
+
+    // ======================== 3. 修改操作 (Update) ========================
+
+    // ======================== 4. 查询操作 (Query) ========================
 }

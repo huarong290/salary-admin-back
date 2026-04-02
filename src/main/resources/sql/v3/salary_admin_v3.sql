@@ -299,7 +299,7 @@ CREATE TABLE `salary_calc_rule`
     `rule_type`   TINYINT(1) NOT NULL DEFAULT 1 COMMENT '规则类型 (1:公式,2:函数)',
     `rule_script` TEXT        NOT NULL COMMENT '表达式脚本',
     `return_type` VARCHAR(32) NOT NULL DEFAULT 'Decimal' COMMENT '返回值类型',
-    `sort_value`  INT         NOT NULL DEFAULT 0 COMMENT '执行优先级',
+    `sort_value`  INT         NOT NULL DEFAULT 0 COMMENT '默认显示排序(仅用于字典列表展示)',
     `status`      TINYINT(1) NOT NULL DEFAULT 1 COMMENT '状态 (1:启用,0:停用)',
     `depends_on`  VARCHAR(255)         DEFAULT NULL COMMENT '依赖变量',
     `param_json`  JSON                 DEFAULT NULL COMMENT '参数配置',

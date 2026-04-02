@@ -28,7 +28,7 @@ public class CalcRuleAddReqDTO {
     @Schema(description = "返回值类型")
     private String returnType;
 
-    @Schema(description = "执行优先级")
+    @Schema(description = "默认显示排序(仅用于字典列表展示)")
     private Integer sortValue;
 
     @Schema(description = "状态 (1:启用, 0:停用)")

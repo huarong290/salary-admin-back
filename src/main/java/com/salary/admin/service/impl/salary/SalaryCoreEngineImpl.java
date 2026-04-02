@@ -41,7 +41,6 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     private final ISalaryItemConfigService iSalaryItemConfigService;
     //  全新计算引擎核心 Service
     private final SalaryRuleEngine salaryRuleEngine;
-    private final ISalaryCalcPipelineService iSalaryCalcPipelineService;
     private final ISalaryCalcRuleService iSalaryCalcRuleService;
     private final ISalaryCalcContextService iSalaryCalcContextService;
     private final ISalaryCalcLogService iSalaryCalcLogService;
@@ -98,12 +97,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         // 4. 加载执行管道与规则库
         // ==========================================
         // 此处可通过参数或员工属性动态决定使用哪条 Pipeline，默认使用 DEFAULT
-        List<SalaryCalcPipeline> pipelines = iSalaryCalcPipelineService.list(
-                Wrappers.<SalaryCalcPipeline>lambdaQuery()
-                        .eq(SalaryCalcPipeline::getPipelineCode, "DEFAULT_PIPELINE")
-                        .eq(SalaryCalcPipeline::getStatus, 1)
-                        .orderByAsc(SalaryCalcPipeline::getStage, SalaryCalcPipeline::getSortOrder)
-        );
+
 
         Map<String, SalaryCalcRule> ruleMap = iSalaryCalcRuleService.list(
                 Wrappers.<SalaryCalcRule>lambdaQuery().eq(SalaryCalcRule::getStatus, 1)
@@ -114,52 +108,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         // ==========================================================
         // 5. 🚀 引擎轰鸣：严格按照 Pipeline Stage 顺次执行
         // ==========================================
-        for (SalaryCalcPipeline step : pipelines) {
-            long stepStartTime = System.currentTimeMillis();
-            SalaryCalcRule rule = ruleMap.get(step.getRuleCode());
-            if (rule == null) continue;
 
-            BigDecimal resultValue = BigDecimal.ZERO;
-            String errorMsg = null;
-
-            try {
-                // 5.1 执行 AviatorScript 表达式
-                resultValue = salaryRuleEngine.execute(rule.getRuleScript(), ctx);
-
-                // 5.2 瀑布流反写：将计算结果放回上下文，供下游规则使用！
-                ctx.put(rule.getRuleCode(), resultValue);
-
-                // 5.3 核心判别：如果该 RuleCode 是一个标准的“薪资发薪项”（在 config 表有定义），且金额不为 0
-                // 则它需要体现在工资条上，生成 ItemDetail；否则，它只是个中间变量（如：应纳税所得额）
-                SalaryItemConfig config = itemConfigMap.get(rule.getRuleCode());
-                if (config != null && resultValue.compareTo(BigDecimal.ZERO) != 0) {
-
-                    SalaryItemDetail detail = buildItemDetail(period, summaryId, config, resultValue, 2, "引擎计算生成");
-                    detail.setRuleCode(rule.getRuleCode());
-                    detail.setCalcSnapshot(JSON.toJSONString(ctx)); // 保留当时计算时的所有变量快照
-                    detail.setCalcPriority(step.getSortOrder());
-
-                    allDetails.add(detail);
-                }
-
-            } catch (Exception e) {
-                errorMsg = e.getMessage();
-                log.error("Pipeline 规则执行异常! Code: {}, 脚本: {}", rule.getRuleCode(), rule.getRuleScript(), e);
-                throw new RuntimeException("薪资核算中断于规则 [" + rule.getRuleName() + "]: " + e.getMessage());
-            } finally {
-                // 5.4 无论成功失败，必须记录执行日志
-                SalaryCalcLog logEntity = new SalaryCalcLog();
-                logEntity.setEmployeeId(period.getEmployeeId());
-                logEntity.setPeriodId(period.getId());
-                logEntity.setRuleCode(rule.getRuleCode());
-                logEntity.setStage(step.getStage());
-                logEntity.setInputJson(JSON.toJSONString(ctx));
-                logEntity.setOutputValue(resultValue);
-                logEntity.setErrorMsg(errorMsg);
-                logEntity.setExecuteTime(System.currentTimeMillis() - stepStartTime);
-                calcLogs.add(logEntity);
-            }
-        }
 
         // ==========================================================
         // 6. 财务汇总与数据归集

@@ -60,9 +60,9 @@ public class SalaryCalcRule extends BaseEntity<SalaryCalcRule> {
     @TableField("return_type")
     private String returnType;
     /**
-     * 执行优先级
+     * 默认显示排序(仅用于字典列表展示)
      */
-    @Schema(description = "执行优先级")
+    @Schema(description = "默认显示排序(仅用于字典列表展示)")
     @TableField("sort_value")
     private Integer sortValue;
     /**

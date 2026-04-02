@@ -32,7 +32,7 @@ public class CalcRuleEditReqDTO {
     @Schema(description = "返回值类型")
     private String returnType;
 
-    @Schema(description = "执行优先级")
+    @Schema(description = "默认显示排序(仅用于字典列表展示)")
     private Integer sortValue;
 
     @Schema(description = "状态 (1:启用, 0:停用)")
@@ -44,7 +44,7 @@ public class CalcRuleEditReqDTO {
     @Schema(description = "参数配置 (JSON字符串)")
     private String paramJson;
 
-    @Schema(description = "所属阶段 (1基础 2补贴 3扣款 4税 5汇总)")
+    @Schema(description = "所属阶段 (1.基础薪资阶段 2.津贴与奖金阶段 3扣款与社保阶段 4税务核算阶段 5汇总)")
     private Integer stage;
 
     @Schema(description = "备注")
