@@ -1,5 +1,6 @@
 package com.salary.admin.service.impl.salary;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.convert.salary.calccontext.CalcContextConvert;
@@ -9,14 +10,20 @@ import com.salary.admin.model.dto.calccontext.CalcContextAddReqDTO;
 import com.salary.admin.model.dto.calccontext.CalcContextEditReqDTO;
 import com.salary.admin.model.dto.calccontext.CalcContextQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcContext;
+import com.salary.admin.model.entity.salary.SalaryEmployee;
 import com.salary.admin.model.vo.calccontext.CalcContextVO;
+import com.salary.admin.service.salary.ISalaryArchiveService;
 import com.salary.admin.service.salary.ISalaryCalcContextService;
+import com.salary.admin.service.salary.ISalaryEmployeeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -34,6 +41,11 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
     private final SalaryCalcContextExtMapper salaryCalcContextExtMapper;
 
     private final CalcContextConvert calcContextConvert;
+
+    private final ISalaryEmployeeService iSalaryEmployeeService;
+
+    private final ISalaryArchiveService iSalaryArchiveService;
+
     // ======================== 1. 新增操作 (Create) ========================
     @Override
     public Long addContext(CalcContextAddReqDTO reqDTO) {
@@ -41,6 +53,69 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         this.save(entity);
         log.info("已生成计算快照，ID: {}, 员工ID: {}, 周期ID: {}", entity.getId(), entity.getEmployeeId(), entity.getPeriodId());
         return entity.getId();
+    }
+    @Override
+    public Map<String, Object> buildEmployeeContext(Long periodId, Long employeeId) {
+        log.debug("开始组装薪资核算上下文 Env | 周期: {}, 员工: {}", periodId, employeeId);
+        Map<String, Object> env = new HashMap<>();
+
+        // ==========================================
+        // 1. 获取员工基础信息
+        // ==========================================
+        SalaryEmployee employee = iSalaryEmployeeService.getById(employeeId);
+        if (employee == null) {
+            throw new BusinessException("上下文中找不到对应的员工信息: " + employeeId);
+        }
+        // 注入员工变量
+        env.put("employeeId", employee.getId());
+        env.put("employmentStatus", employee.getEmploymentStatus()); // 如: 1-正式, 2-试用, 0-离职
+        env.put("accommodationStatus", employee.getAccommodationStatus()); // 住宿状态，可用于房补规则条件
+
+        // 我们之前设计的远程/坐班标志（示例扩展）
+        // env.put("workMode", employee.getWorkMode());
+
+        // ==========================================
+        // 2. 获取薪资档案信息 (最新生效版本)
+        // ==========================================
+        // 这里假设你有获取最新生效档案的方法
+        var archive = iSalaryArchiveService.getLatestEffectiveArchive(employeeId);
+        if (archive == null) {
+            throw new BusinessException("员工 [" + employee.getEmployeeName() + "] 缺失有效的薪资档案，请先定薪！");
+        }
+
+        // 注入档案变量：核心！(这些变量必须严格与 Aviator 公式里的英文对齐)
+        env.put("baseSalary", archive.getBaseSalary() != null ? archive.getBaseSalary() : BigDecimal.ZERO);
+        env.put("taxRuleCode", archive.getTaxRuleCode()); // 个税分发路由凭证 (如: TAX_RESIDENT_CN, NO_TAX)
+
+        // 动态将档案明细 (Archive Items) 的配置项注入环境
+        // 假设档案里配置了房补 std_housing_allow: 300，则 env.put("std_housing_allow", 300)
+        if (!CollectionUtils.isEmpty(archive.getArchiveItems())) {
+            archive.getArchiveItems().forEach(item -> {
+                // itemCode 就是配置字典里的英文字段
+                env.put(item.getTypeName(), item.getAmount());
+            });
+        }
+
+        // ==========================================
+        // 3. 跨模块获取动态业务数据 (考勤、绩效)
+        // ==========================================
+        // TODO: 生产环境中这里应该调用考勤 Feign 接口或本地 Service 获取当月考勤
+        // 目前先注入硬编码模拟数据，后续接入真实模块替换即可
+        env.put("monthDays", new BigDecimal("21.75")); // 当月标准计薪天数
+        env.put("attendanceDays", new BigDecimal("21.75")); // 实际出勤天数
+        env.put("isFullAttendance", true); // 是否满勤
+
+        // TODO: 生产环境中这里应该调用绩效模块获取
+        env.put("kpiGrade", "A"); // 绩效等级 A/B/C/D
+        env.put("kpiScore", new BigDecimal("95.5")); // 绩效打分
+
+        // ==========================================
+        // 4. 落盘上下文计算快照，用于发薪审计和追溯
+        // ==========================================
+        this.saveAuditSnapshot(periodId, employeeId, archive.getId(), env);
+
+        log.debug("组装完成，当前员工计算环境变量: {}", env);
+        return env;
     }
     // ======================== 2. 删除操作 (Delete) ========================
     @Override
@@ -101,5 +176,26 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
             throw new BusinessException("该计算快照不存在");
         }
         return calcContextConvert.toVO(entity);
+    }
+
+
+    /**
+     * 辅助方法：保存快照防篡改
+     */
+    private void saveAuditSnapshot(Long periodId, Long employeeId, Long archiveId, Map<String, Object> env) {
+        // 先删除该周期下的旧快照，保证幂等性
+        this.remove(new LambdaQueryWrapper<SalaryCalcContext>()
+                .eq(SalaryCalcContext::getPeriodId, periodId)
+                .eq(SalaryCalcContext::getEmployeeId, employeeId));
+
+        SalaryCalcContext snapshot = new SalaryCalcContext();
+        snapshot.setPeriodId(periodId);
+        snapshot.setEmployeeId(employeeId);
+        snapshot.setArchiveId(archiveId);
+        // 将 Map 转换为 JSON 文本存入数据库
+        snapshot.setEnvJson(JSONUtil.toJsonStr(env));
+        snapshot.setRemark("引擎自动装配提取快照");
+
+        this.save(snapshot);
     }
 }

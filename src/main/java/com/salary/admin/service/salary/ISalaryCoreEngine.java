@@ -1,7 +1,7 @@
 package com.salary.admin.service.salary;
 
-import com.salary.admin.model.entity.salary.SalaryPeriod;
-import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
+import com.salary.admin.model.dto.engine.SalaryCalcBatchReqDTO;
+import com.salary.admin.model.dto.engine.SalaryCalcSingleReqDTO;
 
 /**
  * 薪资核心引擎接口 (V3.0 Pipeline 规则引擎版)
@@ -12,17 +12,20 @@ import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
  * @since 2026-03-31
  */
 public interface ISalaryCoreEngine {
-
-
+    /**
+     * 执行单人当月薪资核算 (瀑布流管道计算核心)
+     *
+     * @param reqDTO 单人核算参数
+     */
+    void calculateEmployeeSalary(SalaryCalcSingleReqDTO reqDTO);
 
     /**
-     * 6. 🚀 引擎心脏：执行单人单周期规则管道计算，并生成明细与快照
-     * @param summaryId 汇总单 ID
-     * @param archive   员工生效的薪资档案快照
-     * @param period    当期薪资周期/考勤数据
-     * @return 汇总单 ID
+     * 批量执行薪资核算 (发薪台触发)
+     *
+     * @param reqDTO 批量核算参数
      */
-    Long createRecordByCalculation(Long summaryId, SalaryArchiveVO archive, SalaryPeriod period);
+    void calculateBatchSalary(SalaryCalcBatchReqDTO reqDTO);
+
 
 
 }

@@ -39,11 +39,17 @@ public class SalaryCalcContext extends BaseEntity<SalaryCalcContext> {
     @TableField("period_id")
     private Long periodId;
     /**
+     *  来源档案ID (记录当时计算是基于哪个版本的定薪档案)
+     */
+    @Schema(description = "来源档案ID")
+    @TableField("archive_id")
+    private Long archiveId;
+    /**
      * 上下文变量JSON（ctx）
      */
     @Schema(description = "上下文变量JSON（ctx）")
-    @TableField("context_json")
-    private String contextJson;
+    @TableField("env_json")
+    private String envJson;
     /**
      * 使用的流程编码
      */
@@ -51,12 +57,25 @@ public class SalaryCalcContext extends BaseEntity<SalaryCalcContext> {
     @TableField("pipeline_code")
     private String pipelineCode;
     /**
+     *  使用的流程管道版本号
+     */
+    @Schema(description = "使用的流程管道版本号")
+    @TableField("pipeline_version")
+    private Integer pipelineVersion;
+    /**
      * 版本号
      */
     @Schema(description = "版本号")
     @Version
     @TableField("version")
     private Integer version;
+
+    /**
+     * 备注
+     */
+    @Schema(description = "备注")
+    @TableField("remark")
+    private String remark;
 
     @Override
     public Serializable pkVal() {

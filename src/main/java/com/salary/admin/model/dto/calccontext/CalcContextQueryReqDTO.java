@@ -22,4 +22,9 @@ public class CalcContextQueryReqDTO {
 
     @Schema(description = "版本号")
     private Integer version;
+    /**
+     *  备注说明
+     */
+    @Schema(description = "备注说明")
+    private String remark;
 }

@@ -97,5 +97,27 @@ public class SalarySummaryServiceImpl extends ServiceImpl<SalarySummaryExtMapper
                 .update();
     }
 
+    @Override
+    public SalarySummary getSummaryByUnique(Long periodId, Long employeeId) {
+        if (periodId == null || employeeId == null) {
+            return null;
+        }
+
+        // 1. 执行唯一查询
+        SalarySummary summary = this.lambdaQuery()
+                .eq(SalarySummary::getPeriodId, periodId)
+                .eq(SalarySummary::getEmployeeId, employeeId)
+                .one(); // 数据库中有唯一索引保证
+
+        // 2. 💡 架构师建议：增加“锁定保护”校验
+        if (summary != null && Integer.valueOf(1).equals(summary.getLockFlag())) {
+            // 如果单据已锁定，说明已经财务关账或发放，此时引擎尝试重写数据是非常危险的
+            log.warn("⚠️ 警告：员工[{}]在周期[{}]的薪资单已锁定，引擎尝试重算已被拦截。", employeeId, periodId);
+            throw new BusinessException("该薪资单已锁定（可能已关账或发放），禁止重算！请先联系财务解锁。");
+        }
+
+        return summary;
+    }
+
 
 }

@@ -245,11 +245,11 @@ INSERT INTO `sys_dict_item` (`dict_type_code`, `dict_item_value`, `dict_item_lab
 -- ==========================================
 -- 7. 员工在职状态
 -- ==========================================
-('employment_status', 'regular', '正式员工', 10, 'system'),
-('employment_status', 'probation', '试用期员工', 20, 'system'),
-('employment_status', 'intern', '实习生', 30, 'system'),
-('employment_status', 'part_time', '兼职/外包', 40, 'system'),
-('employment_status', 'resigned', '已离职', 50, 'system');
+('employment_status', '1', '正式员工', 10, 'system'),
+('employment_status', '2', '试用期员工', 20, 'system'),
+('employment_status', '3', '实习生', 30, 'system'),
+('employment_status', '4', '兼职/外包', 40, 'system'),
+('employment_status', '0', '已离职', 50, 'system');
 
 
 

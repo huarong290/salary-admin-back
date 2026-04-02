@@ -33,4 +33,15 @@ public interface ISalarySummaryService extends IService<SalarySummary> {
     /** 统一更新锁定状态 (支持批量/单个) */
     boolean updateLockStatus(SalarySummaryOperateDTO operateDTO);
 
+
+    /**
+     * 🌟 [引擎专用] 根据周期和员工获取唯一汇总单据
+     * 用于计算引擎在核算完成后，将结果回写到主表
+     *
+     * @param periodId   薪资周期ID
+     * @param employeeId 员工ID
+     * @return 薪资汇总实体
+     */
+    SalarySummary getSummaryByUnique(Long periodId, Long employeeId);
+
 }

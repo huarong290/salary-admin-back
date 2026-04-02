@@ -7,9 +7,12 @@
         <id column="id" property="id" />
         <result column="employee_id" property="employeeId" />
         <result column="period_id" property="periodId" />
-        <result column="context_json" property="contextJson" />
+        <result column="archive_id" property="archiveId" />
+        <result column="env_json" property="envJson" />
         <result column="pipeline_code" property="pipelineCode" />
+        <result column="pipeline_version" property="pipelineVersion" />
         <result column="version" property="version" />
+        <result column="remark" property="remark" />
         <result column="delete_flag" property="deleteFlag" />
         <result column="create_by" property="createBy" />
         <result column="create_time" property="createTime" />
@@ -19,7 +22,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, employee_id, period_id, context_json, pipeline_code, version, delete_flag, create_by, create_time, update_by, update_time
+        id, employee_id, period_id,archive_id, env_json, pipeline_code,pipeline_version, version, remark,delete_flag, create_by, create_time, update_by, update_time
     </sql>
     <!-- 物理删除：直接删除记录 -->
     <delete id="physicalDeleteById">

@@ -156,4 +156,21 @@ public class SalaryCalcRuleServiceImpl extends ServiceImpl<SalaryCalcRuleExtMapp
 
         return calcRuleConvert.toVOList(activeEntities);
     }
+
+    @Override
+    public CalcRuleVO getByRuleCode(String ruleCode) {
+        if (StringUtils.isBlank(ruleCode)) {
+            return null;
+        }
+
+        // 利用 LambdaQueryWrapper 查询唯一记录
+        SalaryCalcRule entity = this.lambdaQuery()
+                .eq(SalaryCalcRule::getRuleCode, ruleCode)
+                .one(); // 因为数据库有 uk_rule_code_del 唯一约束，用 one() 没问题
+
+        if (entity == null) {
+            return null;
+        }
+        return calcRuleConvert.toVO(entity);
+    }
 }

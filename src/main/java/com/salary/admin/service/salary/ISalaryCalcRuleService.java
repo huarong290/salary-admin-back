@@ -77,4 +77,13 @@ public interface ISalaryCalcRuleService extends IService<SalaryCalcRule> {
      * @return 活跃规则列表
      */
     List<CalcRuleVO> listActiveRules();
+
+    /**
+     * 🌟 [引擎专用] 根据规则编码获取计算规则详情
+     * 用于瀑布流计算引擎在运行时动态拉取 Aviator 公式脚本
+     *
+     * @param ruleCode 规则编码 (如: BASE_SALARY)
+     * @return 规则视图对象 (包含脚本内容)
+     */
+    CalcRuleVO getByRuleCode(String ruleCode);
 }

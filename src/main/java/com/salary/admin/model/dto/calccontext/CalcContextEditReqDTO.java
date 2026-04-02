@@ -17,8 +17,13 @@ public class CalcContextEditReqDTO {
     private Long id;
 
     @Schema(description = "上下文变量JSON字符串")
-    private String contextJson;
+    private String envJson;
 
     @Schema(description = "版本号")
     private Integer version;
+    /**
+     *  备注说明
+     */
+    @Schema(description = "备注说明")
+    private String remark;
 }
