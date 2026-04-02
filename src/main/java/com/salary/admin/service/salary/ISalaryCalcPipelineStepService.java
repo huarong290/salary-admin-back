@@ -1,7 +1,7 @@
 package com.salary.admin.service.salary;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepAddReqDTO;
+import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepBatchItemDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcPipelineStep;
 import com.salary.admin.model.vo.calcpipelinestep.CalcPipelineStepVO;
 
@@ -30,7 +30,7 @@ public interface ISalaryCalcPipelineStepService extends IService<SalaryCalcPipel
      * @param stepAddDTOList 前端传来的步骤集合
      * @return 是否成功
      */
-    boolean batchSaveSteps(String pipelineCode, Integer pipelineVersion, List<CalcPipelineStepAddReqDTO> stepAddDTOList);
+    boolean batchSaveSteps(String pipelineCode, Integer pipelineVersion, List<CalcPipelineStepBatchItemDTO> stepAddDTOList);
     // ======================== 4. 查询操作 (Query) ========================
     /**
      * 根据管道编码和版本，获取该管道下的执行步骤

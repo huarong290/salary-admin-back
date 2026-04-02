@@ -126,9 +126,10 @@ public class SalaryCalcRuleServiceImpl extends ServiceImpl<SalaryCalcRuleExtMapp
         // 状态筛选
         wrapper.eq(reqDTO.getStatus() != null, SalaryCalcRule::getStatus, reqDTO.getStatus());
 
-        // 默认按更新时间降序，保证新配置的规则排在前面
-        wrapper.orderByDesc(SalaryCalcRule::getUpdateTime);
-
+        // 建议的 MyBatis-Plus 查询条件
+        wrapper.orderByAsc(SalaryCalcRule::getStage)         // 第一顺位：按核算阶段排序 (基础->补贴->扣款->税)
+                .orderByAsc(SalaryCalcRule::getSortValue)     // 第二顺位：阶段内按 sort_value 排序
+                .orderByDesc(SalaryCalcRule::getUpdateTime);  // 第三顺位：同阶段同权重时，最新修改的排前面
         // 3. 执行查询
         IPage<SalaryCalcRule> resultPage = this.page(page, wrapper);
 

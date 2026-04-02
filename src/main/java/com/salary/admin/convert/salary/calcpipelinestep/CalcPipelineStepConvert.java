@@ -2,6 +2,7 @@ package com.salary.admin.convert.salary.calcpipelinestep;
 
 
 import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepAddReqDTO;
+import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepBatchItemDTO;
 import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepEditReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcPipelineStep;
 import com.salary.admin.model.vo.calcpipelinestep.CalcPipelineStepVO;
@@ -33,6 +34,14 @@ public interface CalcPipelineStepConvert {
      * @return 数据库实体对象
      */
     SalaryCalcPipelineStep toEntity(CalcPipelineStepEditReqDTO editDTO);
+    /**
+     * 批量保存明细项 DTO 转换为数据库实体
+     * 场景：用于瀑布流编排设计器的全量发布
+     *
+     * @param batchItemDTO 批量保存明细项参数
+     * @return 数据库实体对象
+     */
+    SalaryCalcPipelineStep toEntity(CalcPipelineStepBatchItemDTO batchItemDTO);
 
     /**
      * 实体对象转换为 VO

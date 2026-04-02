@@ -1,7 +1,7 @@
 package com.salary.admin.controller.salary;
 
 import com.salary.admin.common.ApiResult;
-import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepAddReqDTO;
+import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepBatchItemDTO;
 import com.salary.admin.model.vo.calcpipelinestep.CalcPipelineStepVO;
 import com.salary.admin.service.salary.ISalaryCalcPipelineStepService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +38,7 @@ public class SalaryCalcPipelineStepController {
     @PostMapping("/batch-save")
     public ApiResult<Boolean> batchSaveSteps(@RequestParam String pipelineCode,
                                              @RequestParam Integer pipelineVersion,
-                                             @RequestBody @Validated List<CalcPipelineStepAddReqDTO> stepList) {
+                                             @RequestBody @Validated List<CalcPipelineStepBatchItemDTO> stepList) {
         boolean success = iSalaryCalcPipelineStepService.batchSaveSteps(pipelineCode, pipelineVersion, stepList);
         return ApiResult.successResult(success);
     }
