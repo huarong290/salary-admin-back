@@ -11,6 +11,17 @@ salary_summary
 salary_payment_record
 
 
+buildEmployeeContext()
+    ↓
+buildContextData()   ← 纯构建（可复用、可测试）
+    ↓
+fillArchive()
+fillEmployee()
+fillAttendance()
+fillKpi()
+    ↓
+saveSnapshot()
+
 yelive
 假设当前计算的只有下面这些
 每月底薪  5840

@@ -270,7 +270,18 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
 
         return PageResult.of(resultPage, records);
     }
-
+    // ==========================================
+    // 7. 获取单条薪资档案详情 (供详情弹窗使用)
+    // ==========================================
+    @Override
+    public SalaryArchiveVO getArchiveDetail(Long id) {
+        SalaryArchive archive = this.getById(id);
+        if (archive == null) {
+            throw new BusinessException("该薪资档案不存在或已被删除");
+        }
+        // 💡 架构复用：直接调用底部已有的私有方法，它会自动查出关联的 archiveItems 并做字典翻译
+        return assembleArchiveVO(archive);
+    }
     // =========================================================================
     // 🔐 核心私有辅助方法
     // =========================================================================

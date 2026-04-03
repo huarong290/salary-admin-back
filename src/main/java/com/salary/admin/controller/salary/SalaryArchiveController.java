@@ -77,4 +77,11 @@ public class SalaryArchiveController {
     public ApiResult<PageResult<SalaryArchiveVO>> getArchivePage(@RequestBody ArchiveQueryReqDTO reqDTO) {
         return ApiResult.successResult(salaryArchiveService.getArchivePage(reqDTO));
     }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "获取单条档案详情", description = "根据主键ID获取档案详情及挂载的薪资明细项，用于详情弹窗展示")
+    public ApiResult<SalaryArchiveVO> getArchiveDetail(
+            @Parameter(description = "档案主键ID", example = "1") @PathVariable Long id) {
+        return ApiResult.successResult(salaryArchiveService.getArchiveDetail(id));
+    }
 }

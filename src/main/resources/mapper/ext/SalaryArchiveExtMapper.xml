@@ -40,7 +40,6 @@
         a.audit_status,
         a.base_salary,
         a.probation_base_salary,
-        a.full_attendance_bonus,
         a.currency,
         a.change_reason,
         a.tax_rule_code,

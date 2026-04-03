@@ -72,4 +72,13 @@ public interface ISalaryArchiveService extends IService<SalaryArchive> {
      * @return 分页结果
      */
     PageResult<SalaryArchiveVO> getArchivePage(ArchiveQueryReqDTO reqDTO);
+
+    /**
+     * 获取单条薪资档案详情（包含明细子项）
+     * 🌟 用于前端详情弹窗展示
+     *
+     * @param id 档案主键 ID
+     * @return 档案视图对象
+     */
+    SalaryArchiveVO getArchiveDetail(Long id);
 }
