@@ -12,13 +12,9 @@ import java.util.List;
 @Schema(description = "引擎-批量薪资核算指令参数")
 public class SalaryCalcBatchReqDTO {
 
-    @NotNull(message = "薪资周期ID不能为空")
-    @Schema(description = "薪资周期ID")
-    private Long periodId;
-
-    @NotEmpty(message = "执行核算的员工列表不能为空")
-    @Schema(description = "需要核算的员工ID集合")
-    private List<Long> employeeIds;
+    @NotEmpty(message = "请至少选择一条需要核算的薪资单据")
+    @Schema(description = "待核算的薪资汇总单ID集合 (对应 salary_summary.id)")
+    private List<Long> summaryIds;
 
     @NotBlank(message = "管道编码不能为空")
     @Schema(description = "核算管道编码")

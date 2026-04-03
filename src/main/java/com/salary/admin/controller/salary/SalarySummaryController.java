@@ -36,7 +36,7 @@ public class SalarySummaryController {
         return ApiResult.successResult(summaryService.getSummaryPage(reqDTO));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail/{id}")
     @Operation(summary = "获取薪资单详情", description = "返回包含 detail_json 解析后的结构化明细数据")
     public ApiResult<SalarySummaryVO> getById(@PathVariable Long id) {
         return ApiResult.successResult(summaryService.getSummaryDetail(id));

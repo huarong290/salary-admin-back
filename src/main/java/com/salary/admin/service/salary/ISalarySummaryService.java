@@ -35,7 +35,7 @@ public interface ISalarySummaryService extends IService<SalarySummary> {
 
 
     /**
-     * 🌟 [引擎专用] 根据周期和员工获取唯一汇总单据
+     * [引擎专用] 根据周期和员工获取唯一汇总单据
      * 用于计算引擎在核算完成后，将结果回写到主表
      *
      * @param periodId   薪资周期ID

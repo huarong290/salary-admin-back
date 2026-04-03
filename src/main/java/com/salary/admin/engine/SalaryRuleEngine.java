@@ -27,10 +27,10 @@ public class SalaryRuleEngine {
         //  1. 开启金融级高精度计算：所有浮点数自动转为 BigDecimal
         AviatorEvaluator.setOption(Options.ALWAYS_PARSE_FLOATING_POINT_NUMBER_INTO_DECIMAL, true);
 
-        // 🌟 2. 开启整数除法自动转浮点数 (防止 21.5 / 21.75 变成 0)
+        //  2. 开启整数除法自动转浮点数 (防止 21.5 / 21.75 变成 0)
         AviatorEvaluator.setOption(Options.ALWAYS_PARSE_INTEGRAL_NUMBER_INTO_DECIMAL, true);
 
-        // 🌟 3. 设置计算精度 MathContext (使用 DECIMAL128，极其精确)
+        //  3. 设置计算精度 MathContext (使用 DECIMAL128，极其精确)
         AviatorEvaluator.setOption(Options.MATH_CONTEXT, java.math.MathContext.DECIMAL128);
 
         log.info("💰 薪资计算引擎 (AviatorScript) 初始化完成，已开启全量 BigDecimal 精度保护。");
