@@ -188,12 +188,12 @@ public class SalaryKpiRecordServiceImpl extends ServiceImpl<SalaryKpiRecordExtMa
         if (StringUtils.isBlank(grade)) return BigDecimal.ZERO;
 
         return switch (grade) {
-            case "S" -> new BigDecimal("1.5000");
-            case "A" -> new BigDecimal("1.2000"); // A级上浮 20%
-            case "B" -> new BigDecimal("1.0000"); // B级正常拿 100%
-            case "C" -> new BigDecimal("0.8000"); // C级扣 20%
-            case "D" -> BigDecimal.ZERO;          // D级全扣
-            default  -> BigDecimal.ZERO;
+            case "S" -> new BigDecimal("1.0000");// 拿底薪的 100%
+            case "A" -> new BigDecimal("0.5000"); // A级上浮 20%
+            case "B" -> new BigDecimal("0.2000"); // B级正常拿 100%
+            case "C" -> BigDecimal.ZERO; // C级  0%
+            case "D" -> BigDecimal.ZERO; // D级 0%
+            default  -> BigDecimal.ZERO; // 默认 0%
         };
     }
 }

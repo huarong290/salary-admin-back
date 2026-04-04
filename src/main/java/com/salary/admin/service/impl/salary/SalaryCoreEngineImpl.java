@@ -441,7 +441,10 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             snapshot.setSettlementCurrency("CNY");
             // 记录核心引擎环境变量作为排查依据
             snapshot.setCalcRemark("引擎计算成功，使用的管道: " + pipelineCode);
-
+            // 把 env 里的基础数据拿出来，真正塞进快照里！
+            snapshot.setAttendanceDays((BigDecimal) env.getOrDefault("attendanceDays", BigDecimal.ZERO));
+            snapshot.setMonthDays((BigDecimal) env.getOrDefault("monthDays", BigDecimal.ZERO));
+            snapshot.setBaseSalary((BigDecimal) env.getOrDefault("baseSalary", BigDecimal.ZERO));
             // 将 DTO 序列化为 JSON 字符串
             String detailJsonString = JSONUtil.toJsonStr(snapshot);
 

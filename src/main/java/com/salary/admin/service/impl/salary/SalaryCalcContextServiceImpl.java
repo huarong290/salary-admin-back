@@ -11,10 +11,14 @@ import com.salary.admin.model.dto.calccontext.CalcContextEditReqDTO;
 import com.salary.admin.model.dto.calccontext.CalcContextQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcContext;
 import com.salary.admin.model.entity.salary.SalaryEmployee;
+import com.salary.admin.model.entity.salary.SalaryKpiRecord;
+import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.calccontext.CalcContextVO;
+import com.salary.admin.service.ISalaryKpiRecordService;
 import com.salary.admin.service.salary.ISalaryArchiveService;
 import com.salary.admin.service.salary.ISalaryCalcContextService;
 import com.salary.admin.service.salary.ISalaryEmployeeService;
+import com.salary.admin.service.salary.ISalaryPeriodService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,6 +49,10 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
     private final ISalaryEmployeeService iSalaryEmployeeService;
 
     private final ISalaryArchiveService iSalaryArchiveService;
+
+    private final ISalaryPeriodService iSalaryPeriodService;
+
+    private final ISalaryKpiRecordService iSalaryKpiRecordService;
 
     // ======================== 1. 新增操作 (Create) ========================
     @Override
@@ -97,17 +105,40 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         }
 
         // ==========================================
-        // 3. 跨模块获取动态业务数据 (考勤、绩效)
+        // 3. 跨模块获取动态业务数据 (考勤、绩效)-> 🌟 真实查库联调
         // ==========================================
-        // TODO: 生产环境中这里应该调用考勤 Feign 接口或本地 Service 获取当月考勤
-        // 目前先注入硬编码模拟数据，后续接入真实模块替换即可
-        env.put("monthDays", new BigDecimal("21.75")); // 当月标准计薪天数
-        env.put("attendanceDays", new BigDecimal("21.75")); // 实际出勤天数
-        env.put("isFullAttendance", true); // 是否满勤
+        // 3.1 提取真实的考勤周期数据
+        SalaryPeriod period = iSalaryPeriodService.getById(periodId);
+        if (period != null) {
+            env.put("monthDays", period.getMonthDays() != null ? period.getMonthDays() : BigDecimal.ZERO);
+            env.put("attendanceDays", period.getAttendanceDays() != null ? period.getAttendanceDays() : BigDecimal.ZERO);
+            env.put("isFullAttendance", period.getFullAttendanceFlag() != null && period.getFullAttendanceFlag() == 1);
+        } else {
+            // 防空兜底
+            env.put("monthDays", BigDecimal.ZERO);
+            env.put("attendanceDays", BigDecimal.ZERO);
+            env.put("isFullAttendance", false);
+        }
 
-        // TODO: 生产环境中这里应该调用绩效模块获取
-        env.put("kpiGrade", "A"); // 绩效等级 A/B/C/D
-        env.put("kpiScore", new BigDecimal("95.5")); // 绩效打分
+        // 3.2 提取真实的【已定稿】绩效打分数据
+        SalaryKpiRecord kpi = iSalaryKpiRecordService.lambdaQuery()
+                .eq(SalaryKpiRecord::getPeriodId, periodId)
+                .eq(SalaryKpiRecord::getEmployeeId, employeeId)
+                .eq(SalaryKpiRecord::getAuditStatus, 1) // ⚠️ 核心：必须是已定稿可算薪的状态
+                .eq(SalaryKpiRecord::getEffectiveFlag, 1)
+                .one();
+
+        if (kpi != null) {
+            env.put("kpiGrade", kpi.getKpiGrade());
+            env.put("kpiScore", kpi.getKpiScore() != null ? kpi.getKpiScore() : BigDecimal.ZERO);
+            //引擎的 KPI_BONUS 公式强依赖这个变量：
+            env.put("kpiCoefficient", kpi.getKpiCoefficient() != null ? kpi.getKpiCoefficient() : BigDecimal.ZERO);
+        } else {
+            // 如果该员工本月没有定稿的绩效，默认不发绩效奖金
+            env.put("kpiGrade", "WAITING");
+            env.put("kpiScore", BigDecimal.ZERO);
+            env.put("kpiCoefficient", BigDecimal.ZERO);
+        }
 
         // ==========================================
         // 4. 落盘上下文计算快照，用于发薪审计和追溯
@@ -196,7 +227,7 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         snapshot.setEnvJson(JSONUtil.toJsonStr(env));
         snapshot.setRemark("引擎自动装配提取快照");
 
-        // 🌟 变动标识：为实体赋予管道编码和版本号，解决非空约束报错！
+        // 为实体赋予管道编码和版本号，解决非空约束报错！
         snapshot.setPipelineCode(pipelineCode);
         snapshot.setPipelineVersion(pipelineVersion);
         this.save(snapshot);
