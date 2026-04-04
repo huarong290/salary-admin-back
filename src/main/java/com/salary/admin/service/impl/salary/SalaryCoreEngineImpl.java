@@ -5,6 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.googlecode.aviator.AviatorEvaluator;
 import com.salary.admin.engine.SalaryRuleEngine;
+import com.salary.admin.event.CalcLogEvent;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.model.dto.engine.SalaryCalcBatchReqDTO;
 import com.salary.admin.model.dto.engine.SalaryCalcSingleReqDTO;
@@ -19,6 +20,7 @@ import com.salary.admin.service.salary.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +60,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     private final ISalaryCalcLogService iSalaryCalcLogService;
     private final ISalaryItemDetailService iSalaryItemDetailService;
     private final ISalaryCalcPipelineStepService iSalaryCalcPipelineStepService;
-
+    private final ApplicationEventPublisher eventPublisher;
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean initSummaryAccount(SummaryInitReqDTO reqDTO) {
@@ -158,7 +160,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         if (steps.isEmpty()) throw new BusinessException("薪资管道未配置有效的核算步骤！");
 
         // 2. 准备原材料
-        Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId);
+        Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion);
 
         // 初始化累加器与快照
         BigDecimal incomeTotal = BigDecimal.ZERO;
@@ -275,7 +277,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         }
 
         // 2. 准备原材料 (Context Env)
-        Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId);
+        Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion);
 
         // 初始化数据载体
         List<SalaryItemDetail> detailList = new ArrayList<>();
@@ -292,9 +294,19 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         BigDecimal deductionTotal = BigDecimal.ZERO;
         BigDecimal taxTotal = BigDecimal.ZERO;
         BigDecimal companyExpenseTotal = BigDecimal.ZERO;
-
+        // 在进循环前，根据流水线将要执行的 ruleCode，提前把字典配置里的 ID 查出来放入 Map 中
+        Set<String> ruleCodes = steps.stream().map(SalaryCalcPipelineStep::getRuleCode).collect(Collectors.toSet());
+        Map<String, Long> itemConfigMap = iSalaryItemConfigService.lambdaQuery()
+                .in(SalaryItemConfig::getItemCode, ruleCodes)
+                .list()
+                .stream()
+                .collect(Collectors.toMap(SalaryItemConfig::getItemCode, SalaryItemConfig::getId, (v1, v2) -> v1));
         // 3. 驱动流水线
         for (SalaryCalcPipelineStep step : steps) {
+            //  记录开始时间
+            long startTime = System.currentTimeMillis();
+            BigDecimal stepResult = null;
+            String errorMsg = null;
             String ruleCode = step.getRuleCode();
 
             try {
@@ -311,7 +323,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 CalcRuleVO rule = iSalaryCalcRuleService.getByRuleCode(ruleCode);
 
                 // 3.3 Aviator 核心计算
-                BigDecimal stepResult = salaryRuleEngine.execute(rule.getRuleScript(), env);
+                 stepResult = salaryRuleEngine.execute(rule.getRuleScript(), env);
 
                 // 3.4 空值跳过
                 if (step.getSkipIfNull() == 1 && stepResult.compareTo(BigDecimal.ZERO) == 0) {
@@ -323,11 +335,13 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
                 // 3.5 智能分类并组装 DB 明细实体
                 int itemType = determineItemTypeByStage(step.getStage());
-
+                // 从 Map 中取出真实的 itemConfigId（防空兜底为0L）
+                Long itemConfigId = itemConfigMap.getOrDefault(ruleCode, 0L);
                 SalaryItemDetail detail = new SalaryItemDetail()
                         .setPeriodId(periodId)
                         .setEmployeeId(employeeId)
                         .setSummaryId(reqDTO.getSummaryId()) // 关联主表ID
+                        .setItemConfigId(itemConfigId)
                         .setItemCode(ruleCode)
                         .setItemName(step.getRuleName())
                         .setSettlementAmount(stepResult)
@@ -378,6 +392,22 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                     // 容错模式：跳过并记为 0
                     env.put(ruleCode, BigDecimal.ZERO);
                 }
+            }finally {
+                // 无论计算成功还是失败，都在 finally 块中推送异步审计日志
+                long executeTime = System.currentTimeMillis() - startTime;
+
+                SalaryCalcLog auditLog = new SalaryCalcLog();
+                auditLog.setEmployeeId(employeeId);
+                auditLog.setPeriodId(periodId);
+                auditLog.setRuleCode(ruleCode);
+                auditLog.setStage(step.getStage() != null ? step.getStage() : 1);
+                auditLog.setInputJson(JSONUtil.toJsonStr(env)); // 保存当时的计算环境变量
+                auditLog.setOutputValue(stepResult);
+                auditLog.setErrorMsg(errorMsg);
+                auditLog.setExecuteTime(executeTime);
+
+                // 发布事件 (交由后台线程异步落库)
+                eventPublisher.publishEvent(new CalcLogEvent(auditLog));
             }
         }
 

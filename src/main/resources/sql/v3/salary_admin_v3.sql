@@ -537,3 +537,32 @@ CREATE TABLE `salary_payment_record`
     KEY                   `idx_summary_emp_month` (`summary_id`, `employee_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='薪资结算明细记录表';
 
+
+-- ==========================================================
+-- 22.员工月度绩效考核记录表 ( salary_kpi_record )
+-- 业务定位：独立存储员工的月度绩效考核结果，与发薪周期(period)强绑定。
+-- 引擎对接：算薪引擎在执行时，根据 employee_id 和 period_id 获取生效的绩效系数。
+-- ==========================================================
+CREATE TABLE `salary_kpi_record`
+(
+    `id`               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `employee_id`      BIGINT UNSIGNED NOT NULL COMMENT '员工ID',
+    `period_id`        BIGINT UNSIGNED NOT NULL COMMENT '关联薪资周期ID (硬关联：确保绩效与发薪周期绝对对齐)',
+    `settlement_month` CHAR(6)         NOT NULL COMMENT '考核/结算月份 (格式: YYYYMM，方便按月快速检索)',
+    `kpi_grade`        VARCHAR(16)     NOT NULL DEFAULT '' COMMENT '最终绩效评级 (例如: S, A, B, C, D 等)',
+    `kpi_score`        DECIMAL(6, 2)   NOT NULL DEFAULT 0.00 COMMENT '最终考核打分 (例如: 95.50，用于精细化计算)',
+    `kpi_coefficient`  DECIMAL(6, 4)   NOT NULL DEFAULT 1.0000 COMMENT '绩效发放系数 (核心参数：例如 1.2000，算薪引擎直接乘以绩效基数)',
+    `evaluate_by`      VARCHAR(64)     NOT NULL DEFAULT '' COMMENT '考核人 (通常记录直属主管或HR的账号/工号)',
+    `evaluate_remark`  VARCHAR(500)    NOT NULL DEFAULT '' COMMENT '考核评语/说明 (用于申诉或审计备查)',
+    `audit_status`     TINYINT(1)      NOT NULL DEFAULT 0 COMMENT '审核流转状态 (0:打分中/草稿, 1:已确认/审核通过, 2:被驳回/申诉中。注：引擎只抓取=1的数据)',
+    `effective_flag`   TINYINT(1)      NOT NULL DEFAULT 1 COMMENT '版本生效标识 (1:当前生效版本, 0:历史作废版本。用于处理重新打分时的历史数据保留)',
+    `delete_flag`      BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '逻辑删除标识 (0:未删除, >0:已删除)',
+    `create_by`        VARCHAR(64)     NOT NULL DEFAULT 'admin' COMMENT '创建者',
+    `create_time`      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`        VARCHAR(64)     NOT NULL DEFAULT 'admin' COMMENT '修改者',
+    `update_time`      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_emp_period_del` (`employee_id`, `period_id`, `delete_flag`),
+    KEY `idx_month_status` (`settlement_month`, `audit_status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工月度绩效考核记录表';
+

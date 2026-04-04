@@ -8,14 +8,14 @@ import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
 
 public class MybatisPlusCodeGenerator {
 
     public static void main(String[] args) {
-//        List<String> tableList = List.of(
-//                "sys_dict_item",
-//                "sys_dict_type"
-//        );
+        List<String> tableList = List.of(
+                "salary_kpi_record"
+        );
 
         FastAutoGenerator.create(
                         "jdbc:mysql://localhost:33061/salary_admin_v3?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&serverTimezone=Asia/Shanghai",
@@ -43,8 +43,9 @@ public class MybatisPlusCodeGenerator {
                 )
                 // 策略配置
                 .strategyConfig(builder -> builder
-                        .addInclude(".*")
+                        .addInclude(tableList)
                         // 这里用 * 表示所有表
+//                        .addInclude(".*")
                         .entityBuilder()
                         .enableLombok()
                         .enableChainModel()

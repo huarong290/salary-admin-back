@@ -55,7 +55,7 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         return entity.getId();
     }
     @Override
-    public Map<String, Object> buildEmployeeContext(Long periodId, Long employeeId) {
+    public Map<String, Object> buildEmployeeContext(Long periodId, Long employeeId, String pipelineCode, Integer pipelineVersion) {
         log.debug("开始组装薪资核算上下文 Env | 周期: {}, 员工: {}", periodId, employeeId);
         Map<String, Object> env = new HashMap<>();
 
@@ -112,7 +112,7 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         // ==========================================
         // 4. 落盘上下文计算快照，用于发薪审计和追溯
         // ==========================================
-        this.saveAuditSnapshot(periodId, employeeId, archive.getId(), env);
+        this.saveAuditSnapshot(periodId, employeeId, archive.getId(), env, pipelineCode, pipelineVersion);
 
         log.debug("组装完成，当前员工计算环境变量: {}", env);
         return env;
@@ -182,7 +182,7 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
     /**
      * 辅助方法：保存快照防篡改
      */
-    private void saveAuditSnapshot(Long periodId, Long employeeId, Long archiveId, Map<String, Object> env) {
+    private void saveAuditSnapshot(Long periodId, Long employeeId, Long archiveId, Map<String, Object> env,String pipelineCode, Integer pipelineVersion) {
         // 先删除该周期下的旧快照，保证幂等性
         this.remove(new LambdaQueryWrapper<SalaryCalcContext>()
                 .eq(SalaryCalcContext::getPeriodId, periodId)
@@ -196,6 +196,9 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         snapshot.setEnvJson(JSONUtil.toJsonStr(env));
         snapshot.setRemark("引擎自动装配提取快照");
 
+        // 🌟 变动标识：为实体赋予管道编码和版本号，解决非空约束报错！
+        snapshot.setPipelineCode(pipelineCode);
+        snapshot.setPipelineVersion(pipelineVersion);
         this.save(snapshot);
     }
 }
