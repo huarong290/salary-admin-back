@@ -42,7 +42,8 @@ VALUES (1, 1, 'system'), -- system -> 超级管理员
 -- ==========================================================
 TRUNCATE TABLE `sys_menu`;
 
-INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_redirect`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`, `menu_visible`, `menu_status`)
+INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_redirect`, `menu_icon`,
+                        `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`, `menu_visible`, `menu_status`)
 VALUES
 -- ==========================================================
 -- 模块 A：工作台与系统基础管理
@@ -80,86 +81,107 @@ VALUES
 (135, '字典刷新缓存', 'sys_dict_refresh', '', '', '', '', 'sys:dict:refresh', 3, 130, 5, 1, 1),
 
 -- 【0】薪资管理 (父级主目录)
-    (150, '薪资管理', 'salary_manage', '/salary', 'Layout', '', 'Money', '', 1, 0, 10, 1, 1),
+(150, '薪资管理', 'salary_manage', '/salary', 'Layout', '', 'Money', '', 1, 0, 10, 1, 1),
 
 -- ==========================================================
 -- 【1】员工基础档案 (子菜单，Sort = 1，160号段)
 -- ==========================================================
-    (160, '员工基础档案', 'salary_employee', 'employee', 'salary/employee/EmployeePage', '', 'User', 'salary:employee:list', 2, 150, 1, 1, 1),
-    (161, '查看员工列表', 'salary_employee_query', '', '', '', '', 'salary:employee:query', 3, 160, 1, 1, 1),
-    (162, '新增员工档案', 'salary_employee_add', '', '', '', '', 'salary:employee:add', 3, 160, 2, 1, 1),
-    (163, '修改员工档案', 'salary_employee_edit', '', '', '', '', 'salary:employee:edit', 3, 160, 3, 1, 1),
-    (164, '销毁员工档案', 'salary_employee_del', '', '', '', '', 'salary:employee:del', 3, 160, 4, 1, 1),
-    (165, '查看档案详情', 'salary_employee_detail', '', '', '', '', 'salary:employee:detail', 3, 160, 5, 1, 1),
+(160, '员工基础档案', 'salary_employee', 'employee', 'salary/employee/EmployeePage', '', 'User', 'salary:employee:list',
+ 2, 150, 1, 1, 1),
+(161, '查看员工列表', 'salary_employee_query', '', '', '', '', 'salary:employee:query', 3, 160, 1, 1, 1),
+(162, '新增员工档案', 'salary_employee_add', '', '', '', '', 'salary:employee:add', 3, 160, 2, 1, 1),
+(163, '修改员工档案', 'salary_employee_edit', '', '', '', '', 'salary:employee:edit', 3, 160, 3, 1, 1),
+(164, '销毁员工档案', 'salary_employee_del', '', '', '', '', 'salary:employee:del', 3, 160, 4, 1, 1),
+(165, '查看档案详情', 'salary_employee_detail', '', '', '', '', 'salary:employee:detail', 3, 160, 5, 1, 1),
 
 -- ==========================================================
 -- 【2】薪资周期管理 (子菜单，Sort = 2，170号段)
 -- ==========================================================
-    (170, '薪资周期管理', 'salary_period', 'period', 'salary/period/PeriodPage', '', 'Calendar', 'salary:period:list', 2, 150, 2, 1, 1),
-    (171, '查看周期列表', 'salary_period_query', '', '', '', '', 'salary:period:query', 3, 170, 1, 1, 1),
-    (172, '新增/开启周期', 'salary_period_add', '', '', '', '', 'salary:period:add', 3, 170, 2, 1, 1),
-    (173, '修改周期数据', 'salary_period_edit', '', '', '', '', 'salary:period:edit', 3, 170, 3, 1, 1),
-    (174, '批量初始化周期', 'salary_period_init', '', '', '', '', 'salary:period:init', 3, 170, 4, 1, 1),
-    (175, '删除/销毁周期', 'salary_period_del', '', '', '', '', 'salary:period:del', 3, 170, 5, 1, 1),
+(170, '薪资周期管理', 'salary_period', 'period', 'salary/period/PeriodPage', '', 'Calendar', 'salary:period:list', 2,
+ 150, 2, 1, 1),
+(171, '查看周期列表', 'salary_period_query', '', '', '', '', 'salary:period:query', 3, 170, 1, 1, 1),
+(172, '新增/开启周期', 'salary_period_add', '', '', '', '', 'salary:period:add', 3, 170, 2, 1, 1),
+(173, '修改周期数据', 'salary_period_edit', '', '', '', '', 'salary:period:edit', 3, 170, 3, 1, 1),
+(174, '批量初始化周期', 'salary_period_init', '', '', '', '', 'salary:period:init', 3, 170, 4, 1, 1),
+(175, '删除/销毁周期', 'salary_period_del', '', '', '', '', 'salary:period:del', 3, 170, 5, 1, 1),
 
 -- ==========================================================
 -- 【3】薪资项目配置 (子菜单，Sort = 3，180号段)
 -- ==========================================================
-    (180, '薪资项目配置', 'salary_item_config', 'itemconfig', 'salary/itemconfig/ItemConfigPage', '', 'Setting', 'salary:item_config:list', 2, 150, 3, 1, 1),
-    (181, '新增项目', 'salary_item_add', '', '', '', '', 'salary:item_config:add', 3, 180, 1, 1, 1),
-    (182, '修改项目', 'salary_item_edit', '', '', '', '', 'salary:item_config:edit', 3, 180, 2, 1, 1),
-    (183, '删除项目', 'salary_item_del', '', '', '', '', 'salary:item_config:del', 3, 180, 3, 1, 1),
-    (184, '同步配置', 'salary_item_refresh', '', '', '', '', 'salary:item_config:refresh', 3, 180, 4, 1, 1),
+(180, '薪资项目配置', 'salary_item_config', 'itemconfig', 'salary/itemconfig/ItemConfigPage', '', 'Setting',
+ 'salary:item_config:list', 2, 150, 3, 1, 1),
+(181, '新增项目', 'salary_item_add', '', '', '', '', 'salary:item_config:add', 3, 180, 1, 1, 1),
+(182, '修改项目', 'salary_item_edit', '', '', '', '', 'salary:item_config:edit', 3, 180, 2, 1, 1),
+(183, '删除项目', 'salary_item_del', '', '', '', '', 'salary:item_config:del', 3, 180, 3, 1, 1),
+(184, '同步配置', 'salary_item_refresh', '', '', '', '', 'salary:item_config:refresh', 3, 180, 4, 1, 1),
 
 -- ==========================================================
 -- 【4】薪资档案管理 (子菜单，Sort = 4，190号段)
 -- ==========================================================
-    (190, '薪资档案管理', 'salary_archive', 'archive', 'salary/archive/ArchivePage', '', 'Document', 'salary:archive:list', 2, 150, 4, 1, 1),
-    (191, '新员工定薪', 'salary_archive_init', '', '', '', '', 'salary:archive:init', 3, 190, 1, 1, 1),
-    (192, '调薪申请', 'salary_archive_adjust', '', '', '', '', 'salary:archive:adjust', 3, 190, 2, 1, 1),
-    (193, '调薪审批', 'salary_archive_audit', '', '', '', '', 'salary:archive:audit', 3, 190, 3, 1, 1),
-    (194, '查看详情', 'salary_archive_detail', '', '', '', '', 'salary:archive:detail', 3, 190, 4, 1, 1),
-    (195, '导出档案', 'salary_archive_export', '', '', '', '', 'salary:archive:export', 3, 190, 5, 1, 1),
+(190, '薪资档案管理', 'salary_archive', 'archive', 'salary/archive/ArchivePage', '', 'Document', 'salary:archive:list',
+ 2, 150, 4, 1, 1),
+(191, '新员工定薪', 'salary_archive_init', '', '', '', '', 'salary:archive:init', 3, 190, 1, 1, 1),
+(192, '调薪申请', 'salary_archive_adjust', '', '', '', '', 'salary:archive:adjust', 3, 190, 2, 1, 1),
+(193, '调薪审批', 'salary_archive_audit', '', '', '', '', 'salary:archive:audit', 3, 190, 3, 1, 1),
+(194, '查看详情', 'salary_archive_detail', '', '', '', '', 'salary:archive:detail', 3, 190, 4, 1, 1),
+(195, '导出档案', 'salary_archive_export', '', '', '', '', 'salary:archive:export', 3, 190, 5, 1, 1),
 
 -- ==========================================================
 -- 【5】月度绩效大盘管理 (🔥 新增子菜单，Sort = 5，200号段)
 -- ==========================================================
-    (200, '月度绩效管理', 'salary_kpi_ecord', 'kpirecord', 'salary/kpirecord/KpiRecordPage', '', 'TrendCharts', 'salary:kpi_record:list', 2, 150, 5, 1, 1),
-    (201, '查询绩效大盘', 'salary_kpi_record_query', '', '', '', '', 'salary:kpi_record:query', 3, 200, 1, 1, 1),
-    (202, '派发绩效单', 'salary_kpi_record_init', '', '', '', '', 'salary:kpi_record:init', 3, 200, 2, 1, 1),
-    (203, '评估打分', 'salary_kpi_record_evaluate', '', '', '', '', 'salary:kpi_record:evaluate', 3, 200, 3, 1, 1),
-    (204, '审核定稿', 'salary_kpi_record_confirm', '', '', '', '', 'salary:kpi_record:confirm', 3, 200, 4, 1, 1),
+(200, '月度绩效管理', 'salary_kpi_ecord', 'kpirecord', 'salary/kpirecord/KpiRecordPage', '', 'TrendCharts',
+ 'salary:kpi_record:list', 2, 150, 5, 1, 1),
+(201, '查询绩效大盘', 'salary_kpi_record_query', '', '', '', '', 'salary:kpi_record:query', 3, 200, 1, 1, 1),
+(202, '派发绩效单', 'salary_kpi_record_init', '', '', '', '', 'salary:kpi_record:init', 3, 200, 2, 1, 1),
+(203, '评估打分', 'salary_kpi_record_evaluate', '', '', '', '', 'salary:kpi_record:evaluate', 3, 200, 3, 1, 1),
+(204, '审核定稿', 'salary_kpi_record_confirm', '', '', '', '', 'salary:kpi_record:confirm', 3, 200, 4, 1, 1),
 
 -- ==========================================================
 -- 【6】薪资引擎配置 (目录级别，Sort = 6，统领 210~230 号段)
 -- ==========================================================
-    (210, '薪资引擎配置', 'salary_engine', 'engine', '', '', 'Operation', '', 1, 150, 6, 1, 1),
+(210, '薪资引擎配置', 'salary_engine', 'engine', '', '', 'Operation', '', 1, 150, 6, 1, 1),
 
 -- 6.1 薪资引擎 -> 计算规则库 (220 号段，父级ID为 210)
-    (220, '计算规则库', 'salary_calc_rule', 'calc-rule', 'salary/calcrule/CalcRulePage', '', 'Collection', 'salary:rule:list', 2, 210, 1, 1, 1),
-    (221, '查询规则', 'salary_rule_query', '', '', '', '', 'salary:rule:query', 3, 220, 1, 1, 1),
-    (222, '新增规则', 'salary_rule_add', '', '', '', '', 'salary:rule:add', 3, 220, 2, 1, 1),
-    (223, '修改规则', 'salary_rule_edit', '', '', '', '', 'salary:rule:edit', 3, 220, 3, 1, 1),
-    (224, '删除规则', 'salary_rule_del', '', '', '', '', 'salary:rule:del', 3, 220, 4, 1, 1),
+(220, '计算规则库', 'salary_calc_rule', 'calc-rule', 'salary/calcrule/CalcRulePage', '', 'Collection',
+ 'salary:rule:list', 2, 210, 1, 1, 1),
+(221, '查询规则', 'salary_rule_query', '', '', '', '', 'salary:rule:query', 3, 220, 1, 1, 1),
+(222, '新增规则', 'salary_rule_add', '', '', '', '', 'salary:rule:add', 3, 220, 2, 1, 1),
+(223, '修改规则', 'salary_rule_edit', '', '', '', '', 'salary:rule:edit', 3, 220, 3, 1, 1),
+(224, '删除规则', 'salary_rule_del', '', '', '', '', 'salary:rule:del', 3, 220, 4, 1, 1),
 
 -- 6.2 薪资引擎 -> 核算管道编排 (230 号段，父级ID为 210)
-    (230, '核算管道编排', 'salary_calc_pipeline', 'calc-pipeline', 'salary/calcpipeline/CalcPipelinePage', '', 'Connection', 'salary:pipeline:list', 2, 210, 2, 1, 1),
-    (231, '查询管道', 'salary_pipeline_query', '', '', '', '', 'salary:pipeline:query', 3, 230, 1, 1, 1),
-    (232, '新建管道', 'salary_pipeline_add', '', '', '', '', 'salary:pipeline:add', 3, 230, 2, 1, 1),
-    (233, '修改管道元数据', 'salary_pipeline_edit', '', '', '', '', 'salary:pipeline:edit', 3, 230, 3, 1, 1),
-    (234, '删除管道', 'salary_pipeline_del', '', '', '', '', 'salary:pipeline:del', 3, 230, 4, 1, 1),
-    (235, '发布瀑布流配置', 'salary_pipeline_design', '', '', '', '', 'salary:pipeline:design', 3, 230, 5, 1, 1),
-    (236, '设为系统默认', 'salary_pipeline_default', '', '', '', '', 'salary:pipeline:default', 3, 230, 6, 1, 1),
-    (237, '升级新版本', 'salary_pipeline_upgrade', '', '', '', '', 'salary:pipeline:upgrade', 3, 230, 7, 1, 1),
+(230, '核算管道编排', 'salary_calc_pipeline', 'calc-pipeline', 'salary/calcpipeline/CalcPipelinePage', '', 'Connection',
+ 'salary:pipeline:list', 2, 210, 2, 1, 1),
+(231, '查询管道', 'salary_pipeline_query', '', '', '', '', 'salary:pipeline:query', 3, 230, 1, 1, 1),
+(232, '新建管道', 'salary_pipeline_add', '', '', '', '', 'salary:pipeline:add', 3, 230, 2, 1, 1),
+(233, '修改管道元数据', 'salary_pipeline_edit', '', '', '', '', 'salary:pipeline:edit', 3, 230, 3, 1, 1),
+(234, '删除管道', 'salary_pipeline_del', '', '', '', '', 'salary:pipeline:del', 3, 230, 4, 1, 1),
+(235, '发布瀑布流配置', 'salary_pipeline_design', '', '', '', '', 'salary:pipeline:design', 3, 230, 5, 1, 1),
+(236, '设为系统默认', 'salary_pipeline_default', '', '', '', '', 'salary:pipeline:default', 3, 230, 6, 1, 1),
+(237, '升级新版本', 'salary_pipeline_upgrade', '', '', '', '', 'salary:pipeline:upgrade', 3, 230, 7, 1, 1),
+
 
 -- ==========================================================
--- 【7】薪资汇总与发薪 (子菜单，Sort = 7，240号段)
+-- 【7】专项调整(手工账) (子菜单，Sort = 7，240号段)
 -- ==========================================================
-    (240, '薪资汇总与发薪', 'salary_summary', 'summary', 'salary/summary/SummaryPage', '', 'Wallet', 'salary:summary:list', 2, 150, 7, 1, 1),
-    (241, '查看汇总列表', 'salary_summary_query', '', '', '', '', 'salary:summary:query', 3, 240, 1, 1, 1),
-    (242, '查看工资条明细', 'salary_summary_detail', '', '', '', '', 'salary:summary:detail', 3, 240, 2, 1, 1),
-    (243, '锁定与解锁单据', 'salary_summary_lock', '', '', '', '', 'salary:summary:lock', 3, 240, 3, 1, 1),
-    (244, '执行薪资引擎核算', 'salary_summary_calc', '', '', '', '', 'salary:summary:calc', 3, 240, 4, 1, 1);
+(240, '专项调整(手工账)', 'salary_adjustment', 'adjustment', 'salary/adjustment/AdjustmentPage', '', 'PriceTag',
+ 'salary:adjustment:list', 2, 150, 7, 1, 1),
+(241, '查询手工账', 'salary_adjustment_query', '', '', '', '', 'salary:adjustment:query', 3, 240, 1, 1, 1),
+(242, '新增手工账', 'salary_adjustment_add', '', '', '', '', 'salary:adjustment:add', 3, 240, 2, 1, 1),
+(243, '修改手工账', 'salary_adjustment_edit', '', '', '', '', 'salary:adjustment:edit', 3, 240, 3, 1, 1),
+(244, '删除手工账', 'salary_adjustment_del', '', '', '', '', 'salary:adjustment:del', 3, 240, 4, 1, 1),
+(245, '批量生效/撤回', 'salary_adjustment_audit', '', '', '', '', 'salary:adjustment:audit', 3, 240, 5, 1, 1),
+
+-- ==========================================================
+-- 【8】薪资汇总与发薪 (子菜单，Sort = 8，250号段)
+-- ==========================================================
+(250, '薪资汇总与发薪', 'salary_summary', 'summary', 'salary/summary/SummaryPage', '', 'Wallet', 'salary:summary:list',
+ 2, 150, 8, 1, 1),
+(251, '查看汇总列表', 'salary_summary_query', '', '', '', '', 'salary:summary:query', 3, 250, 1, 1, 1),
+(252, '查看工资条明细', 'salary_summary_detail', '', '', '', '', 'salary:summary:detail', 3, 250, 2, 1, 1),
+(253, '锁定与解锁单据', 'salary_summary_lock', '', '', '', '', 'salary:summary:lock', 3, 250, 3, 1, 1),
+(254, '执行引擎核算', 'salary_summary_calc', '', '', '', '', 'salary:summary:calc', 3, 250, 4, 1, 1);
+
 -- 5. 初始化角色菜单关联 (sys_role_menu)
 -- ==========================================================
 
@@ -212,7 +234,8 @@ VALUES (4, 10, 'system'),
 -- ==========================================================
 -- 初始化字典类型数据
 -- ==========================================================
-INSERT INTO `sys_dict_type` (`dict_type_code`, `dict_type_name`, `dict_category`, `remark`, `create_by`) VALUES
+INSERT INTO `sys_dict_type` (`dict_type_code`, `dict_type_name`, `dict_category`, `remark`, `create_by`)
+VALUES
 -- 薪资模块 (salary)
 
 -- 财务模块 (finance)
@@ -228,7 +251,8 @@ INSERT INTO `sys_dict_type` (`dict_type_code`, `dict_type_name`, `dict_category`
 -- ==========================================================
 -- 初始化字典明细项数据
 -- ==========================================================
-INSERT INTO `sys_dict_item` (`dict_type_code`, `dict_item_value`, `dict_item_label`, `dict_item_sort`, `create_by`) VALUES
+INSERT INTO `sys_dict_item` (`dict_type_code`, `dict_item_value`, `dict_item_label`, `dict_item_sort`, `create_by`)
+VALUES
 
 -- ==========================================
 -- 1. 薪资收入大类 (对应 item_category = 1)
@@ -290,26 +314,29 @@ INSERT INTO `sys_dict_item` (`dict_type_code`, `dict_item_value`, `dict_item_lab
 ('employment_status', '0', '已离职', 50, 'system');
 
 
-
-
 -- 字典管理目录 (挂在系统管理下)
-INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_redirect`, `menu_icon`, `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`, `menu_visible`, `menu_status`) VALUES
-                                                                                                                                                                                                                       (130, '字典管理', 'sys_dict', 'dict', 'system/dict/DictPage', '', 'Collection', 'sys:dict:list', 2, 10, 4, 1, 1),
-                                                                                                                                                                                                                       (131, '新增字典类型', 'sys_dict_type_add', '', '', '', '', 'sys:dict_type:add', 3, 130, 1, 1, 1),
-                                                                                                                                                                                                                       (132, '删除字典类型', 'sys_dict_type_del', '', '', '', '', 'sys:dict_type:del', 3, 130, 2, 1, 1),
-                                                                                                                                                                                                                       (133, '修改字典类型', 'sys_dict_type_edit', '', '', '', '', 'sys:dict_type:edit', 3, 130, 3, 1, 1),
-                                                                                                                                                                                                                       (134, '查询字典类型', 'sys_dict_type_query', '', '', '', '', 'sys:dict_type:query', 3, 130, 4, 1, 1),
-                                                                                                                                                                                                                       (135, '新增字段项', 'sys_dict_item_add', '', '', '', '', 'sys:dict_item:add', 3, 130, 5, 1, 1),
-                                                                                                                                                                                                                       (136, '删除字典项', 'sys_dict_item_del', '', '', '', '', 'sys:dict_item:del', 3, 130, 6, 1, 1),
-                                                                                                                                                                                                                       (137, '修改字典项', 'sys_dict_item_edit', '', '', '', '', 'sys:dict_item:edit', 3, 130, 7, 1, 1),
+INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_redirect`, `menu_icon`,
+                        `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`, `menu_visible`, `menu_status`)
+VALUES (130, '字典管理', 'sys_dict', 'dict', 'system/dict/DictPage', '', 'Collection', 'sys:dict:list', 2, 10, 4, 1, 1),
+       (131, '新增字典类型', 'sys_dict_type_add', '', '', '', '', 'sys:dict_type:add', 3, 130, 1, 1, 1),
+       (132, '删除字典类型', 'sys_dict_type_del', '', '', '', '', 'sys:dict_type:del', 3, 130, 2, 1, 1),
+       (133, '修改字典类型', 'sys_dict_type_edit', '', '', '', '', 'sys:dict_type:edit', 3, 130, 3, 1, 1),
+       (134, '查询字典类型', 'sys_dict_type_query', '', '', '', '', 'sys:dict_type:query', 3, 130, 4, 1, 1),
+       (135, '新增字段项', 'sys_dict_item_add', '', '', '', '', 'sys:dict_item:add', 3, 130, 5, 1, 1),
+       (136, '删除字典项', 'sys_dict_item_del', '', '', '', '', 'sys:dict_item:del', 3, 130, 6, 1, 1),
+       (137, '修改字典项', 'sys_dict_item_edit', '', '', '', '', 'sys:dict_item:edit', 3, 130, 7, 1, 1),
 
-                                                                                                                                                                                                                       (138, '查询字典类型', 'sys_dict_item_query', '', '', '', '', 'sys:dict_item:query', 3, 130, 8, 1, 1);
+       (138, '查询字典类型', 'sys_dict_item_query', '', '', '', '', 'sys:dict_item:query', 3, 130, 8, 1, 1);
 
 
 -- 分配给超级管理员 (SUPER_ADMIN ID: 1)
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_by`)
-SELECT 1, id, 'system' FROM `sys_menu` WHERE id BETWEEN 130 AND 135;
+SELECT 1, id, 'system'
+FROM `sys_menu`
+WHERE id BETWEEN 130 AND 135;
 
 -- 分配给普通管理员 (ADMIN ID: 2, 剔除删除权限)
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_by`)
-SELECT 2, id, 'system' FROM `sys_menu` WHERE id IN (130, 131, 132, 133, 135);
+SELECT 2, id, 'system'
+FROM `sys_menu`
+WHERE id IN (130, 131, 132, 133, 135);

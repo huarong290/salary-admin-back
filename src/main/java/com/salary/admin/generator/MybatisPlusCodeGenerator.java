@@ -14,7 +14,7 @@ public class MybatisPlusCodeGenerator {
 
     public static void main(String[] args) {
         List<String> tableList = List.of(
-                "salary_kpi_record"
+                "salary_adjustment"
         );
 
         FastAutoGenerator.create(
@@ -32,7 +32,7 @@ public class MybatisPlusCodeGenerator {
                 // 包配置
                 .packageConfig(builder -> builder
                         .parent("com.salary.admin")
-                        .entity("model.entity.sys")
+                        .entity("model.entity.salary")
                         .mapper("mapper.auto")
                         .service("service")
                         .serviceImpl("service.impl")
