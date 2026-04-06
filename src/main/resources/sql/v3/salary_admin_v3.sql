@@ -262,7 +262,7 @@ CREATE TABLE `salary_archive`
     `update_by`             VARCHAR(64)    NOT NULL DEFAULT 'admin',
     `update_time`           DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `uk_emp_version_del` (`employee_id`, `version`, `delete_flag`),
-    KEY                     `uk_emp_latest_del` (`employee_id`, `latest_flag`, `audit_status`),
+    KEY                     `idx_emp_latest_status` (`employee_id`, `latest_flag`, `audit_status`),
     KEY                     `idx_emp_time_slice` (`employee_id`, `effective_date`, `expiry_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工薪资标准配置表(含版本历史)';
 -- ==========================================================

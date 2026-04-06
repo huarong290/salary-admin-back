@@ -340,3 +340,98 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_by`)
 SELECT 2, id, 'system'
 FROM `sys_menu`
 WHERE id IN (130, 131, 132, 133, 135);
+
+
+
+-- ==========================================================
+-- 9. 初始化 系统字典明细表 salary_item_config
+-- ==========================================================
+TRUNCATE TABLE `salary_item_config`;
+
+INSERT INTO `salary_item_config`
+(`item_code`, `item_name`, `item_category`, `category_dict_value`, `env_var_name`, `calc_priority`, `taxable_flag`, `tax_deductible_flag`, `fixed_flag`, `pinyin_code`, `sort_value`, `remark`)
+VALUES
+-- ----------------------------------------------------------
+-- 【1】收入类 - 档案固定项 (Fixed = 1，这些配置给员工定薪时使用)
+-- ----------------------------------------------------------
+('BASE_SALARY', '基本工资', 1, 'INC_BASE', 'baseSalary', 10, 1, 0, 1, 'jbgz', 10, '员工档案中的核心基础底薪，计税基准'),
+('HOUSING_ALLOW', '住房补贴', 1, 'INC_ALLOWANCE', 'housingAllow', 20, 1, 0, 1, 'zfbt', 11, '随职级固定的每月房屋补贴，合并计税'),
+('MEAL_ALLOW', '餐补', 1, 'INC_ALLOWANCE', 'mealAllow', 30, 0, 0, 1, 'cb', 12, '每月固定餐补，依据合规策略设为不计税'),
+('SHIFT_12H_ALLOWANCE', '12小时补贴', 1, 'INC_ALLOWANCE', 'shift12hAllowance', 12, 1, 0, 1, '12xsbt', 13, '特殊排班固定补贴'),
+('QUARANTINE_ALLOWANCE', '隔离补贴', 1, 'INC_SUBSIDY', 'quarantineAllowance', 13, 1, 0, 0, 'glbt', 14, '疫情或特殊情况隔离补贴'),
+-- ----------------------------------------------------------
+-- 【2】收入类 - 动态变动项 (Fixed = 0，通过考勤/绩效/手工账产生)
+-- ----------------------------------------------------------
+('OVERTIME_PAY_DAY', '日加班工资', 1, 'INC_OVERTIME', 'overtimePayDay', 20, 1, 0, 0, 'rjbgz', 20, '按天折算的加班费'),
+('OVERTIME_PAY_HOUR', '时加班工资', 1, 'INC_OVERTIME', 'overtimePayHour', 21, 1, 0, 0, 'sjbgz', 21, '按小时折算的加班费'),
+('KPI_BONUS', 'KPI绩效', 1, 'INC_BONUS', 'kpiBonus', 30, 1, 0, 0, 'kpi', 30, '月度KPI考核奖金'),
+('COMMISSION_SALES', '业绩提成', 1, 'INC_BONUS', 'commissionSales', 31, 1, 0, 0, 'yjtc', 31, '业务员业绩抽成'),
+('COMMISSION_AGENT', '代理提成', 1, 'INC_BONUS', 'commissionAgent', 32, 1, 0, 0, 'dltc', 32, '代理线抽成'),
+('ATTENDANCE_BONUS', '全勤奖', 1, 'INC_ATTENDANCE', 'attendanceBonus', 40, 1, 0, 0, 'qqj', 40, '考勤满勤奖励'),
+
+-- ----------------------------------------------------------
+-- 【3】各类奖金/福利/报销 (Fixed = 0，通常通过手工账或特殊批次导入)
+-- ----------------------------------------------------------
+('SAFETY_CARD_BONUS', '安全卡奖励', 1, 'INC_OTHER', 'safetyCardBonus', 50, 1, 0, 0, 'aqkjl', 50, '安全合规奖励'),
+('ANNUAL_LEAVE_BONUS', '年假奖金', 1, 'INC_OTHER', 'annualLeaveBonus', 51, 1, 0, 0, 'njjj', 51, '未休年假折现'),
+('REFERRAL_BONUS', '内推奖金', 1, 'INC_OTHER', 'referralBonus', 52, 1, 0, 0, 'ntjj', 52, '推荐人才奖励'),
+('BIRTHDAY_BONUS', '生日礼金', 1, 'INC_FESTIVAL', 'birthdayBonus', 53, 0, 0, 0, 'srlj', 53, '生日福利(通常避税)'),
+
+-- 节日福利系列
+('FESTIVAL_DRAGON_BOAT', '端午节福利/礼金', 1, 'INC_FESTIVAL', 'festivalDragonBoat', 60, 1, 0, 0, 'dwj', 60, '端午专项'),
+('FESTIVAL_MID_AUTUMN', '中秋节福利/礼金', 1, 'INC_FESTIVAL', 'festivalMidAutumn', 61, 1, 0, 0, 'zqj', 61, '中秋专项'),
+
+-- 赛事激励系列
+('EVENT_EURO_CUP', '欧洲杯激励奖金', 1, 'INC_BONUS', 'eventEuroCup', 70, 1, 0, 0, 'ozb', 70, '欧洲杯期间业务激励'),
+('EVENT_WORLD_CUP', '世界杯激励奖金', 1, 'INC_BONUS', 'eventWorldCup', 71, 1, 0, 0, 'sjb', 71, '世界杯期间业务激励'),
+
+-- 年终奖系列 (枚举出常用倍数，方便财务做账与审计)
+('ANNUAL_BONUS_13', '年终奖13薪', 1, 'INC_YEAR_END', 'annualBonus13', 80, 1, 0, 0, 'nzj13', 80, '标准13薪'),
+('ANNUAL_BONUS_13_5', '年终奖13.5薪', 1, 'INC_YEAR_END', 'annualBonus13_5', 81, 1, 0, 0, 'nzj13.5', 81, '13.5薪'),
+('ANNUAL_BONUS_14', '年终奖14薪', 1, 'INC_YEAR_END', 'annualBonus14', 82, 1, 0, 0, 'nzj14', 82, '14薪'),
+('ANNUAL_BONUS_14_5', '年终奖14.5薪', 1, 'INC_YEAR_END', 'annualBonus14_5', 83, 1, 0, 0, 'nzj14.5', 83, '14.5薪'),
+('ANNUAL_BONUS_15', '年终奖15薪', 1, 'INC_YEAR_END', 'annualBonus15', 84, 1, 0, 0, 'nzj15', 84, '15薪'),
+('ANNUAL_BONUS_15_5', '年终奖15.5薪', 1, 'INC_YEAR_END', 'annualBonus15_5', 85, 1, 0, 0, 'nzj15.5', 85, '15.5薪'),
+('ANNUAL_BONUS_16', '年终奖16薪', 1, 'INC_YEAR_END', 'annualBonus16', 86, 1, 0, 0, 'nzj16', 86, '16薪'),
+('ANNUAL_BONUS_16_5', '年终奖16.5薪', 1, 'INC_YEAR_END', 'annualBonus16_5', 87, 1, 0, 0, 'nzj16.5', 87, '16.5薪'),
+('ANNUAL_BONUS_17', '年终奖17薪', 1, 'INC_YEAR_END', 'annualBonus17', 88, 1, 0, 0, 'nzj17', 88, '17薪'),
+('ANNUAL_BONUS_17_5', '年终奖17.5薪', 1, 'INC_YEAR_END', 'annualBonus17_5', 89, 1, 0, 0, 'nzj17.5', 89, '17.5薪'),
+-- 忠诚奖系列 (按周期细分)
+
+('LOYALTY_BONUS_2Y', '忠诚奖金(二年度)', 1, 'INC_BONUS', 'loyaltyBonus2y', 90, 1, 0, 0, 'zcj2', 90, '满两年忠诚奖'),
+('LOYALTY_BONUS_5Y', '忠诚奖金(五年度)', 1, 'INC_BONUS', 'loyaltyBonus5y', 91, 1, 0, 0, 'zcj5', 91, '满五年忠诚奖'),
+('LOYALTY_BONUS_10Y', '忠诚奖金(十年度)', 1, 'INC_BONUS', 'loyaltyBonus10y', 92, 1, 0, 0, 'zcj10', 92, '满十年忠诚奖'),
+-- 报销与返还系列 (非薪金收入，免税)
+('EXPENSE_REIMBURSE_ONBOARD', '新入职/回国费用报销', 1, 'INC_OTHER', 'expenseReimburseOnboard', 95, 0, 0, 0, 'bxfy', 95, '机票签注等费用报销(免税)'),
+('DEPOSIT_REFUND_CURRENT', '本月押金返还', 1, 'INC_OTHER', 'depositRefundCurrent', 96, 0, 0, 0, 'yjfh', 96, '押金到期退还员工(免税)'),
+-- ----------------------------------------------------------
+-- 【4】扣款类 (Fixed = 0，注意税前扣除与税后扣除的区别)
+-- ----------------------------------------------------------
+('ABSENT_DEDUCTION', '缺勤扣款', 2, 'DED_ABSENT', 'absentDeduction', 100, 0, 1, 0, 'qqkk', 100, '【税前扣除】按旷工天数扣减底薪，降低个税基数'),
+('LATE_DEDUCTION', '迟到早退扣款', 2, 'DED_LATE', 'lateDeduction', 110, 0, 1, 0, 'cdzt', 110, '【税前扣除】根据考勤自动计算扣减'),
+
+('UTILITY_DEDUCTION', '水电扣款', 2, 'DED_OTHER', 'utilityDeduction', 120, 0, 0, 0, 'sdkk', 120, '【税后扣除】后勤手工账导入，不影响个税基数'),
+('FINE_DEDUCTION', '管理罚款', 2, 'DED_FINE', 'fineDeduction', 121, 0, 0, 0, 'glfk', 121, '【税后扣除】单次违规罚款'),
+
+-- 代扣与押金类 (税后扣除，钱暂存公司)
+('PASSPORT_FEE_DEDUCTION', '护照费用代扣', 2, 'DED_OTHER', 'passportFeeDeduction', 122, 0, 0, 0, 'hzdk', 122, '【税后扣除】签证护照代办费'),
+('DEPOSIT_DEDUCTION_CURRENT', '本月押金', 2, 'DED_OTHER', 'depositDeductionCurrent', 123, 0, 0, 0, 'byyj', 123, '【税后扣除】9G工签或设备押金按月扣减'),
+
+-- ----------------------------------------------------------
+-- 【5】系统兜底/调整项
+-- ----------------------------------------------------------
+('RESIGNATION_SETTLEMENT', '离职费用结算', 2, 'DED_OTHER', 'resignationSettlement', 140, 0, 0, 0, 'lzjs', 140, '离职时的清算专项(正负皆可)'),
+('PREV_MONTH_ADJUSTMENT', '上月补发/续扣', 1, 'INC_OTHER', 'prevMonthAdjustment', 141, 1, 0, 0, 'sybf', 141, '历史遗留问题的人工调账'),
+-- ----------------------------------------------------------
+-- 【6】税费与社保类 (社保为固定项，个税为最高优先级的动态计算项)
+-- ----------------------------------------------------------
+('SI_PENSION_IND', '养老保险(个人)', 3, 'SI_PENSION', 'siPensionInd', 200, 0, 1, 1, 'ylbx', 200, '【税前扣除】法定五险一金代扣，定薪时带入'),
+('SI_MED_IND', '医疗保险(个人)', 3, 'SI_MED', 'siMedInd', 210, 0, 1, 1, 'ylbx', 210, '【税前扣除】法定五险一金代扣，定薪时带入'),
+('SI_HOUSING_IND', '公积金(个人)', 3, 'SI_HOUSING', 'siHousingInd', 220, 0, 1, 1, 'gjj', 220, '【税前扣除】法定五险一金代扣，定薪时带入'),
+('AUTO_TAX_CALC', '智能个税核算中心', 3, 'TAX_INCOME', 'autoTaxCalc', 999, 0, 0, 0, 'zngs', 999, '【终极节点】计算优先级最低(999)，最后一步执行阶梯个税扣除'),
+
+-- ----------------------------------------------------------
+-- 【7】公司支出类 (HR视角成本核算，不显示在员工基础工资条)
+-- ----------------------------------------------------------
+('ER_PENSION_COMP', '养老保险(公司)', 4, 'ER_PENSION', 'erPensionComp', 300, 0, 0, 1, 'ylbx', 300, '公司用工成本'),
+('ER_VISA_COMP', '海外签证费用', 4, 'ER_VISA', 'erVisaComp', 310, 0, 0, 0, 'qzfy', 310, '出海员工特有，公司承担费用入账');

@@ -61,6 +61,10 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
     private final ArchiveConvert archiveConvert;
     private final ArchiveItemConvert archiveItemConvert;
 
+
+
+    // 消除魔法值，统一定义无限远的失效日期常量
+    private static final LocalDate MAX_EXPIRY_DATE = LocalDate.of(9999, 12, 31);
     // ==========================================
     // 1. 员工入职定薪 (初始化 V1)
     // ==========================================
@@ -74,13 +78,13 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
             throw new BusinessException("该员工已存在薪资档案，请走调薪流程");
         }
         //2. 增强：同步更新员工岗位信息 (定薪时确定的岗位)
-        updateEmployeeJobInfo(reqDTO.getEmployeeId(), reqDTO.getChangeReason());
+        updateEmployeeJobInfo(reqDTO.getEmployeeId(), reqDTO.getJobTitle());
         // 3. 转换为实体并初始化拉链表属性
         SalaryArchive archive = archiveConvert.initToEntity(reqDTO);
         archive.setVersion(1);                   // 初始版本 V1
         archive.setLatestFlag(1);                // 标记为最新版本
         archive.setAuditStatus(1);               // 入职定薪直接生效 (可根据业务调整为 0-待审)
-        archive.setExpiryDate(LocalDate.of(9999, 12, 31)); // 默认无限期
+        archive.setExpiryDate(MAX_EXPIRY_DATE);; // 默认无限期
 
         // 如果前端未传生效日期，默认当天
         if (archive.getEffectiveDate() == null) {
@@ -171,11 +175,13 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
                 if (!draftArchive.getEffectiveDate().isAfter(previous.getEffectiveDate())) {
                     throw new BusinessException("新版生效日期必须晚于当前版本的生效日期: " + previous.getEffectiveDate());
                 }
-                // 5.原子切换：旧版在此刻失效
-                previous.setLatestFlag(0);
-                previous.setExpiryDate(draftArchive.getEffectiveDate().minusDays(1));
-                // 强校验更新结果，失败则抛出异常，触发 @Transactional 回滚
-                boolean updatePrevSuccess = this.updateById(previous);
+                // 5.原子切换：旧版在此刻失效 使用 LambdaUpdateWrapper 进行 CAS 安全截断，防止并发脏写
+                boolean updatePrevSuccess = this.lambdaUpdate()
+                        .eq(SalaryArchive::getId, previous.getId())
+                        .eq(SalaryArchive::getLatestFlag, 1) // 乐观锁机制
+                        .set(SalaryArchive::getLatestFlag, 0)
+                        .set(SalaryArchive::getExpiryDate, draftArchive.getEffectiveDate().minusDays(1))
+                        .update();
                 if (!updatePrevSuccess) {
                     throw new BusinessException("系统繁忙，旧版档案状态更新失败，请重试");
                 }
@@ -189,8 +195,14 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
             draftArchive.setLatestFlag(0); //  显式归零，确保安全
         }
 
-        draftArchive.setRemark(auditRemark);
-        return this.updateById(draftArchive);
+        // 7.同样采用 CAS 乐观更新草稿状态，保证并发安全
+        return this.lambdaUpdate()
+                .eq(SalaryArchive::getId, archiveId)
+                .eq(SalaryArchive::getAuditStatus, 0)
+                .set(SalaryArchive::getAuditStatus, draftArchive.getAuditStatus())
+                .set(SalaryArchive::getLatestFlag, draftArchive.getLatestFlag())
+                .set(SalaryArchive::getRemark, auditRemark)
+                .update();
     }
 
     // ==========================================
@@ -328,7 +340,10 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
     }
 
     /**
-     * 组装完整的档案视图 (聚合员工信息、字典翻译、关联明细)
+     * 组装单条薪资档案视图 (聚合员工信息、字典翻译、关联明细)
+     * ⚠️ 架构警告：此方法内部包含关联查库操作，严禁在列表查询的循环体中调用！
+     * * @param archive 档案主表实体
+     * @return 档案完整视图 VO
      */
     private SalaryArchiveVO assembleArchiveVO(SalaryArchive archive) {
         SalaryArchiveVO vo = archiveConvert.toVO(archive);
@@ -342,7 +357,7 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
             vo.setJobTitle(employee.getJobTitle()); // VO新增字段
         }
 
-        // 2. 字典翻译：结算币种 (如 CNY -> 人民币)
+        // 2. 字典翻译：结算币种 (依赖 Redis 缓存 如 CNY -> 人民币)
         if (StrUtil.isNotBlank(archive.getCurrency())) {
             vo.setCurrencyLabel(dictItemService.getDictLabel("settlement_currency", archive.getCurrency()));
         }
@@ -350,12 +365,14 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
         // 3. 查出挂载的明细项，并翻译明细字典
         List<SalaryArchiveItem> items = archiveItemService.list(new LambdaQueryWrapper<SalaryArchiveItem>()
                 .eq(SalaryArchiveItem::getArchiveId, archive.getId()));
-
+        // 4. 转换并翻译明细字典
         if (CollUtil.isNotEmpty(items)) {
             List<SalaryArchiveItemVO> itemVOList = archiveItemConvert.toVOList(items);
+            // 使用 JDK 11+ / Stream 风格增强健壮性
             itemVOList.forEach(itemVO -> {
                 // 翻译字典：如 'base_pay' -> '固定薪资类'
                 String dictType = mapCategoryToDictType(itemVO.getItemType());
+                // 此处强依赖 dictItemService 开启了缓存
                 itemVO.setCategoryDictLabel(dictItemService.getDictLabel(dictType, itemVO.getCategoryDictValue()));
             });
             vo.setArchiveItems(itemVOList);

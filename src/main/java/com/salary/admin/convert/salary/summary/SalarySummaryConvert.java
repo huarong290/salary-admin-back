@@ -7,9 +7,7 @@ import com.salary.admin.model.dto.salary.snapshot.SalarySnapshotDTO;
 import com.salary.admin.model.entity.salary.SalarySummary;
 import com.salary.admin.model.vo.salary.summary.SalarySummaryVO;
 import org.apache.commons.lang3.StringUtils;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -50,5 +48,14 @@ public abstract class SalarySummaryConvert {
             return null;
         }
     }
-
+    /**
+     * 🌟 MapStruct 收尾钩子：在 toVO 映射完成后执行
+     * 目的：将深层 details 里的 usedArchives 提取到 VO 的第一层，方便前端直接使用
+     */
+    @AfterMapping
+    protected void afterToVO(SalarySummary entity, @MappingTarget SalarySummaryVO vo) {
+        if (vo.getDetails() != null && vo.getDetails().getUsedArchives() != null) {
+            vo.setUsedArchives(vo.getDetails().getUsedArchives());
+        }
+    }
 }

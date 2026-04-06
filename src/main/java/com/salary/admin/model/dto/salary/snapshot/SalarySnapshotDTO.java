@@ -105,4 +105,11 @@ public class SalarySnapshotDTO implements Serializable {
      */
     @Schema(description = "计算时的自动备注")
     private String calcRemark;
+
+    // ==================== 5. 🌟 核算溯源快照 (底层存储) ====================
+    /**
+     * 本次核算命中的档案快照列表
+     */
+    @Schema(description = "本次核算命中的档案快照列表 (解决分段计薪和底层持久化溯源)")
+    private List<ArchiveSnapshot> usedArchives;
 }

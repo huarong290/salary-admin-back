@@ -10,6 +10,7 @@ import com.salary.admin.exception.BusinessException;
 import com.salary.admin.model.dto.engine.SalaryCalcBatchReqDTO;
 import com.salary.admin.model.dto.engine.SalaryCalcSingleReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
+import com.salary.admin.model.dto.salary.snapshot.ArchiveSnapshot;
 import com.salary.admin.model.dto.salary.snapshot.SalaryDetailItemDTO;
 import com.salary.admin.model.dto.salary.snapshot.SalarySnapshotDTO;
 import com.salary.admin.model.dto.salary.summary.SummaryInitReqDTO;
@@ -17,10 +18,12 @@ import com.salary.admin.model.entity.salary.*;
 import com.salary.admin.model.vo.calcrule.CalcRuleVO;
 import com.salary.admin.model.vo.salary.summary.SalarySummaryVO;
 import com.salary.admin.service.salary.*;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +64,12 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     private final ISalaryItemDetailService iSalaryItemDetailService;
     private final ISalaryCalcPipelineStepService iSalaryCalcPipelineStepService;
     private final ApplicationEventPublisher eventPublisher;
+
+    // 🌟 【架构师优化】：注入自身代理对象，解决 this 调用导致 @Transactional 本地事务失效的问题
+    @Lazy
+    @Resource
+    private ISalaryCoreEngine selfProxy;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean initSummaryAccount(SummaryInitReqDTO reqDTO) {
@@ -139,7 +148,9 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     public SalarySummaryVO previewCalculate(SalaryCalcSingleReqDTO reqDTO) {
         // 0. 获取原始账套
         SalarySummary summary = iSalarySummaryService.getById(reqDTO.getSummaryId());
-        if (summary == null) throw new BusinessException("薪资账套数据不存在！");
+        if (summary == null){
+            throw new BusinessException("薪资账套数据不存在！");
+        }
 
         Long periodId = summary.getPeriodId();
         Long employeeId = summary.getEmployeeId();
@@ -161,7 +172,17 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
         // 2. 准备原材料
         Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion);
+        // 提取埋点注入的所用档案列表，用于审计溯源和UI展示
+        List<ArchiveSnapshot> usedArchives =
+                (List<ArchiveSnapshot>) env.get("_usedArchives");
 
+        // 提前全量查询字典配置，用于精准分类
+        Set<String> ruleCodes = steps.stream().map(SalaryCalcPipelineStep::getRuleCode).collect(Collectors.toSet());
+        Map<String, SalaryItemConfig> itemConfigMap = iSalaryItemConfigService.lambdaQuery()
+                .in(SalaryItemConfig::getItemCode, ruleCodes)
+                .list()
+                .stream()
+                .collect(Collectors.toMap(SalaryItemConfig::getItemCode, c -> c, (v1, v2) -> v1));
         // 初始化累加器与快照
         BigDecimal incomeTotal = BigDecimal.ZERO;
         BigDecimal deductionTotal = BigDecimal.ZERO;
@@ -193,7 +214,9 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 }
 
                 env.put(ruleCode, stepResult);
-                int itemType = determineItemTypeByStage(step.getStage());
+                // 🌟 【架构师优化】：抛弃按 Stage 死板判断分类的做法，直接取配置表的真实属性
+                SalaryItemConfig config = itemConfigMap.get(ruleCode);
+                int itemType = config != null ? config.getItemCategory() : 1;
 
                 SalaryDetailItemDTO snapshotItem = SalaryDetailItemDTO.builder()
                         .itemCode(ruleCode)
@@ -227,6 +250,8 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         previewVO.setTaxTotal(taxTotal);
         previewVO.setNetSalary(netSalary);
 
+        // 向前端 VO 注入档案溯源快照
+        previewVO.setUsedArchives(usedArchives);
         // 挂载明细用于更深度的前端展示（如果需要）
         snapshot.setGrossSalary(incomeTotal);
         snapshot.setDeductionTotal(deductionTotal);
@@ -278,7 +303,9 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
         // 2. 准备原材料 (Context Env)
         Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion);
-
+        // 🌟 【架构师优化】：提取档案溯源快照
+        List<ArchiveSnapshot> usedArchives =
+                (List<ArchiveSnapshot>) env.get("_usedArchives");
         // 初始化数据载体
         List<SalaryItemDetail> detailList = new ArrayList<>();
 
@@ -288,7 +315,8 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         snapshot.setDeduction(new ArrayList<>());
         snapshot.setTax(new ArrayList<>());
         snapshot.setCompanyExpense(new ArrayList<>());
-
+        // 注入档案快照到落库 JSON 中，彻底解决财务审计的后顾之忧
+        snapshot.setUsedArchives(usedArchives);
         // 初始化累加器
         BigDecimal incomeTotal = BigDecimal.ZERO;
         BigDecimal deductionTotal = BigDecimal.ZERO;
@@ -296,11 +324,13 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         BigDecimal companyExpenseTotal = BigDecimal.ZERO;
         // 在进循环前，根据流水线将要执行的 ruleCode，提前把字典配置里的 ID 查出来放入 Map 中
         Set<String> ruleCodes = steps.stream().map(SalaryCalcPipelineStep::getRuleCode).collect(Collectors.toSet());
-        Map<String, Long> itemConfigMap = iSalaryItemConfigService.lambdaQuery()
+        // 将 Map 的泛型改为 SalaryItemConfig 实体
+        Map<String, SalaryItemConfig> itemConfigMap = iSalaryItemConfigService.lambdaQuery()
                 .in(SalaryItemConfig::getItemCode, ruleCodes)
                 .list()
                 .stream()
-                .collect(Collectors.toMap(SalaryItemConfig::getItemCode, SalaryItemConfig::getId, (v1, v2) -> v1));
+                // 将 value 映射为 c -> c (即实体本身)，而不是 SalaryItemConfig::getId
+                .collect(Collectors.toMap(SalaryItemConfig::getItemCode, c -> c, (v1, v2) -> v1));
         // 3. 驱动流水线
         for (SalaryCalcPipelineStep step : steps) {
             //  记录开始时间
@@ -332,11 +362,9 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 }
 
                 env.put(ruleCode, stepResult);
-
-                // 3.5 智能分类并组装 DB 明细实体
-                int itemType = determineItemTypeByStage(step.getStage());
-                // 从 Map 中取出真实的 itemConfigId（防空兜底为0L）
-                Long itemConfigId = itemConfigMap.getOrDefault(ruleCode, 0L);
+                SalaryItemConfig config = itemConfigMap.get(ruleCode);
+                Long itemConfigId = config != null ? config.getId() : 0L;
+                int itemType = config != null ? config.getItemCategory() : 1;
                 SalaryItemDetail detail = new SalaryItemDetail()
                         .setPeriodId(periodId)
                         .setEmployeeId(employeeId)

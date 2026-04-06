@@ -1,5 +1,6 @@
 package com.salary.admin.model.vo.salary.summary;
 
+import com.salary.admin.model.dto.salary.snapshot.ArchiveSnapshot;
 import com.salary.admin.model.dto.salary.snapshot.SalarySnapshotDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -9,6 +10,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 薪资汇总展示对象 (用于前端页面展示)
@@ -85,6 +87,11 @@ public class SalarySummaryVO implements Serializable {
      */
     @Schema(description = "薪资计算详细快照 (包含收入/扣款明细及计算日志)")
     private SalarySnapshotDTO details;
+
+    // ==================== 5.5 核算溯源快照 ====================
+
+    @Schema(description = "本次核算命中的档案快照列表 (解决分段计薪和前端溯源展示问题)")
+    private List<ArchiveSnapshot> usedArchives;
 
     // ==================== 6. 审计字段 ====================
 
