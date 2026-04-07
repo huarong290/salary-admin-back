@@ -56,8 +56,19 @@ public class SalarySummaryServiceImpl extends ServiceImpl<SalarySummaryExtMapper
         if (summary == null || summary.getDeleteFlag() > 0) {
             throw new BusinessException("该薪资结算单不存在或已被删除");
         }
+        // 1. 检查数据库原始字符串
+        log.info("DEBUG 1: 数据库原始 JSON 长度 = {}",
+                summary.getDetailJson() != null ? summary.getDetailJson().length() : "NULL");
         // 直接调用 MapStruct 转换
-        return salarySummaryConvert.toVO(summary);
+        SalarySummaryVO vo = salarySummaryConvert.toVO(summary);
+        // 2. 检查 MapStruct 转换后的对象状态
+        if (vo.getDetails() != null) {
+            log.info("DEBUG 2: VO.details 转换成功! 包含收入项数量: {}",
+                    vo.getDetails().getIncome() != null ? vo.getDetails().getIncome().size() : 0);
+        } else {
+            log.warn("DEBUG 2: VO.details 依然是 NULL！");
+        }
+        return vo;
     }
 
     @Override

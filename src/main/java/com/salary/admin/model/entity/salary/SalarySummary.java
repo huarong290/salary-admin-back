@@ -1,7 +1,6 @@
 package com.salary.admin.model.entity.salary;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.salary.admin.model.entity.base.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -22,7 +21,7 @@ import java.time.LocalDate;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
-@TableName(value = "salary_summary", autoResultMap = true)
+@TableName(value = "salary_summary")
 public class SalarySummary extends BaseEntity<SalarySummary> {
 
     private static final long serialVersionUID = 1L;
@@ -134,7 +133,7 @@ public class SalarySummary extends BaseEntity<SalarySummary> {
      * 汇总快照(用于展示工资单):{\"income\": [...],\"deduction\": [...],\"tax\": [...]}
      */
     @Schema(description = "汇总快照(用于展示工资单):{\"income\": [...],\"deduction\": [...],\"tax\": [...]}")
-    @TableField(value = "detail_json", typeHandler = JacksonTypeHandler.class)
+    @TableField(value = "detail_json")
     private String detailJson;
     /**
      * 备注

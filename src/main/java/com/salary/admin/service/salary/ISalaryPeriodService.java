@@ -2,10 +2,7 @@ package com.salary.admin.service.salary;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.salary.admin.common.PageResult;
-import com.salary.admin.model.dto.salary.period.PeriodAddReqDTO;
-import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
-import com.salary.admin.model.dto.salary.period.PeriodEditReqDTO;
-import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
+import com.salary.admin.model.dto.salary.period.*;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.period.PeriodBatchInitResultVO;
 import com.salary.admin.model.vo.salary.period.PeriodOptionVO;
@@ -88,8 +85,8 @@ public interface ISalaryPeriodService extends IService<SalaryPeriod> {
 
     /**
      * 获取指定员工的所有结算月份列表 (无分页，用于录入弹窗的级联下拉框)
-     * @param employeeId 员工ID
+     * @param queryReqDTO 员工ID
      * @return 简易选项列表
      */
-    List<PeriodOptionVO> listOptionByEmployee(Long employeeId);
+    List<PeriodOptionVO> listOptionByEmployee(PeriodSelectQueryReqDTO queryReqDTO);
 }

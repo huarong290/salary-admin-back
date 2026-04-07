@@ -9,10 +9,7 @@ import com.salary.admin.common.PageResult;
 import com.salary.admin.convert.salary.period.PeriodConvert;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.mapper.ext.SalaryPeriodExtMapper;
-import com.salary.admin.model.dto.salary.period.PeriodAddReqDTO;
-import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
-import com.salary.admin.model.dto.salary.period.PeriodEditReqDTO;
-import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
+import com.salary.admin.model.dto.salary.period.*;
 import com.salary.admin.model.entity.salary.SalaryEmployee;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.period.PeriodBatchInitResultVO;
@@ -278,17 +275,30 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
     }
 
     @Override
-    public List<PeriodOptionVO> listOptionByEmployee(Long employeeId) {
-        // 专门针对某一个员工查，不需要 groupBy，直接根据员工ID过滤并倒序排列
-        List<SalaryPeriod> list = this.list(new LambdaQueryWrapper<SalaryPeriod>()
-                .select(SalaryPeriod::getId,
-                        SalaryPeriod::getSettlementMonth,
-                        SalaryPeriod::getWorkMonth,
-                        SalaryPeriod::getStartDate,
-                        SalaryPeriod::getEndDate)
-                .eq(SalaryPeriod::getEmployeeId, employeeId) // 🌟 核心：精确锁定员工
-                .orderByDesc(SalaryPeriod::getSettlementMonth));
+    public List<PeriodOptionVO> listOptionByEmployee(PeriodSelectQueryReqDTO queryReqDTO) {
+        LambdaQueryWrapper<SalaryPeriod> wrapper = new LambdaQueryWrapper<>();
 
+        // 1. 核心逻辑分发
+        if (queryReqDTO != null && queryReqDTO.getEmployeeId() != null) {
+            // 【查个人】：需要查出该员工所有的周期，不能用 groupBy，因为同一个月可能因为调薪有多个切片
+            wrapper.eq(SalaryPeriod::getEmployeeId, queryReqDTO.getEmployeeId());
+        } else {
+            // 【查全局】：做去重处理，通常用于搜索栏的月份筛选
+            wrapper.select(SalaryPeriod::getSettlementMonth,
+                            SalaryPeriod::getStartDate,
+                            SalaryPeriod::getEndDate)
+                    .groupBy(SalaryPeriod::getSettlementMonth,
+                            SalaryPeriod::getStartDate,
+                            SalaryPeriod::getEndDate);
+        }
+
+        // 2. 统一排序：按月份倒序，最新的在最上面
+        wrapper.orderByDesc(SalaryPeriod::getSettlementMonth)
+                .orderByDesc(SalaryPeriod::getStartDate);
+
+        List<SalaryPeriod> list = this.list(wrapper);
+
+        // 3. 转换并返回
         return periodConvert.toOptionVOList(list);
     }
 

@@ -3,10 +3,7 @@ package com.salary.admin.controller.salary;
 import com.salary.admin.annotation.Loggable;
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.common.PageResult;
-import com.salary.admin.model.dto.salary.period.PeriodAddReqDTO;
-import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
-import com.salary.admin.model.dto.salary.period.PeriodEditReqDTO;
-import com.salary.admin.model.dto.salary.period.PeriodQueryReqDTO;
+import com.salary.admin.model.dto.salary.period.*;
 import com.salary.admin.model.vo.salary.period.PeriodBatchInitResultVO;
 import com.salary.admin.model.vo.salary.period.PeriodOptionVO;
 import com.salary.admin.model.vo.salary.period.PeriodVO;
@@ -79,9 +76,15 @@ public class SalaryPeriodController {
         return ApiResult.successResult(periodService.batchInitPeriodsOnly(reqDTO));
     }
 
-    @GetMapping("/options")
+    @GetMapping("/listOptions")
     @Operation(summary = "获取已存在的结算月份列表", description = "用于前端账套下拉筛选")
     public ApiResult<List<PeriodOptionVO>> listOptions() {
         return ApiResult.successResult(periodService.listOption());
+    }
+
+    @GetMapping("/listOptionByEmployee")
+    @Operation(summary = "获取已存在的结算月份列表", description = "用于前端账套下拉筛选")
+    public ApiResult<List<PeriodOptionVO>> listOptionByEmployee(PeriodSelectQueryReqDTO queryReqDTO) {
+        return ApiResult.successResult(periodService.listOptionByEmployee(queryReqDTO));
     }
 }
