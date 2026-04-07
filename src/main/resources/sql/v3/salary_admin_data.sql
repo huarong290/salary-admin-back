@@ -435,3 +435,69 @@ VALUES
 -- ----------------------------------------------------------
 ('ER_PENSION_COMP', '养老保险(公司)', 4, 'ER_PENSION', 'erPensionComp', 300, 0, 0, 1, 'ylbx', 300, '公司用工成本'),
 ('ER_VISA_COMP', '海外签证费用', 4, 'ER_VISA', 'erVisaComp', 310, 0, 0, 0, 'qzfy', 310, '出海员工特有，公司承担费用入账');
+
+
+
+INSERT INTO salary_calc_pipeline_info
+(id, pipeline_code, pipeline_name, version, default_flag, status, remark, delete_flag, create_by, create_time, update_by, update_time)
+VALUES
+    (1, 'OFFICIAL_STAFF_2026', '2026年度正式员工核算流', 1, 0, 1, '本管道适用于集团 2026 年度全体正式员工月度核算。
+制度依据：遵循 2026 版薪酬管理办法，包含基本工资、五险一金及各项绩效奖金。
+逻辑特性：计算顺序严格遵循 [基础->补贴->扣款->税->汇总] 阶段，已同步 2026 年最新公积金缴存基数上限。
+维护人：HR-薪酬组 / 技术支撑部', 0, 'system', '2026-04-02 14:11:34', 'system', '2026-04-02 14:11:34');
+TRUNCATE TABLE `salary_calc_pipeline_step`;
+
+INSERT INTO `salary_calc_pipeline_step`
+(`pipeline_code`, `pipeline_version`, `rule_code`, `rule_name`, `stage`, `sort_order`, `condition_script`, `block_flag`, `skip_if_null`)
+VALUES
+-- STAGE 一、基础收入 (权重 10-49)
+-- 1. 底薪 (始终执行)
+('OFFICIAL_STAFF_2026', 1, 'BASE_SALARY', '底薪计算', 1, 10, NULL, 1, 0),
+
+-- 2. 全勤 (始终执行，脚本内部判断满勤)
+('OFFICIAL_STAFF_2026', 1, 'ATTENDANCE_BONUS', '全勤奖', 1, 20, NULL, 1, 0),
+
+-- 3. KPI (只有绩效分大于0才执行)
+('OFFICIAL_STAFF_2026', 1, 'KPI_BONUS', 'KPI绩效计算', 1, 30, 'kpiScore > 0', 0, 1),
+
+-- 4. 调账收入
+('OFFICIAL_STAFF_2026', 1, 'OTHER_INCOME_ADJUST', '其他收入调账', 1, 40, NULL, 0, 1),
+-- STAGE 二、 津贴福利 (权重 50-99)
+-- 5. 住房补贴 (只有正式工 employmentStatus == 1 才执行)
+('OFFICIAL_STAFF_2026', 1, 'HOUSING_ALLOW', '住房补贴', 2, 50, 'employmentStatus == 1', 1, 0),
+
+-- STAGE 三、专项扣款 (权重 100-199)
+-- 6. 水电费
+('OFFICIAL_STAFF_2026', 1, 'UTILITY_DEDUCTION', '水电网扣费', 3, 60, NULL, 0, 1),
+
+-- 7. 扣款调账
+('OFFICIAL_STAFF_2026', 1, 'OTHER_DEDUCT_ADJUST', '其他扣款调账', 3, 70, NULL, 0, 1),
+-- STAGE 四、税务核算 (权重 999)
+-- 8. 个税 (最后执行)
+('OFFICIAL_STAFF_2026', 1, 'AUTO_TAX_CALC', '智能个税核算', 4, 999, NULL, 1, 0);
+
+
+TRUNCATE TABLE `salary_calc_rule`;
+
+INSERT INTO `salary_calc_rule`
+(`rule_code`, `rule_name`, `rule_script`, `return_type`, `status`)
+VALUES
+-- 底薪：支持缺勤折算
+('BASE_SALARY', '底薪计算', 'monthDays > 0M ? (baseSalary / monthDays * attendanceDays) : 0M', 'Decimal', 10, 1),
+
+-- 全勤：判断逻辑
+('ATTENDANCE_BONUS', '全勤奖', 'isFullAttendance == true ? (attendanceBonus == nil ? 0.0M : attendanceBonus) : 0.0M', 'Decimal', 20, 1),
+
+-- KPI：基数 * 系数
+('KPI_BONUS', 'KPI绩效计算', 'let base = baseSalary == nil ? 0.0M : baseSalary; let coeff = kpiCoefficient == nil ? 0.0M : kpiCoefficient; return base * coeff;', 'Decimal', 30, 1),
+-- 其他收入调账
+('OTHER_INCOME_ADJUST', '其他收入调账', 'OTHER_INCOME_ADJUST == nil ? 0.0M : OTHER_INCOME_ADJUST', 'Decimal', 40, 1),
+-- 住房补贴：正式工才全额，且支持折算
+('HOUSING_ALLOW', '住房补贴', 'monthDays > 0M ? (housingAllow / monthDays * attendanceDays) : 0M', 'Decimal', 50, 1),
+
+-- 变动项直接取值 (因为 Context 里已经算好了)
+('UTILITY_DEDUCTION', '水电网扣费', 'UTILITY_DEDUCTION == nil ? 0.0M : UTILITY_DEDUCTION', 'Decimal', 110, 1),
+('OTHER_DEDUCT_ADJUST', '其他扣款调账', 'OTHER_DEDUCT_ADJUST == nil ? 0.0M : OTHER_DEDUCT_ADJUST', 'Decimal', 120, 1),
+
+-- 个税：这里只是示意，实际个税逻辑通常更复杂
+('AUTO_TAX_CALC', '智能个税核算', '0.0M', 'Decimal', 999, 1);

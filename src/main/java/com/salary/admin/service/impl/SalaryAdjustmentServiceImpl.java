@@ -1,7 +1,6 @@
 package com.salary.admin.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,10 +12,10 @@ import com.salary.admin.model.dto.adjustment.AdjustmentAddReqDTO;
 import com.salary.admin.model.dto.adjustment.AdjustmentEditReqDTO;
 import com.salary.admin.model.dto.adjustment.AdjustmentQueryDTO;
 import com.salary.admin.model.entity.salary.SalaryAdjustment;
+import com.salary.admin.model.vo.salary.adjustment.SalaryAdjustmentVO;
 import com.salary.admin.service.ISalaryAdjustmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,23 +121,23 @@ public class SalaryAdjustmentServiceImpl extends ServiceImpl<SalaryAdjustmentExt
     }
 
     @Override
-    public PageResult<SalaryAdjustment> pageQuery(AdjustmentQueryDTO queryDTO) {
-        LambdaQueryWrapper<SalaryAdjustment> wrapper = new LambdaQueryWrapper<>();
+    public PageResult<SalaryAdjustmentVO> pageQuery(AdjustmentQueryDTO queryDTO) {
+        // 1. 构造 MyBatis-Plus 分页参数
+        Page<SalaryAdjustmentVO> pageParam = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize());
 
-        // 动态构建查询条件
-        wrapper.eq(queryDTO.getPeriodId() != null, SalaryAdjustment::getPeriodId, queryDTO.getPeriodId())
-                .eq(queryDTO.getEmployeeId() != null, SalaryAdjustment::getEmployeeId, queryDTO.getEmployeeId())
-                .eq(StringUtils.isNotBlank(queryDTO.getItemCode()), SalaryAdjustment::getItemCode, queryDTO.getItemCode())
-                .eq(queryDTO.getStatus() != null, SalaryAdjustment::getStatus, queryDTO.getStatus());
+        // 2. 调用 ExtMapper 里的关联查询方法
+        // 数据库一层直接出 VO，不再需要 Service 层循环赋值
+        IPage<SalaryAdjustmentVO> pageData = baseMapper.selectAdjustmentPageVo(pageParam, queryDTO);
 
-        // 默认按创建时间倒序排，最新的展示在最上面
-        wrapper.orderByDesc(SalaryAdjustment::getCreateTime);
-
-        // 1. 执行 MyBatis-Plus 分页查询
-        Page<SalaryAdjustment> pageParam = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize());
-        IPage<SalaryAdjustment> pageData = this.page(pageParam, wrapper);
-
-        // 2. 🌟 调用通用封装类的 static of 方法，转换为统一格式
         return PageResult.of(pageData);
+    }
+
+    @Override
+    public SalaryAdjustmentVO getDetail(Long id) {
+        SalaryAdjustmentVO vo = baseMapper.getDetailVoById(id);
+        if (vo == null) {
+            throw new BusinessException("该专项调整记录不存在！");
+        }
+        return vo;
     }
 }

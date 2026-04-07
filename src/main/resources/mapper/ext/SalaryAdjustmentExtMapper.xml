@@ -29,4 +29,48 @@
         id, employee_id, period_id, item_code, item_name, currency, original_amount, exchange_rate, settlement_amount, adjust_type, source_type, status, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
+    <select id="selectAdjustmentPageVo" resultType="com.salary.admin.model.vo.salary.adjustment.SalaryAdjustmentVO">
+        SELECT
+        t.id,
+        t.employee_id as employeeId,
+        e.employee_name as employeeName,  t.period_id as periodId,
+        p.settlement_month as settlementMonth, t.item_code as itemCode,
+        t.item_name as itemName,
+        t.adjust_type as adjustType,
+        t.original_amount as originalAmount,
+        t.currency,
+        t.exchange_rate as exchangeRate,
+        t.settlement_amount as settlementAmount,
+        t.status,
+        t.remark,
+        t.create_by as createBy,
+        t.create_time as createTime
+        FROM salary_adjustment t
+        LEFT JOIN salary_employee e ON t.employee_id = e.id AND e.delete_flag = 0
+        LEFT JOIN salary_period p ON t.period_id = p.id AND p.delete_flag = 0 <where>
+        t.delete_flag = 0
+        <if test="query.employeeId != null">
+            AND t.employee_id = #{query.employeeId}
+        </if>
+        <if test="query.periodId != null">
+            AND t.period_id = #{query.periodId}
+        </if>
+        <if test="query.status != null">
+            AND t.status = #{query.status}
+        </if>
+        <if test="query.itemCode != null and query.itemCode != ''">
+            AND t.item_code = #{query.itemCode}
+        </if>
+    </where>
+        ORDER BY t.create_time DESC
+    </select>
+
+    <select id="getDetailVoById" resultType="com.salary.admin.model.vo.salary.adjustment.SalaryAdjustmentVO">
+        SELECT
+            t.*,
+            e.employee_name as employeeName,
+            p.settlement_month as settlementMonth FROM salary_adjustment t
+                                                           LEFT JOIN salary_employee e ON t.employee_id = e.id
+                                                           LEFT JOIN salary_period p ON t.period_id = p.id WHERE t.id = #{id} AND t.delete_flag = 0
+    </select>
 </mapper>

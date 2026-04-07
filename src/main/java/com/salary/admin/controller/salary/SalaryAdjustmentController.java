@@ -1,11 +1,11 @@
-package com.salary.admin.controller;
+package com.salary.admin.controller.salary;
 
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.adjustment.AdjustmentAddReqDTO;
 import com.salary.admin.model.dto.adjustment.AdjustmentEditReqDTO;
 import com.salary.admin.model.dto.adjustment.AdjustmentQueryDTO;
-import com.salary.admin.model.entity.salary.SalaryAdjustment;
+import com.salary.admin.model.vo.salary.adjustment.SalaryAdjustmentVO;
 import com.salary.admin.service.ISalaryAdjustmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -57,8 +57,13 @@ public class SalaryAdjustmentController {
 
     @Operation(summary = "5. 分页查询专项调整列表")
     @GetMapping("/page")
-    public ApiResult<PageResult<SalaryAdjustment>> page(@Validated AdjustmentQueryDTO queryDTO) {
+    public ApiResult<PageResult<SalaryAdjustmentVO>> page(@Validated AdjustmentQueryDTO queryDTO) {
         // 使用 ApiResult 统一包装，适配前端 axios 拦截器的解包逻辑
         return ApiResult.successResult(iSalaryAdjustmentService.pageQuery(queryDTO));
+    }
+    @Operation(summary = "6. 获取专项调整详情")
+    @GetMapping("/detail/{id}")
+    public ApiResult<SalaryAdjustmentVO> getDetail(@PathVariable Long id) {
+        return ApiResult.successResult(iSalaryAdjustmentService.getDetail(id));
     }
 }

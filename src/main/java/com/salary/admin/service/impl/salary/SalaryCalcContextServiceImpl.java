@@ -12,6 +12,7 @@ import com.salary.admin.model.dto.calccontext.CalcContextQueryReqDTO;
 import com.salary.admin.model.dto.salary.snapshot.ArchiveSnapshot;
 import com.salary.admin.model.entity.salary.*;
 import com.salary.admin.model.vo.calccontext.CalcContextVO;
+import com.salary.admin.service.ISalaryAdjustmentService;
 import com.salary.admin.service.ISalaryKpiRecordService;
 import com.salary.admin.service.salary.*;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +55,8 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
 
     // 注入薪资配置字典服务
     private final ISalaryItemConfigService iSalaryItemConfigService;
-
+    // 注入调账服务
+    private final ISalaryAdjustmentService iSalaryAdjustmentService;
     // ======================== 1. 新增操作 (Create) ========================
     @Override
     public Long addContext(CalcContextAddReqDTO reqDTO) {
@@ -149,7 +151,7 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
                     .map(item -> item.getItemConfigId()) // ⚠️ 确保你的 SalaryArchiveItemVO 里有 itemConfigId 字段
                     .collect(Collectors.toSet());
 
-            if (!configIds.isEmpty()) {
+            if (!CollectionUtils.isEmpty(configIds)) {
                 // 批量查询配置字典实体
                 Map<Long, SalaryItemConfig> configMap = iSalaryItemConfigService.listByIds(configIds).stream()
                         .collect(Collectors.toMap(SalaryItemConfig::getId, c -> c));
@@ -164,9 +166,25 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
                 });
             }
         }
-
         // ==========================================
-        // 5. 跨模块获取动态业务数据 (考勤、绩效)
+        // 5. 注入手工账变动数据（水电费、罚款等）
+        // 逻辑：查询当前周期、该员工、且状态为“已生效”的调账项
+        // ==========================================
+        List<SalaryAdjustment> adjustments = iSalaryAdjustmentService.lambdaQuery()
+                .eq(SalaryAdjustment::getPeriodId, periodId)
+                .eq(SalaryAdjustment::getEmployeeId, employeeId)
+                .eq(SalaryAdjustment::getStatus, 1)
+                .list();
+
+        if (!CollectionUtils.isEmpty(adjustments)) {
+            adjustments.forEach(adj -> {
+                // 将调账金额以 itemCode 为变量名注入，如 UTILITY_DEDUCTION
+                // Aviator 脚本可以直接通过变量名访问该金额
+                env.put(adj.getItemCode(), adj.getSettlementAmount());
+            });
+        }
+        // ==========================================
+        // 6. 跨模块获取动态业务数据 (考勤、绩效)
         // ==========================================
         SalaryKpiRecord kpi = iSalaryKpiRecordService.lambdaQuery()
                 .eq(SalaryKpiRecord::getPeriodId, periodId)

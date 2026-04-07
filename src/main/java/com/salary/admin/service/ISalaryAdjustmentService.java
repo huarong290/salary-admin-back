@@ -6,6 +6,7 @@ import com.salary.admin.model.dto.adjustment.AdjustmentAddReqDTO;
 import com.salary.admin.model.dto.adjustment.AdjustmentEditReqDTO;
 import com.salary.admin.model.dto.adjustment.AdjustmentQueryDTO;
 import com.salary.admin.model.entity.salary.SalaryAdjustment;
+import com.salary.admin.model.vo.salary.adjustment.SalaryAdjustmentVO;
 
 import java.util.List;
 
@@ -42,5 +43,10 @@ public interface ISalaryAdjustmentService extends IService<SalaryAdjustment> {
     /**
      * 分页查询
      */
-    PageResult<SalaryAdjustment> pageQuery(AdjustmentQueryDTO queryDTO);
+    PageResult<SalaryAdjustmentVO> pageQuery(AdjustmentQueryDTO queryDTO);
+
+    /**
+     * 获取单条详情 (包含员工姓名等关联信息)
+     */
+    SalaryAdjustmentVO getDetail(Long id);
 }
