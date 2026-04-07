@@ -349,11 +349,12 @@ WHERE id IN (130, 131, 132, 133, 135);
 -- ==========================================================
 TRUNCATE TABLE `salary_item_config`;
 
+-- 建议：如果表内已有数据，可以先 TRUNCATE TABLE salary_item_config;
 INSERT INTO `salary_item_config`
 (`item_code`, `item_name`, `item_category`, `category_dict_value`, `env_var_name`, `calc_priority`, `taxable_flag`, `tax_deductible_flag`, `fixed_flag`, `pinyin_code`, `sort_value`, `remark`)
 VALUES
 -- ----------------------------------------------------------
--- 【1】收入类 - 档案固定项
+-- 【1】收入类 - 档案固定项 (Fixed Items)
 -- ----------------------------------------------------------
 ('BASE_SALARY', '基本工资', 1, 'INC_BASE', 'baseSalary', 10, 1, 0, 1, 'jbgz', 10, '核心底薪'),
 ('HOUSING_ALLOW', '住房补贴', 1, 'INC_ALLOWANCE', 'housingAllow', 20, 1, 0, 1, 'zfbt', 11, '每月固定房补'),
@@ -362,7 +363,7 @@ VALUES
 ('QUARANTINE_ALLOWANCE', '隔离补贴', 1, 'INC_SUBSIDY', 'quarantineAllowance', 13, 1, 0, 0, 'glbt', 14, '特殊隔离补贴'),
 
 -- ----------------------------------------------------------
--- 【2】收入类 - 动态变动项 (考勤/绩效/全勤)
+-- 【2】收入类 - 动态变动项 (Attendance & Performance)
 -- ----------------------------------------------------------
 ('OVERTIME_PAY_DAY', '日加班工资', 1, 'INC_OVERTIME', 'overtimePayDay', 20, 1, 0, 0, 'rjbgz', 20, '按天加班费'),
 ('OVERTIME_PAY_HOUR', '时加班工资', 1, 'INC_OVERTIME', 'overtimePayHour', 21, 1, 0, 0, 'sjbgz', 21, '按时加班费'),
@@ -370,16 +371,17 @@ VALUES
 ('COMMISSION_SALES', '业绩提成', 1, 'INC_BONUS', 'commissionSales', 31, 1, 0, 0, 'yjtc', 31, '业务提成'),
 ('COMMISSION_AGENT', '代理提成', 1, 'INC_BONUS', 'commissionAgent', 32, 1, 0, 0, 'dltc', 32, '代理提成'),
 ('ATTENDANCE_BONUS', '全勤奖', 1, 'INC_ATTENDANCE', 'attendanceBonus', 40, 1, 0, 0, 'qqj', 40, '全勤奖金'),
+('ATTENDANCE_REISSUE', '考勤/薪资补发', 1, 'INC_ATTENDANCE', 'attendanceReissue', 41, 1, 0, 0, 'kqbf', 41, '漏打卡或考勤误差补发'),
 
 -- ----------------------------------------------------------
--- 【3】各类奖励与节日福利 (统一后缀：Bonus=现金, Gift=实物)
+-- 【3】各类奖励与节日福利 (Bonus & Festival)
 -- ----------------------------------------------------------
 ('SAFETY_CARD_BONUS', '安全卡奖励', 1, 'INC_OTHER', 'safetyCardBonus', 50, 1, 0, 0, 'aqkjl', 50, '安全奖励'),
 ('ANNUAL_LEAVE_BONUS', '年假奖金', 1, 'INC_OTHER', 'annualLeaveBonus', 51, 1, 0, 0, 'njjj', 51, '年假折现'),
 ('REFERRAL_BONUS', '内推奖金', 1, 'INC_OTHER', 'referralBonus', 52, 1, 0, 0, 'ntjj', 52, '内推奖励'),
 ('BIRTHDAY_BONUS', '生日礼金', 1, 'INC_FESTIVAL', 'birthdayBonus', 53, 0, 0, 0, 'srlj', 53, '生日福利'),
 
--- 节日系列标准化：Bonus 统一代表 Cash
+-- 节日现金/实物
 ('FESTIVAL_SPRING_GIFT', '春节福利', 0, 'INC_FESTIVAL', 'festivalSpringGift', 60, 1, 0, 0, 'cjfw', 60, '实物'),
 ('FESTIVAL_SPRING_BONUS', '春节礼金', 1, 'INC_FESTIVAL', 'festivalSpringBonus', 61, 1, 0, 0, 'cjlj', 61, '现金'),
 ('FESTIVAL_DRAGON_BOAT_GIFT', '端午节福利', 0, 'INC_FESTIVAL', 'festivalDragonBoatGift', 62, 1, 0, 0, 'dwfw', 62, '实物'),
@@ -391,21 +393,34 @@ VALUES
 ('EVENT_EURO_CUP', '欧洲杯激励奖金', 1, 'INC_BONUS', 'eventEuroCup', 70, 1, 0, 0, 'ozb', 70, '欧洲杯奖金'),
 ('EVENT_WORLD_CUP', '世界杯激励奖金', 1, 'INC_BONUS', 'eventWorldCup', 71, 1, 0, 0, 'sjb', 71, '世界杯奖金'),
 
--- 年终奖系列 (统一移除小数点，使用小驼峰)
-('ANNUAL_BONUS_13', '年终奖13薪', 1, 'INC_YEAR_END', 'annualBonus13', 80, 1, 0, 0, 'nzj13', 80, '13薪'),
-('ANNUAL_BONUS_13_5', '年终奖13.5薪', 1, 'INC_YEAR_END', 'annualBonus135', 81, 1, 0, 0, 'nzj135', 81, '13.5薪'),
-('ANNUAL_BONUS_14', '年终奖14薪', 1, 'INC_YEAR_END', 'annualBonus14', 82, 1, 0, 0, 'nzj14', 82, '14薪'),
+-- 年终奖系列
+('ANNUAL_BONUS_14_5', '年终奖14.5薪', 1, 'INC_YEAR_END', 'annualBonus145', 80, 1, 0, 0, 'nzj145', 80, '14.5薪'),
+('ANNUAL_BONUS_15', '年终奖15薪', 1, 'INC_YEAR_END', 'annualBonus15', 81, 1, 0, 0, 'nzj15', 81, '15薪'),
+('ANNUAL_BONUS_15_5', '年终奖15.5薪', 1, 'INC_YEAR_END', 'annualBonus155', 82, 1, 0, 0, 'nzj155', 82, '15.5薪'),
+('ANNUAL_BONUS_16', '年终奖16薪', 1, 'INC_YEAR_END', 'annualBonus16', 83, 1, 0, 0, 'nzj16', 83, '16薪'),
+('ANNUAL_BONUS_16_5', '年终奖16.5薪', 1, 'INC_YEAR_END', 'annualBonus165', 84, 1, 0, 0, 'nzj165', 84, '16.5薪'),
+('ANNUAL_BONUS_17', '年终奖17薪', 1, 'INC_YEAR_END', 'annualBonus17', 85, 1, 0, 0, 'nzj17', 85, '17薪'),
+('ANNUAL_BONUS_17_5', '年终奖17.5薪', 1, 'INC_YEAR_END', 'annualBonus175', 86, 1, 0, 0, 'nzj175', 86, '17.5薪'),
+('ANNUAL_BONUS_18', '年终奖18薪', 1, 'INC_YEAR_END', 'annualBonus18', 87, 1, 0, 0, 'nzj18', 87, '18薪'),
+('ANNUAL_BONUS_18_5', '年终奖18.5薪', 1, 'INC_YEAR_END', 'annualBonus185', 88, 1, 0, 0, 'nzj185', 88, '18.5薪'),
+('ANNUAL_BONUS_19', '年终奖19薪', 1, 'INC_YEAR_END', 'annualBonus19', 89, 1, 0, 0, 'nzj19', 89, '19薪'),
 
 -- 忠诚奖
 ('LOYALTY_BONUS_2Y', '忠诚奖金(二年度)', 1, 'INC_BONUS', 'loyaltyBonus2y', 90, 1, 0, 0, 'zcj2', 90, '满2年'),
 ('LOYALTY_BONUS_5Y', '忠诚奖金(五年度)', 1, 'INC_BONUS', 'loyaltyBonus5y', 91, 1, 0, 0, 'zcj5', 91, '满5年'),
-
--- 报销项
-('EXPENSE_REIMBURSE_ONBOARD', '入职费用报销', 1, 'INC_OTHER', 'expenseReimburseOnboard', 95, 0, 0, 0, 'rzbx', 95, '免税报销'),
-('DEPOSIT_REFUND_CURRENT', '本月押金返还', 1, 'INC_OTHER', 'depositRefundCurrent', 96, 0, 0, 0, 'yjfh', 96, '押金返还'),
+('LOYALTY_BONUS_10Y', '忠诚奖金(十年度)', 1, 'INC_BONUS', 'loyaltyBonus10y', 92, 1, 0, 0, 'zcj10', 92, '满10年'),
 
 -- ----------------------------------------------------------
--- 【4】扣款类
+-- 【4】返还/报销项 (Rebate/Reimbursement - 对应扣款)
+-- ----------------------------------------------------------
+('EXPENSE_REIMBURSE_ONBOARD', '入职费用报销', 1, 'INC_OTHER', 'expenseReimburseOnboard', 95, 0, 0, 0, 'rzbx', 95, '免税报销'),
+('DEPOSIT_REFUND_CURRENT', '本月押金返还', 1, 'INC_OTHER', 'depositRefundCurrent', 96, 0, 0, 0, 'yjfh', 96, '对应押金扣除'),
+('FINE_REBATE', '管理罚款返还', 1, 'INC_OTHER', 'fineRebate', 97, 0, 0, 0, 'fkfh', 97, '罚款申诉退回'),
+('UTILITY_REBATE', '水电网费返还', 1, 'INC_OTHER', 'utilityRebate', 98, 0, 0, 0, 'sdwfh', 98, '水电费多扣返还'),
+('PASSPORT_FEE_REBATE', '护照费用返还', 1, 'INC_OTHER', 'passportFeeRebate', 99, 0, 0, 0, 'hzfh', 99, '护照费多扣返还'),
+
+-- ----------------------------------------------------------
+-- 【5】扣款类 (Deductions)
 -- ----------------------------------------------------------
 ('ABSENT_DEDUCTION', '缺勤扣款', 2, 'DED_ABSENT', 'absentDeduction', 100, 0, 1, 0, 'qqkk', 100, '税前扣'),
 ('LATE_DEDUCTION', '迟到早退扣款', 2, 'DED_LATE', 'lateDeduction', 110, 0, 1, 0, 'cdzt', 110, '税前扣'),
@@ -415,25 +430,25 @@ VALUES
 ('DEPOSIT_DEDUCTION_CURRENT', '本月押金扣除', 2, 'DED_OTHER', 'depositDeductionCurrent', 123, 0, 0, 0, 'byyj', 123, '押金扣'),
 
 -- ----------------------------------------------------------
--- 【5】系统调整
+-- 【6】系统调整与结算
 -- ----------------------------------------------------------
-('RESIGNATION_SETTLEMENT', '离职费用结算', 2, 'DED_OTHER', 'resignationSettlement', 140, 0, 0, 0, 'lzjs', 140, '离职清算'),
+('RESIGNATION_SETTLEMENT', '离职费用结算', 2, 'DED_OTHER', 'resignationSettlement', 140, 0, 0, 0, 'lzjs', 140, '离职清算扣款'),
 ('PREV_MONTH_ADJUSTMENT', '上月补发/续扣', 1, 'INC_OTHER', 'prevMonthAdjustment', 141, 1, 0, 0, 'sybf', 141, '人工调账'),
 
 -- ----------------------------------------------------------
--- 【6】税费与社保
+-- 【7】税费与社保 (Personal SI & Tax)
 -- ----------------------------------------------------------
 ('SI_PENSION_IND', '养老保险(个人)', 3, 'SI_PENSION', 'siPensionInd', 200, 0, 1, 1, 'ylbx', 200, '个人养老'),
 ('SI_MED_IND', '医疗保险(个人)', 3, 'SI_MED', 'siMedInd', 210, 0, 1, 1, 'ylbx', 210, '个人医疗'),
 ('SI_HOUSING_IND', '公积金(个人)', 3, 'SI_HOUSING', 'siHousingInd', 220, 0, 1, 1, 'gjj', 220, '个人公积金'),
+('SI_REISSUE_IND', '个人社保退费/补发', 1, 'INC_OTHER', 'siReissueInd', 230, 0, 0, 0, 'sbgjjbf', 230, '社保多扣返还'),
 ('AUTO_TAX_CALC', '智能个税核算', 3, 'TAX_INCOME', 'autoTaxCalc', 999, 0, 0, 0, 'zngs', 999, '个税终结节点'),
 
 -- ----------------------------------------------------------
--- 【7】公司成本 (不进工资条)
+-- 【8】公司成本 (Employer Cost - 不进个人工资条实发)
 -- ----------------------------------------------------------
 ('ER_PENSION_COMP', '养老保险(公司)', 4, 'ER_PENSION', 'erPensionComp', 300, 0, 0, 1, 'ylbx', 300, '公司成本'),
 ('ER_VISA_COMP', '海外签证费用', 4, 'ER_VISA', 'erVisaComp', 310, 0, 0, 0, 'qzfy', 310, '公司承担签证');
-
 
 
 INSERT INTO salary_calc_pipeline_info
@@ -444,118 +459,194 @@ VALUES
 逻辑特性：计算顺序严格遵循 [基础->补贴->扣款->税->汇总] 阶段，已同步 2026 年最新公积金缴存基数上限。
 维护人：HR-薪酬组 / 技术支撑部', 0, 'system', '2026-04-02 14:11:34', 'system', '2026-04-02 14:11:34');
 
--- ==========================================================
--- 10. 初始化 薪资计算规则表 salary_calc_rule
--- 标准：引用 env_var_name 小驼峰变量，强制 decimal 强转
--- ==========================================================
+-- =================================================================================
+-- 10. 初始化 薪资计算规则表 salary_calc_rule (全量59项大满贯版)
+-- 标准：全部采用 env_var_name (小驼峰) + decimal() 强制防精度丢失 + nil 空值防御
+-- =================================================================================
 TRUNCATE TABLE `salary_calc_rule`;
 
 INSERT INTO `salary_calc_rule`
 (`rule_code`, `rule_name`, `rule_type`, `rule_script`, `return_type`, `sort_value`, `status`, `remark`)
 VALUES
 -- ----------------------------------------------------------
--- 【1】基础薪资阶段 (核心计算)
+-- 【1】基础与考勤绩效 (Base & Perf)
 -- ----------------------------------------------------------
-('BASE_SALARY', '底薪计算', 1,
- 'let base = (baseSalary == nil) ? 0.0M : decimal(baseSalary); monthDays > 0M ? (base / monthDays * attendanceDays) : 0.0M',
- 'Decimal', 10, 1, '按出勤天数折算的底薪'),
+('BASE_SALARY', '基本工资', 1, 'let base = (baseSalary == nil) ? 0.0M : decimal(baseSalary); monthDays > 0M ? (base / monthDays * attendanceDays) : 0.0M', 'Decimal', 10, 1, '底薪折算'),
+('HOUSING_ALLOW', '住房补贴', 1, 'let allow = (housingAllow == nil) ? 0.0M : decimal(housingAllow); monthDays > 0M ? (allow / monthDays * attendanceDays) : 0.0M', 'Decimal', 11, 1, '房补折算'),
+('MEAL_ALLOW', '餐补', 1, 'let allow = (mealAllow == nil) ? 0.0M : decimal(mealAllow); monthDays > 0M ? (allow / monthDays * attendanceDays) : 0.0M', 'Decimal', 12, 1, '餐补折算'),
+('SHIFT_12H_ALLOWANCE', '12小时补贴', 1, 'shift12hAllowance == nil ? 0.0M : decimal(shift12hAllowance)', 'Decimal', 13, 1, '排班补贴'),
+('QUARANTINE_ALLOWANCE', '隔离补贴', 1, 'quarantineAllowance == nil ? 0.0M : decimal(quarantineAllowance)', 'Decimal', 14, 1, '隔离补贴'),
 
-('ATTENDANCE_BONUS', '全勤奖', 1,
- '(isFullAttendance == true) ? (attendanceBonus == nil ? 0.0M : decimal(attendanceBonus)) : 0.0M',
- 'Decimal', 20, 1, '满勤则发放全勤奖'),
-
-('KPI_BONUS', 'KPI绩效计算', 1,
- 'let base = (baseSalary == nil) ? 0.0M : decimal(baseSalary); let coeff = (kpiCoefficient == nil) ? 0.0M : decimal(kpiCoefficient); base * coeff',
- 'Decimal', 30, 1, '底薪 * KPI系数'),
-
--- ----------------------------------------------------------
--- 【2】津贴与奖金阶段 (小驼峰对齐)
--- ----------------------------------------------------------
-('HOUSING_ALLOW', '住房补贴', 1,
- 'let allow = (housingAllow == nil) ? 0.0M : decimal(housingAllow); monthDays > 0M ? (allow / monthDays * attendanceDays) : 0.0M',
- 'Decimal', 40, 1, '按出勤折算的房补'),
-
-('MEAL_ALLOW', '餐补', 1,
- 'let allow = (mealAllow == nil) ? 0.0M : decimal(mealAllow); monthDays > 0M ? (allow / monthDays * attendanceDays) : 0.0M',
- 'Decimal', 50, 1, '按出勤折算的餐补'),
+('OVERTIME_PAY_DAY', '日加班工资', 1, 'overtimePayDay == nil ? 0.0M : decimal(overtimePayDay)', 'Decimal', 20, 1, '按天加班'),
+('OVERTIME_PAY_HOUR', '时加班工资', 1, 'overtimePayHour == nil ? 0.0M : decimal(overtimePayHour)', 'Decimal', 21, 1, '按时加班'),
+('KPI_BONUS', 'KPI绩效', 1, 'let base = (baseSalary == nil) ? 0.0M : decimal(baseSalary); let coeff = (kpiCoefficient == nil) ? 0.0M : decimal(kpiCoefficient); base * coeff', 'Decimal', 30, 1, '绩效系数'),
+('COMMISSION_SALES', '业绩提成', 1, 'commissionSales == nil ? 0.0M : decimal(commissionSales)', 'Decimal', 31, 1, '销售提成'),
+('COMMISSION_AGENT', '代理提成', 1, 'commissionAgent == nil ? 0.0M : decimal(commissionAgent)', 'Decimal', 32, 1, '代理提成'),
+('ATTENDANCE_BONUS', '全勤奖', 1, '(isFullAttendance == true) ? (attendanceBonus == nil ? 0.0M : decimal(attendanceBonus)) : 0.0M', 'Decimal', 40, 1, '满勤触发'),
+('ATTENDANCE_REISSUE', '考勤/薪资补发', 1, 'attendanceReissue == nil ? 0.0M : decimal(attendanceReissue)', 'Decimal', 41, 1, '漏打卡补发'),
 
 -- ----------------------------------------------------------
--- 【3】变动奖金与节日类 (从手工账/配置注入)
+-- 【2】福利、节日与赛事 (Bonus & Festival)
 -- ----------------------------------------------------------
-('SAFETY_CARD_BONUS', '安全卡奖励', 1, 'safetyCardBonus == nil ? 0.0M : decimal(safetyCardBonus)', 'Decimal', 60, 1, '手工账注入'),
-('ANNUAL_LEAVE_BONUS', '年假奖金', 1, 'annualLeaveBonus == nil ? 0.0M : decimal(annualLeaveBonus)', 'Decimal', 70, 1, '手工账注入'),
-('REFERRAL_BONUS', '内推奖金', 1, 'referralBonus == nil ? 0.0M : decimal(referralBonus)', 'Decimal', 80, 1, '手工账注入'),
-('BIRTHDAY_BONUS', '生日礼金', 1, 'birthdayBonus == nil ? 0.0M : decimal(birthdayBonus)', 'Decimal', 90, 1, '手工账注入'),
+('SAFETY_CARD_BONUS', '安全卡奖励', 1, 'safetyCardBonus == nil ? 0.0M : decimal(safetyCardBonus)', 'Decimal', 50, 1, '安全奖励'),
+('ANNUAL_LEAVE_BONUS', '年假奖金', 1, 'annualLeaveBonus == nil ? 0.0M : decimal(annualLeaveBonus)', 'Decimal', 51, 1, '年假折现'),
+('REFERRAL_BONUS', '内推奖金', 1, 'referralBonus == nil ? 0.0M : decimal(referralBonus)', 'Decimal', 52, 1, '内推奖'),
+('BIRTHDAY_BONUS', '生日礼金', 1, 'birthdayBonus == nil ? 0.0M : decimal(birthdayBonus)', 'Decimal', 53, 1, '生日红包'),
 
--- 节日系列 (注意这里对应你 SQL 里的 festival...Bonus)
-('FESTIVAL_SPRING_BONUS', '春节礼金', 1, 'festivalSpringBonus == nil ? 0.0M : decimal(festivalSpringBonus)', 'Decimal', 100, 1, '节日现金'),
-('FESTIVAL_DRAGON_BOAT_BONUS', '端午节礼金', 1, 'festivalDragonBoatBonus == nil ? 0.0M : decimal(festivalDragonBoatBonus)', 'Decimal', 110, 1, '节日现金'),
-('FESTIVAL_MID_AUTUMN_BONUS', '中秋节礼金', 1, 'festivalMidAutumnBonus == nil ? 0.0M : decimal(festivalMidAutumnBonus)', 'Decimal', 120, 1, '节日现金'),
+('FESTIVAL_SPRING_GIFT', '春节福利', 1, 'festivalSpringGift == nil ? 0.0M : decimal(festivalSpringGift)', 'Decimal', 60, 1, '春节实物'),
+('FESTIVAL_SPRING_BONUS', '春节礼金', 1, 'festivalSpringBonus == nil ? 0.0M : decimal(festivalSpringBonus)', 'Decimal', 61, 1, '春节现金'),
+('FESTIVAL_DRAGON_BOAT_GIFT', '端午节福利', 1, 'festivalDragonBoatGift == nil ? 0.0M : decimal(festivalDragonBoatGift)', 'Decimal', 62, 1, '端午实物'),
+('FESTIVAL_DRAGON_BOAT_BONUS', '端午节礼金', 1, 'festivalDragonBoatBonus == nil ? 0.0M : decimal(festivalDragonBoatBonus)', 'Decimal', 63, 1, '端午现金'),
+('FESTIVAL_MID_AUTUMN_GIFT', '中秋节福利', 1, 'festivalMidAutumnGift == nil ? 0.0M : decimal(festivalMidAutumnGift)', 'Decimal', 64, 1, '中秋实物'),
+('FESTIVAL_MID_AUTUMN_BONUS', '中秋节礼金', 1, 'festivalMidAutumnBonus == nil ? 0.0M : decimal(festivalMidAutumnBonus)', 'Decimal', 65, 1, '中秋现金'),
 
--- 赛事激励
-('EVENT_EURO_CUP', '欧洲杯激励奖金', 1, 'eventEuroCup == nil ? 0.0M : decimal(eventEuroCup)', 'Decimal', 130, 1, '赛事专项'),
-
--- ----------------------------------------------------------
--- 【4】扣款类 (统一小驼峰)
--- ----------------------------------------------------------
-('UTILITY_DEDUCTION', '水电网扣费', 1, 'utilityDeduction == nil ? 0.0M : decimal(utilityDeduction)', 'Decimal', 200, 1, '税后扣除项'),
-('FINE_DEDUCTION', '管理罚款', 1, 'fineDeduction == nil ? 0.0M : decimal(fineDeduction)', 'Decimal', 210, 1, '税后扣除项'),
-('ABSENT_DEDUCTION', '缺勤扣款', 1, 'absentDeduction == nil ? 0.0M : decimal(absentDeduction)', 'Decimal', 220, 1, '税前扣除项'),
+('EVENT_EURO_CUP', '欧洲杯激励奖金', 1, 'eventEuroCup == nil ? 0.0M : decimal(eventEuroCup)', 'Decimal', 70, 1, '欧洲杯'),
+('EVENT_WORLD_CUP', '世界杯激励奖金', 1, 'eventWorldCup == nil ? 0.0M : decimal(eventWorldCup)', 'Decimal', 71, 1, '世界杯'),
 
 -- ----------------------------------------------------------
--- 【5】调账类 (统一小驼峰)
+-- 【3】年终奖与忠诚奖 (Year End & Loyalty)
 -- ----------------------------------------------------------
-('OTHER_INCOME_ADJUST', '其他收入调账', 1, 'otherIncomeAdjust == nil ? 0.0M : decimal(otherIncomeAdjust)', 'Decimal', 300, 1, '人工补发'),
-('OTHER_DEDUCT_ADJUST', '其他扣款调账', 1, 'otherDeductAdjust == nil ? 0.0M : decimal(otherDeductAdjust)', 'Decimal', 310, 1, '人工补扣'),
-('PREV_MONTH_ADJUSTMENT', '上月账务调整', 1, 'prevMonthAdjustment == nil ? 0.0M : decimal(prevMonthAdjustment)', 'Decimal', 320, 1, '历史回溯调整'),
+('ANNUAL_BONUS_13', '年终奖13薪', 1, 'annualBonus13 == nil ? 0.0M : decimal(annualBonus13)', 'Decimal', 79, 1, '13薪'),
+('ANNUAL_BONUS_13_5', '年终奖13.5薪', 1, 'annualBonus135 == nil ? 0.0M : decimal(annualBonus135)', 'Decimal', 80, 1, '13.5薪'),
+('ANNUAL_BONUS_14', '年终奖14薪', 1, 'annualBonus14 == nil ? 0.0M : decimal(annualBonus14)', 'Decimal', 81, 1, '14薪'),
+('ANNUAL_BONUS_14_5', '年终奖14.5薪', 1, 'annualBonus145 == nil ? 0.0M : decimal(annualBonus145)', 'Decimal', 82, 1, '14.5薪'),
+('ANNUAL_BONUS_15', '年终奖15薪', 1, 'annualBonus15 == nil ? 0.0M : decimal(annualBonus15)', 'Decimal', 83, 1, '15薪'),
+('ANNUAL_BONUS_15_5', '年终奖15.5薪', 1, 'annualBonus155 == nil ? 0.0M : decimal(annualBonus155)', 'Decimal', 84, 1, '15.5薪'),
+('ANNUAL_BONUS_16', '年终奖16薪', 1, 'annualBonus16 == nil ? 0.0M : decimal(annualBonus16)', 'Decimal', 85, 1, '16薪'),
+('ANNUAL_BONUS_16_5', '年终奖16.5薪', 1, 'annualBonus165 == nil ? 0.0M : decimal(annualBonus165)', 'Decimal', 86, 1, '16.5薪'),
+('ANNUAL_BONUS_17', '年终奖17薪', 1, 'annualBonus17 == nil ? 0.0M : decimal(annualBonus17)', 'Decimal', 87, 1, '17薪'),
+('ANNUAL_BONUS_17_5', '年终奖17.5薪', 1, 'annualBonus175 == nil ? 0.0M : decimal(annualBonus175)', 'Decimal', 88, 1, '17.5薪'),
+('ANNUAL_BONUS_18', '年终奖18薪', 1, 'annualBonus18 == nil ? 0.0M : decimal(annualBonus18)', 'Decimal', 89, 1, '18薪'),
+('ANNUAL_BONUS_18_5', '年终奖18.5薪', 1, 'annualBonus185 == nil ? 0.0M : decimal(annualBonus185)', 'Decimal', 90, 1, '18.5薪'),
+('ANNUAL_BONUS_19', '年终奖19薪', 1, 'annualBonus19 == nil ? 0.0M : decimal(annualBonus19)', 'Decimal', 91, 1, '19薪'),
+
+('LOYALTY_BONUS_2Y', '忠诚奖金(二年度)', 1, 'loyaltyBonus2y == nil ? 0.0M : decimal(loyaltyBonus2y)', 'Decimal', 92, 1, '满2年'),
+('LOYALTY_BONUS_5Y', '忠诚奖金(五年度)', 1, 'loyaltyBonus5y == nil ? 0.0M : decimal(loyaltyBonus5y)', 'Decimal', 93, 1, '满5年'),
+('LOYALTY_BONUS_10Y', '忠诚奖金(十年度)', 1, 'loyaltyBonus10y == nil ? 0.0M : decimal(loyaltyBonus10y)', 'Decimal', 94, 1, '满10年'),
 
 -- ----------------------------------------------------------
--- 【6】终极个税节点
+-- 【4】返还/报销项 (Rebates)
 -- ----------------------------------------------------------
-('AUTO_TAX_CALC', '智能个税核算', 1, '0.0M', 'Decimal', 999, 1, '调用内置个税引擎，结果暂存');
+('EXPENSE_REIMBURSE_ONBOARD', '入职费用报销', 1, 'expenseReimburseOnboard == nil ? 0.0M : decimal(expenseReimburseOnboard)', 'Decimal', 95, 1, '免税报销'),
+('DEPOSIT_REFUND_CURRENT', '本月押金返还', 1, 'depositRefundCurrent == nil ? 0.0M : decimal(depositRefundCurrent)', 'Decimal', 96, 1, '押金返还'),
+('FINE_REBATE', '管理罚款返还', 1, 'fineRebate == nil ? 0.0M : decimal(fineRebate)', 'Decimal', 97, 1, '罚款申诉返还'),
+('UTILITY_REBATE', '水电网费返还', 1, 'utilityRebate == nil ? 0.0M : decimal(utilityRebate)', 'Decimal', 98, 1, '多扣返还'),
+('PASSPORT_FEE_REBATE', '护照费用返还', 1, 'passportFeeRebate == nil ? 0.0M : decimal(passportFeeRebate)', 'Decimal', 99, 1, '护照费返还'),
 
+-- ----------------------------------------------------------
+-- 【5】扣款与调账类 (Deductions & Adjustments)
+-- ----------------------------------------------------------
+('ABSENT_DEDUCTION', '缺勤扣款', 1, 'absentDeduction == nil ? 0.0M : decimal(absentDeduction)', 'Decimal', 100, 1, '税前扣'),
+('LATE_DEDUCTION', '迟到早退扣款', 1, 'lateDeduction == nil ? 0.0M : decimal(lateDeduction)', 'Decimal', 110, 1, '税前扣'),
+('UTILITY_DEDUCTION', '水电网扣款', 1, 'utilityDeduction == nil ? 0.0M : decimal(utilityDeduction)', 'Decimal', 120, 1, '税后扣'),
+('FINE_DEDUCTION', '管理罚款', 1, 'fineDeduction == nil ? 0.0M : decimal(fineDeduction)', 'Decimal', 121, 1, '税后扣'),
+('PASSPORT_FEE_DEDUCTION', '护照费用代扣', 1, 'passportFeeDeduction == nil ? 0.0M : decimal(passportFeeDeduction)', 'Decimal', 122, 1, '护照代扣'),
+('DEPOSIT_DEDUCTION_CURRENT', '本月押金扣除', 1, 'depositDeductionCurrent == nil ? 0.0M : decimal(depositDeductionCurrent)', 'Decimal', 123, 1, '押金扣'),
 
--- ==========================================================
--- 11. 初始化 薪资核算流水线步骤表 salary_calc_pipeline_step
--- 逻辑：底薪 -> 津贴 -> 节日/奖金 -> 扣款 -> 调账 -> 个税
--- ==========================================================
+('RESIGNATION_SETTLEMENT', '离职费用结算', 1, 'resignationSettlement == nil ? 0.0M : decimal(resignationSettlement)', 'Decimal', 140, 1, '离职清算扣款'),
+('PREV_MONTH_ADJUSTMENT', '上月补发/续扣', 1, 'prevMonthAdjustment == nil ? 0.0M : decimal(prevMonthAdjustment)', 'Decimal', 141, 1, '人工回溯调账'),
+
+-- ----------------------------------------------------------
+-- 【6】社保、税费与公司成本 (SI, Tax & ER Costs)
+-- ----------------------------------------------------------
+('SI_PENSION_IND', '养老保险(个人)', 1, 'siPensionInd == nil ? 0.0M : decimal(siPensionInd)', 'Decimal', 200, 1, '个人社保'),
+('SI_MED_IND', '医疗保险(个人)', 1, 'siMedInd == nil ? 0.0M : decimal(siMedInd)', 'Decimal', 210, 1, '个人社保'),
+('SI_HOUSING_IND', '公积金(个人)', 1, 'siHousingInd == nil ? 0.0M : decimal(siHousingInd)', 'Decimal', 220, 1, '个人公积金'),
+('SI_REISSUE_IND', '个人社保退费/补发', 1, 'siReissueInd == nil ? 0.0M : decimal(siReissueInd)', 'Decimal', 230, 1, '社保多扣补发'),
+
+('ER_PENSION_COMP', '养老保险(公司)', 1, 'erPensionComp == nil ? 0.0M : decimal(erPensionComp)', 'Decimal', 300, 1, '公司成本'),
+('ER_VISA_COMP', '海外签证费用', 1, 'erVisaComp == nil ? 0.0M : decimal(erVisaComp)', 'Decimal', 310, 1, '公司承担'),
+
+('AUTO_TAX_CALC', '智能个税核算', 1, '0.0M', 'Decimal', 999, 1, '触发Java内置计税引擎');
+
 TRUNCATE TABLE `salary_calc_pipeline_step`;
 
 INSERT INTO `salary_calc_pipeline_step`
-(`pipeline_code`, `rule_code`, `step_name`, `stage`, `sort_value`, `is_blocking`, `skip_on_null`, `status`)
+(`pipeline_code`, `pipeline_version`, `rule_code`, `rule_name`, `rule_type`, `condition_script`, `stage`, `sort_order`, `block_flag`, `skip_if_null`, `status`)
 VALUES
 -- ----------------------------------------------------------
--- 【阶段一：基础薪资阶段】权重 10-30
+-- 【Stage 1: 基础与绩效计算】 权重 10-99
 -- ----------------------------------------------------------
-('OFFICIAL_STAFF_2026', 'BASE_SALARY', '底薪计算', '基础薪资阶段', 10, 1, 0, 1),
-('OFFICIAL_STAFF_2026', 'ATTENDANCE_BONUS', '全勤奖', '基础薪资阶段', 20, 0, 1, 1),
-('OFFICIAL_STAFF_2026', 'KPI_BONUS', 'KPI绩效计算', '基础薪资阶段', 30, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'BASE_SALARY', '基本工资', 1, NULL, 1, 10, 1, 0, 1),
+('OFFICIAL_STAFF_2026', 1, 'ATTENDANCE_BONUS', '全勤奖', 1, NULL, 1, 20, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'OVERTIME_PAY_DAY', '日加班工资', 1, NULL, 1, 30, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'OVERTIME_PAY_HOUR', '时加班工资', 1, NULL, 1, 40, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'KPI_BONUS', 'KPI绩效', 1, NULL, 1, 50, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'COMMISSION_SALES', '业绩提成', 1, NULL, 1, 60, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'COMMISSION_AGENT', '代理提成', 1, NULL, 1, 70, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ATTENDANCE_REISSUE', '考勤/薪资补发', 1, NULL, 1, 80, 0, 1, 1),
 
 -- ----------------------------------------------------------
--- 【阶段二：津贴与奖金阶段】权重 40-150
+-- 【Stage 2: 补贴与各项奖励】 权重 100-399
 -- ----------------------------------------------------------
-('OFFICIAL_STAFF_2026', 'HOUSING_ALLOW', '住房补贴', '津贴与奖金阶段', 40, 0, 1, 1),
-('OFFICIAL_STAFF_2026', 'MEAL_ALLOW', '餐补', '津贴与奖金阶段', 50, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'HOUSING_ALLOW', '住房补贴', 1, NULL, 2, 100, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'MEAL_ALLOW', '餐补', 1, NULL, 2, 110, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'SHIFT_12H_ALLOWANCE', '12小时补贴', 1, NULL, 2, 120, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'QUARANTINE_ALLOWANCE', '隔离补贴', 1, NULL, 2, 130, 0, 1, 1),
 
--- 节日激励 (核心：空值跳过=1，非节日月份自动隐藏)
-('OFFICIAL_STAFF_2026', 'FESTIVAL_SPRING_BONUS', '春节礼金', '津贴与奖金阶段', 100, 0, 1, 1),
-('OFFICIAL_STAFF_2026', 'FESTIVAL_DRAGON_BOAT_BONUS', '端午节礼金', '津贴与奖金阶段', 110, 0, 1, 1),
-('OFFICIAL_STAFF_2026', 'FESTIVAL_MID_AUTUMN_BONUS', '中秋节礼金', '津贴与奖金阶段', 120, 0, 1, 1),
-('OFFICIAL_STAFF_2026', 'EVENT_EURO_CUP', '欧洲杯激励奖金', '津贴与奖金阶段', 150, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'SAFETY_CARD_BONUS', '安全卡奖励', 1, NULL, 2, 140, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_LEAVE_BONUS', '年假奖金', 1, NULL, 2, 150, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'REFERRAL_BONUS', '内推奖金', 1, NULL, 2, 160, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'BIRTHDAY_BONUS', '生日礼金', 1, NULL, 2, 170, 0, 1, 1),
+
+('OFFICIAL_STAFF_2026', 1, 'FESTIVAL_SPRING_GIFT', '春节福利', 1, NULL, 2, 180, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'FESTIVAL_SPRING_BONUS', '春节礼金', 1, NULL, 2, 190, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'FESTIVAL_DRAGON_BOAT_GIFT', '端午节福利', 1, NULL, 2, 200, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'FESTIVAL_DRAGON_BOAT_BONUS', '端午节礼金', 1, NULL, 2, 210, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'FESTIVAL_MID_AUTUMN_GIFT', '中秋节福利', 1, NULL, 2, 220, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'FESTIVAL_MID_AUTUMN_BONUS', '中秋节礼金', 1, NULL, 2, 230, 0, 1, 1),
+
+('OFFICIAL_STAFF_2026', 1, 'EVENT_EURO_CUP', '欧洲杯激励奖金', 1, NULL, 2, 240, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'EVENT_WORLD_CUP', '世界杯激励奖金', 1, NULL, 2, 250, 0, 1, 1),
+
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_13', '年终奖13薪', 1, NULL, 2, 300, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_13_5', '年终奖13.5薪', 1, NULL, 2, 301, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_14', '年终奖14薪', 1, NULL, 2, 302, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_14_5', '年终奖14.5薪', 1, NULL, 2, 303, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_15', '年终奖15薪', 1, NULL, 2, 304, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_15_5', '年终奖15.5薪', 1, NULL, 2, 305, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_16', '年终奖16薪', 1, NULL, 2, 306, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_16_5', '年终奖16.5薪', 1, NULL, 2, 307, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_17', '年终奖17薪', 1, NULL, 2, 308, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_17_5', '年终奖17.5薪', 1, NULL, 2, 309, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_18', '年终奖18薪', 1, NULL, 2, 310, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_18_5', '年终奖18.5薪', 1, NULL, 2, 311, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ANNUAL_BONUS_19', '年终奖19薪', 1, NULL, 2, 312, 0, 1, 1),
+
+('OFFICIAL_STAFF_2026', 1, 'LOYALTY_BONUS_2Y', '忠诚奖金(二年度)', 1, NULL, 2, 320, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'LOYALTY_BONUS_5Y', '忠诚奖金(五年度)', 1, NULL, 2, 330, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'LOYALTY_BONUS_10Y', '忠诚奖金(十年度)', 1, NULL, 2, 340, 0, 1, 1),
 
 -- ----------------------------------------------------------
--- 【阶段三：扣款与社保阶段】权重 200-250
+-- 【Stage 3: 考勤扣减与法务代扣】 权重 400-599
 -- ----------------------------------------------------------
-('OFFICIAL_STAFF_2026', 'ABSENT_DEDUCTION', '缺勤扣款', '扣款与社保阶段', 200, 0, 1, 1),
-('OFFICIAL_STAFF_2026', 'UTILITY_DEDUCTION', '水电网扣费', '扣款与社保阶段', 210, 0, 1, 1),
-('OFFICIAL_STAFF_2026', 'FINE_DEDUCTION', '管理罚款', '扣款与社保阶段', 220, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ABSENT_DEDUCTION', '缺勤扣款', 1, NULL, 3, 400, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'LATE_DEDUCTION', '迟到早退扣款', 1, NULL, 3, 410, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'UTILITY_DEDUCTION', '水电网扣款', 1, NULL, 3, 420, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'FINE_DEDUCTION', '管理罚款', 1, NULL, 3, 430, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'PASSPORT_FEE_DEDUCTION', '护照费用代扣', 1, NULL, 3, 440, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'DEPOSIT_DEDUCTION_CURRENT', '本月押金扣除', 1, NULL, 3, 450, 0, 1, 1),
+
+('OFFICIAL_STAFF_2026', 1, 'SI_PENSION_IND', '养老保险(个人)', 1, NULL, 3, 460, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'SI_MED_IND', '医疗保险(个人)', 1, NULL, 3, 470, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'SI_HOUSING_IND', '公积金(个人)', 1, NULL, 3, 480, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ER_PENSION_COMP', '养老保险(公司)', 1, NULL, 3, 490, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'ER_VISA_COMP', '海外签证费用', 1, NULL, 3, 500, 0, 1, 1),
 
 -- ----------------------------------------------------------
--- 【阶段四：调账与结算阶段】权重 300-999
+-- 【Stage 5: 汇总结算与返还调账】 权重 600-899
 -- ----------------------------------------------------------
-('OFFICIAL_STAFF_2026', 'OTHER_INCOME_ADJUST', '其他收入调账', '调账与结算阶段', 300, 0, 1, 1),
-('OFFICIAL_STAFF_2026', 'OTHER_DEDUCT_ADJUST', '其他扣款调账', '调账与结算阶段', 310, 0, 1, 1),
-('OFFICIAL_STAFF_2026', 'PREV_MONTH_ADJUSTMENT', '上月账务调整', '调账与结算阶段', 320, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'EXPENSE_REIMBURSE_ONBOARD', '入职费用报销', 1, NULL, 5, 600, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'DEPOSIT_REFUND_CURRENT', '本月押金返还', 1, NULL, 5, 610, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'FINE_REBATE', '管理罚款返还', 1, NULL, 5, 620, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'UTILITY_REBATE', '水电网费返还', 1, NULL, 5, 630, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'PASSPORT_FEE_REBATE', '护照费用返还', 1, NULL, 5, 640, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'SI_REISSUE_IND', '个人社保退费/补发', 1, NULL, 5, 650, 0, 1, 1),
 
--- 终极步骤：个税核算 (必须是最后一步，权重最高)
-('OFFICIAL_STAFF_2026', 'AUTO_TAX_CALC', '智能个税核算', '调账与结算阶段', 999, 1, 0, 1);
+('OFFICIAL_STAFF_2026', 1, 'PREV_MONTH_ADJUSTMENT', '上月补发/续扣', 1, NULL, 5, 660, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'RESIGNATION_SETTLEMENT', '离职费用结算', 1, NULL, 5, 670, 0, 1, 1),
+
+-- ----------------------------------------------------------
+-- 【Stage 4: 个税核心 (最终节点)】 权重 999
+-- ----------------------------------------------------------
+('OFFICIAL_STAFF_2026', 1, 'AUTO_TAX_CALC', '智能个税核算', 1, NULL, 4, 999, 1, 0, 1);
