@@ -166,10 +166,10 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
                 });
             }
         }
-        // ==========================================
-        // 5. 注入手工账变动数据（水电费、罚款等）
-        // 逻辑：查询当前周期、该员工、且状态为“已生效”的调账项
-        // ==========================================
+// ==========================================
+// 5. 注入手工账变动数据（水电费、罚款等）
+// 🌟 修正：通过 ItemConfig 转换，确保注入的是小驼峰变量名
+// ==========================================
         List<SalaryAdjustment> adjustments = iSalaryAdjustmentService.lambdaQuery()
                 .eq(SalaryAdjustment::getPeriodId, periodId)
                 .eq(SalaryAdjustment::getEmployeeId, employeeId)
@@ -177,10 +177,30 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
                 .list();
 
         if (!CollectionUtils.isEmpty(adjustments)) {
+            // 1. 提取本次涉及的所有 itemCode
+            Set<String> itemCodes = adjustments.stream()
+                    .map(SalaryAdjustment::getItemCode)
+                    .collect(Collectors.toSet());
+
+            // 2. 批量获取配置字典，建立 Code -> EnvVarName 的映射
+            Map<String, String> codeToVarMap = iSalaryItemConfigService.lambdaQuery()
+                    .in(SalaryItemConfig::getItemCode, itemCodes)
+                    .list()
+                    .stream()
+                    .collect(Collectors.toMap(SalaryItemConfig::getItemCode, SalaryItemConfig::getEnvVarName));
+
+            // 3. 按照标准注入 env
             adjustments.forEach(adj -> {
-                // 将调账金额以 itemCode 为变量名注入，如 UTILITY_DEDUCTION
-                // Aviator 脚本可以直接通过变量名访问该金额
-                env.put(adj.getItemCode(), adj.getSettlementAmount());
+                String varName = codeToVarMap.get(adj.getItemCode());
+                if (StringUtils.isNotBlank(varName)) {
+                    // 🚀 现在注入的将是 festivalDragonBoatBonus，而不是全大写了！
+                    env.put(varName, adj.getSettlementAmount());
+                    log.debug("手工账注入成功: 变量名={}, 金额={}", varName, adj.getSettlementAmount());
+                } else {
+                    // 兜底逻辑：如果没配 envVarName，报警但注入 Code 防止计算报错
+                    env.put(adj.getItemCode(), adj.getSettlementAmount());
+                    log.warn("⚠️ 薪资项目 [{}] 未配置环境变量名，已降级使用 ItemCode 注入", adj.getItemCode());
+                }
             });
         }
         // ==========================================
