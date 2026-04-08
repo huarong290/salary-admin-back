@@ -192,14 +192,23 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
             // 3. 按照标准注入 env
             adjustments.forEach(adj -> {
                 String varName = codeToVarMap.get(adj.getItemCode());
+                // 🌟🌟🌟 核心修复：必须根据 adjustType 赋予正负号 🌟🌟🌟
+                BigDecimal finalAmount = adj.getSettlementAmount();
+                if (adj.getAdjustType() != null && adj.getAdjustType() == 2) {
+                    // 如果是扣减(2)，强制转为负数，防止数据库正数穿透
+                    finalAmount = finalAmount.abs().negate();
+                } else {
+                    // 如果是增加(1)，强制确保是正数
+                    finalAmount = finalAmount.abs();
+                }
                 if (StringUtils.isNotBlank(varName)) {
-                    // 🚀 现在注入的将是 festivalDragonBoatBonus，而不是全大写了！
-                    env.put(varName, adj.getSettlementAmount());
-                    log.debug("手工账注入成功: 变量名={}, 金额={}", varName, adj.getSettlementAmount());
+                    // 注入带正确符号的金额 (如：-40)
+                    env.put(varName, finalAmount);
+                    log.debug("手工账注入成功: 变量名={}, 金额={}", varName, finalAmount);
                 } else {
                     // 兜底逻辑：如果没配 envVarName，报警但注入 Code 防止计算报错
-                    env.put(adj.getItemCode(), adj.getSettlementAmount());
-                    log.warn("⚠️ 薪资项目 [{}] 未配置环境变量名，已降级使用 ItemCode 注入", adj.getItemCode());
+                    env.put(adj.getItemCode(), finalAmount);
+                    log.warn("⚠️ 薪资项目 [{}] 未配置环境变量名，已降级使用 ItemCode 注入", finalAmount);
                 }
             });
         }

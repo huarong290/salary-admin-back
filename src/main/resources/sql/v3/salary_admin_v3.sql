@@ -577,7 +577,7 @@ CREATE TABLE `salary_adjustment`
     `item_code`         varchar(50)    NOT NULL COMMENT '薪资项编码 (如：HOLIDAY_BONUS, LATE_DEDUCTION)',
     `item_name`         varchar(50)    NOT NULL COMMENT '项目名称 (如：中秋节礼金, 迟到扣款)',
 
-    `currency`          varchar(3)     NOT NULL DEFAULT 'CNY' COMMENT '原币种代码 (ISO 4217, 如 CNY, USD)',
+    `currency`          varchar(20)     NOT NULL DEFAULT 'CNY' COMMENT '原币种代码 (ISO 4217, 如 CNY, USD)',
     `original_amount`   decimal(15, 4) NOT NULL DEFAULT '0.0000' COMMENT '原币发生金额',
     `exchange_rate`     decimal(10, 6) NOT NULL DEFAULT '1.000000' COMMENT '当期核算汇率 (原币兑换本币的汇率)',
     `settlement_amount` decimal(15, 4) NOT NULL DEFAULT '0.0000' COMMENT '折算本币金额 (实际参与引擎运算的金额)',

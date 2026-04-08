@@ -187,12 +187,13 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         BigDecimal incomeTotal = BigDecimal.ZERO;
         BigDecimal deductionTotal = BigDecimal.ZERO;
         BigDecimal taxTotal = BigDecimal.ZERO;
+        BigDecimal companyExpenseTotal = BigDecimal.ZERO; // 公司成本累加器
 
         SalarySnapshotDTO snapshot = new SalarySnapshotDTO();
         snapshot.setIncome(new ArrayList<>());
         snapshot.setDeduction(new ArrayList<>());
         snapshot.setTax(new ArrayList<>());
-
+        snapshot.setCompanyExpense(new ArrayList<>()); // 防止 case 4 发生空指针异常
         // 3. 驱动流水线 (纯内存试算)
         for (SalaryCalcPipelineStep step : steps) {
             String ruleCode = step.getRuleCode();
@@ -214,23 +215,51 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 }
 
                 env.put(ruleCode, stepResult);
-                // 🌟 【架构师优化】：抛弃按 Stage 死板判断分类的做法，直接取配置表的真实属性
+                // 抛弃按 Stage 死板判断分类的做法，直接取配置表的真实属性
                 SalaryItemConfig config = itemConfigMap.get(ruleCode);
                 int itemType = config != null ? config.getItemCategory() : 1;
-
+                // 🌟🌟🌟 架构师终极魔法：动态路由拦截 🌟🌟🌟
+                // 如果是收入类 (1)，但算出来是负数，强行将其“叛变”为扣款类 (2)，并取绝对值！
+                if (itemType == 1 && stepResult.compareTo(BigDecimal.ZERO) < 0) {
+                    itemType = 2; // 强行转化为扣款类
+                    stepResult = stepResult.abs(); // 金额转为正数，以符合扣款池的累加规则
+                }
+                // 针对不同类别，进行绝对值防御，并规范前端展示金额
+                BigDecimal displayAmount = (itemType == 1) ? stepResult : stepResult.abs();
                 SalaryDetailItemDTO snapshotItem = SalaryDetailItemDTO.builder()
                         .itemCode(ruleCode)
                         .itemName(step.getRuleName())
-                        .settlementAmount(stepResult)
+                        .settlementAmount(displayAmount)
                         .source("SYSTEM_CALC_PREVIEW")
                         .calcLog("公式规则: " + ruleCode)
                         .sort(step.getSortOrder())
                         .build();
 
+                // 按类型放入快照，并进行动态防御累加
                 switch (itemType) {
-                    case 1: snapshot.getIncome().add(snapshotItem); incomeTotal = incomeTotal.add(stepResult); break;
-                    case 2: snapshot.getDeduction().add(snapshotItem); deductionTotal = deductionTotal.add(stepResult); break;
-                    case 3: snapshot.getTax().add(snapshotItem); taxTotal = taxTotal.add(stepResult); break;
+                    case 1:
+                        snapshot.getIncome().add(snapshotItem);
+                        // 收入类：正数加钱，负数减钱（如：PREV_MONTH_ADJUSTMENT 传入 -40），逻辑完美
+                        incomeTotal = incomeTotal.add(stepResult);
+                        break;
+                    case 2:
+                        snapshot.getDeduction().add(snapshotItem);
+                        // 扣款类防御：无论传入正负，一律转绝对值累加到扣款池！
+                        // 防止 subtract 时“负负得正”加钱
+                        deductionTotal = deductionTotal.add(stepResult.abs());
+                        break;
+                    case 3:
+                        snapshot.getTax().add(snapshotItem);
+                        // 税费类防御：同理转绝对值
+                        taxTotal = taxTotal.add(stepResult.abs());
+                        break;
+                    case 4:
+                        snapshot.getCompanyExpense().add(snapshotItem);
+                        //  公司成本防御
+                        companyExpenseTotal = companyExpenseTotal.add(stepResult.abs());
+                        break;
+                    default:
+                        break;
                 }
             } catch (Exception e) {
                 if (step.getBlockFlag() == 1) throw new BusinessException("预览中断: [" + ruleCode + "] 异常 - " + e.getMessage());
@@ -303,7 +332,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
 
         // 2. 准备原材料 (Context Env)
         Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion);
-        // 🌟 【架构师优化】：提取档案溯源快照
+        // 提取档案溯源快照
         List<ArchiveSnapshot> usedArchives =
                 (List<ArchiveSnapshot>) env.get("_usedArchives");
         // 初始化数据载体
@@ -365,6 +394,14 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 SalaryItemConfig config = itemConfigMap.get(ruleCode);
                 Long itemConfigId = config != null ? config.getId() : 0L;
                 int itemType = config != null ? config.getItemCategory() : 1;
+                // 动态路由拦截
+                // 如果是收入类 (1)，但算出来是负数，强行将其“叛变”为扣款类 (2)，并取绝对值！
+                if (itemType == 1 && stepResult.compareTo(BigDecimal.ZERO) < 0) {
+                    itemType = 2; // 强行转化为扣款类
+                    stepResult = stepResult.abs(); // 金额转为正数，以符合扣款池的累加规则
+                }
+                // 针对不同类别，进行绝对值防御，确保落库和展示的金额干净无负号
+                BigDecimal displayAmount = (itemType == 1) ? stepResult : stepResult.abs();
                 SalaryItemDetail detail = new SalaryItemDetail()
                         .setPeriodId(periodId)
                         .setEmployeeId(employeeId)
@@ -372,7 +409,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                         .setItemConfigId(itemConfigId)
                         .setItemCode(ruleCode)
                         .setItemName(step.getRuleName())
-                        .setSettlementAmount(stepResult)
+                        .setSettlementAmount(displayAmount)
                         .setSettlementCurrency("CNY")
                         .setItemType(itemType)
                         .setSourceType(2) // 2-引擎计算
@@ -383,7 +420,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 SalaryDetailItemDTO snapshotItem = SalaryDetailItemDTO.builder()
                         .itemCode(ruleCode)
                         .itemName(step.getRuleName())
-                        .settlementAmount(stepResult)
+                        .settlementAmount(displayAmount)
                         .source("SYSTEM_CALC")
                         .calcLog("公式规则: " + ruleCode) // 记录日志快照
                         .sort(step.getSortOrder())
@@ -393,19 +430,23 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                 switch (itemType) {
                     case 1:
                         snapshot.getIncome().add(snapshotItem);
+                        // 收入类：保持原逻辑，正数加钱，负数减钱
                         incomeTotal = incomeTotal.add(stepResult);
                         break;
                     case 2:
                         snapshot.getDeduction().add(snapshotItem);
-                        deductionTotal = deductionTotal.add(stepResult);
+                        // 扣款类防御，转为绝对值累加到扣款池
+                        deductionTotal = deductionTotal.add(stepResult.abs());
                         break;
                     case 3:
                         snapshot.getTax().add(snapshotItem);
-                        taxTotal = taxTotal.add(stepResult);
+                        // 税费类防御，转为绝对值累加
+                        taxTotal = taxTotal.add(stepResult.abs());
                         break;
                     case 4:
                         snapshot.getCompanyExpense().add(snapshotItem);
-                        companyExpenseTotal = companyExpenseTotal.add(stepResult);
+                        // 公司支出防御，转为绝对值累加
+                        companyExpenseTotal = companyExpenseTotal.add(stepResult.abs());
                         break;
                     default:
                         break;
