@@ -382,11 +382,11 @@ VALUES
 ('BIRTHDAY_BONUS', '生日礼金', 1, 'INC_FESTIVAL', 'birthdayBonus', 53, 0, 0, 0, 'srlj', 53, '生日福利'),
 
 -- 节日现金/实物
-('FESTIVAL_SPRING_GIFT', '春节福利', 0, 'INC_FESTIVAL', 'festivalSpringGift', 60, 1, 0, 0, 'cjfw', 60, '实物'),
+('FESTIVAL_SPRING_GIFT', '春节福利', 1, 'INC_FESTIVAL', 'festivalSpringGift', 60, 1, 0, 0, 'cjfw', 60, '实物'),
 ('FESTIVAL_SPRING_BONUS', '春节礼金', 1, 'INC_FESTIVAL', 'festivalSpringBonus', 61, 1, 0, 0, 'cjlj', 61, '现金'),
-('FESTIVAL_DRAGON_BOAT_GIFT', '端午节福利', 0, 'INC_FESTIVAL', 'festivalDragonBoatGift', 62, 1, 0, 0, 'dwfw', 62, '实物'),
+('FESTIVAL_DRAGON_BOAT_GIFT', '端午节福利', 1, 'INC_FESTIVAL', 'festivalDragonBoatGift', 62, 1, 0, 0, 'dwfw', 62, '实物'),
 ('FESTIVAL_DRAGON_BOAT_BONUS', '端午节礼金', 1, 'INC_FESTIVAL', 'festivalDragonBoatBonus', 63, 1, 0, 0, 'dwlj', 63, '现金'),
-('FESTIVAL_MID_AUTUMN_GIFT', '中秋节福利', 0, 'INC_FESTIVAL', 'festivalMidAutumnGift', 64, 1, 0, 0, 'zqfw', 64, '实物'),
+('FESTIVAL_MID_AUTUMN_GIFT', '中秋节福利', 1, 'INC_FESTIVAL', 'festivalMidAutumnGift', 64, 1, 0, 0, 'zqfw', 64, '实物'),
 ('FESTIVAL_MID_AUTUMN_BONUS', '中秋节礼金', 1, 'INC_FESTIVAL', 'festivalMidAutumnBonus', 65, 1, 0, 0, 'zqlj', 65, '现金'),
 
 -- 赛事激励
