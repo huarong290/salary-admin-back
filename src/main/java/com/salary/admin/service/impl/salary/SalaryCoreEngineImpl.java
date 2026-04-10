@@ -171,7 +171,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         if (steps.isEmpty()) throw new BusinessException("薪资管道未配置有效的核算步骤！");
 
         // 2. 准备原材料
-        Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion);
+        Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion,reqDTO.getArchiveId());
         // 提取埋点注入的所用档案列表，用于审计溯源和UI展示
         List<ArchiveSnapshot> usedArchives =
                 (List<ArchiveSnapshot>) env.get("_usedArchives");
@@ -331,7 +331,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         }
 
         // 2. 准备原材料 (Context Env)
-        Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion);
+        Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion, reqDTO.getArchiveId());
         // 提取档案溯源快照
         List<ArchiveSnapshot> usedArchives =
                 (List<ArchiveSnapshot>) env.get("_usedArchives");

@@ -1,7 +1,7 @@
 package com.salary.admin.service.impl.salary;
 
 import cn.hutool.core.collection.CollUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.common.PageResult;
@@ -11,7 +11,6 @@ import com.salary.admin.mapper.ext.SalaryKpiRecordExtMapper;
 import com.salary.admin.model.dto.salary.kpi.KpiBatchInitReqDTO;
 import com.salary.admin.model.dto.salary.kpi.KpiEvaluateReqDTO;
 import com.salary.admin.model.dto.salary.kpi.KpiRecordQueryReqDTO;
-import com.salary.admin.model.entity.salary.SalaryEmployee;
 import com.salary.admin.model.entity.salary.SalaryKpiRecord;
 import com.salary.admin.model.entity.salary.SalaryPeriod;
 import com.salary.admin.model.vo.salary.kpi.SalaryKpiRecordVO;
@@ -26,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,47 +49,14 @@ public class SalaryKpiRecordServiceImpl extends ServiceImpl<SalaryKpiRecordExtMa
 
     @Override
     public PageResult<SalaryKpiRecordVO> getKpiRecordPage(KpiRecordQueryReqDTO reqDTO) {
-        // 1. 构建查询条件
-        LambdaQueryWrapper<SalaryKpiRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(reqDTO.getSettlementMonth()), SalaryKpiRecord::getSettlementMonth, reqDTO.getSettlementMonth());
-        wrapper.eq(reqDTO.getAuditStatus() != null, SalaryKpiRecord::getAuditStatus, reqDTO.getAuditStatus());
-        wrapper.eq(SalaryKpiRecord::getEffectiveFlag, 1); // 永远只查当前生效版本
-        wrapper.orderByDesc(SalaryKpiRecord::getCreateTime);
+        // 1. 构建 MyBatis-Plus 泛型为 VO 的分页对象
+        Page<SalaryKpiRecordVO> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
 
-        // 2. 执行分页查询
-        Page<SalaryKpiRecord> page = new Page<>(reqDTO.getPageNum(), reqDTO.getPageSize());
-        Page<SalaryKpiRecord> kpiPage = this.page(page, wrapper);
+        // 2. 直接调用自定义 XML 执行连表查询
+        IPage<SalaryKpiRecordVO> resultPage = salaryKpiRecordExtMapper.selectKpiRecordPage(page, reqDTO);
 
-        if (CollUtil.isEmpty(kpiPage.getRecords())) {
-            return PageResult.empty();
-        }
-
-        // 3. 提取所有关联的员工ID
-        Set<Long> empIds = kpiPage.getRecords().stream()
-                .map(SalaryKpiRecord::getEmployeeId)
-                .collect(Collectors.toSet());
-
-        // 4. 内存级聚合防 N+1：批量查询员工基础信息
-        Map<Long, SalaryEmployee> empMap = iSalaryEmployeeService.listByIds(empIds).stream()
-                .collect(Collectors.toMap(SalaryEmployee::getId, e -> e));
-
-
-        // 5. 组装 VO 视图对象
-        List<SalaryKpiRecordVO> voList = kpiPage.getRecords().stream().map(record -> {
-            //  核心转换交由 MapStruct 处理
-            SalaryKpiRecordVO vo = kpiRecordConvert.toVO(record);
-
-            //  手动回填外键级联信息
-            SalaryEmployee emp = empMap.get(record.getEmployeeId());
-            if (emp != null) {
-                vo.setEmployeeName(emp.getEmployeeName());
-                vo.setEmployeeCode(emp.getEmployeeCode());
-                vo.setDepartmentName(emp.getDepartment());
-            }
-            return vo;
-        }).collect(Collectors.toList());
-
-        return  PageResult.of(kpiPage,voList);
+        // 3. 封装标准 PageResult 返回
+        return PageResult.of(resultPage);
     }
 
     @Override

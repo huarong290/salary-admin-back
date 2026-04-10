@@ -12,6 +12,7 @@ import com.salary.admin.model.dto.calccontext.CalcContextQueryReqDTO;
 import com.salary.admin.model.dto.salary.snapshot.ArchiveSnapshot;
 import com.salary.admin.model.entity.salary.*;
 import com.salary.admin.model.vo.calccontext.CalcContextVO;
+import com.salary.admin.model.vo.salary.archive.SalaryArchiveVO;
 import com.salary.admin.service.ISalaryAdjustmentService;
 import com.salary.admin.service.ISalaryKpiRecordService;
 import com.salary.admin.service.salary.*;
@@ -67,7 +68,7 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
     }
 
     @Override
-    public Map<String, Object> buildEmployeeContext(Long periodId, Long employeeId, String pipelineCode, Integer pipelineVersion) {
+    public Map<String, Object> buildEmployeeContext(Long periodId, Long employeeId, String pipelineCode, Integer pipelineVersion, Long specifyArchiveId) {
         log.debug("开始组装薪资核算上下文 Env | 周期: {}, 员工: {}", periodId, employeeId);
         Map<String, Object> env = new HashMap<>();
 
@@ -139,7 +140,16 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         // ==========================================
         // 4. 获取薪资档案明细信息 (以最新生效版本作为基础托底)
         // ==========================================
-        var archive = iSalaryArchiveService.getLatestEffectiveArchive(employeeId);
+        SalaryArchiveVO archive;
+        if (specifyArchiveId != null) {
+            // 【时间旅行模式】：精准提取 HR 指定的历史版本档案详情 (底层会把 archiveItems 也查出来)
+            archive = iSalaryArchiveService.getArchiveDetail(specifyArchiveId);
+            log.info("🕒 触发追溯核算：强制使用指定历史薪资档案 ID: {}", specifyArchiveId);
+        } else {
+            // 【默认模式】：取该员工当前最新生效的托底档案
+            archive = iSalaryArchiveService.getLatestEffectiveArchive(employeeId);
+        }
+
         if (archive == null) {
             throw new BusinessException("员工 [" + employee.getEmployeeName() + "] 缺失有效的薪资档案，请先定薪！");
         }

@@ -27,4 +27,44 @@
         id, employee_id, period_id, settlement_month, kpi_grade, kpi_score, kpi_coefficient, evaluate_by, evaluate_remark, audit_status, effective_flag, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
+
+    <select id="selectKpiRecordPage" resultType="com.salary.admin.model.vo.salary.kpi.SalaryKpiRecordVO">
+        SELECT
+        k.id,
+        k.employee_id,
+        k.period_id,
+        k.settlement_month,
+        k.kpi_grade,
+        k.kpi_score,
+        k.kpi_coefficient,
+        k.evaluate_by,
+        k.evaluate_remark,
+        k.audit_status,
+        k.effective_flag,
+        k.create_time,
+        k.update_time,
+        e.employee_name,
+        e.employee_code,
+        e.department AS department_name
+        FROM salary_kpi_record k
+        LEFT JOIN salary_employee e ON k.employee_id = e.id
+        <where>
+            k.delete_flag = 0
+            AND e.delete_flag = 0
+            AND k.effective_flag = 1 <if test="req.settlementMonth != null and req.settlementMonth != ''">
+            AND k.settlement_month = #{req.settlementMonth}
+        </if>
+
+            <if test="req.auditStatus != null">
+                AND k.audit_status = #{req.auditStatus}
+            </if>
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (
+                e.employee_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR e.employee_code LIKE CONCAT('%', #{req.keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY k.create_time DESC
+    </select>
 </mapper>

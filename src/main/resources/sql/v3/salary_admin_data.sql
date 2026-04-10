@@ -357,10 +357,11 @@ VALUES
 -- 【1】收入类 - 档案固定项 (Fixed Items)
 -- ----------------------------------------------------------
 ('BASE_SALARY', '基本工资', 1, 'INC_BASE', 'baseSalary', 10, 1, 0, 1, 'jbgz', 10, '核心底薪'),
-('HOUSING_ALLOW', '住房补贴', 1, 'INC_ALLOWANCE', 'housingAllow', 20, 1, 0, 1, 'zfbt', 11, '每月固定房补'),
-('MEAL_ALLOW', '餐补', 1, 'INC_ALLOWANCE', 'mealAllow', 30, 0, 0, 1, 'cb', 12, '固定餐补'),
-('SHIFT_12H_ALLOWANCE', '12小时补贴', 1, 'INC_ALLOWANCE', 'shift12hAllowance', 12, 1, 0, 1, '12xsbt', 13, '特殊排班补贴'),
-('QUARANTINE_ALLOWANCE', '隔离补贴', 1, 'INC_SUBSIDY', 'quarantineAllowance', 13, 1, 0, 0, 'glbt', 14, '特殊隔离补贴'),
+('HOUSING_ALLOW', '住房补贴', 1, 'INC_ALLOWANCE', 'housingAllow', 11, 1, 0, 1, 'zfbt', 11, '每月固定房补'),
+('MEAL_ALLOW', '餐补', 1, 'INC_ALLOWANCE', 'mealAllow', 12, 0, 0, 1, 'cb', 12, '固定餐补'),
+('SHIFT_12H_ALLOWANCE', '12小时补贴', 1, 'INC_ALLOWANCE', 'shift12hAllowance', 13, 1, 0, 1, '12xsbt', 13, '特殊排班补贴'),
+('QUARANTINE_ALLOWANCE', '隔离补贴', 1, 'INC_SUBSIDY', 'quarantineAllowance', 14, 1, 0, 0, 'glbt', 14, '特殊隔离补贴'),
+('OTHER_ALLOWANCE', '其他补贴', 1, 'INC_ALLOWANCE', 'otherAllowance', 19, 1, 0, 0, 'qtbt', 19, '非固定通用补贴'),
 
 -- ----------------------------------------------------------
 -- 【2】收入类 - 动态变动项 (Attendance & Performance)
@@ -393,14 +394,17 @@ VALUES
 ('EVENT_EURO_CUP', '欧洲杯激励奖金', 1, 'INC_BONUS', 'eventEuroCup', 70, 1, 0, 0, 'ozb', 70, '欧洲杯奖金'),
 ('EVENT_WORLD_CUP', '世界杯激励奖金', 1, 'INC_BONUS', 'eventWorldCup', 71, 1, 0, 0, 'sjb', 71, '世界杯奖金'),
 
--- 年终奖系列
-('ANNUAL_BONUS_14_5', '年终奖14.5薪', 1, 'INC_YEAR_END', 'annualBonus145', 80, 1, 0, 0, 'nzj145', 80, '14.5薪'),
+-- 年终奖系列 (统一移除小数点，使用小驼峰)
+('ANNUAL_BONUS_13', '年终奖13薪', 1, 'INC_YEAR_END', 'annualBonus13', 77, 1, 0, 0, 'nzj13', 77, '13薪'),
+('ANNUAL_BONUS_13_5', '年终奖13.5薪', 1, 'INC_YEAR_END', 'annualBonus135', 78, 1, 0, 0, 'nzj135', 78, '13.5薪'),
+('ANNUAL_BONUS_14', '年终奖14薪', 1, 'INC_YEAR_END', 'annualBonus14', 79, 1, 0, 0, 'nzj14', 79, '14薪'),
+('ANNUAL_BONUS_14_5', '年终奖14.5薪', 1, 'INC_YEAR_END', 'annualBonus14_5', 80, 1, 0, 0, 'nzj14.5', 80, '14.5薪'),
 ('ANNUAL_BONUS_15', '年终奖15薪', 1, 'INC_YEAR_END', 'annualBonus15', 81, 1, 0, 0, 'nzj15', 81, '15薪'),
-('ANNUAL_BONUS_15_5', '年终奖15.5薪', 1, 'INC_YEAR_END', 'annualBonus155', 82, 1, 0, 0, 'nzj155', 82, '15.5薪'),
+('ANNUAL_BONUS_15_5', '年终奖15.5薪', 1, 'INC_YEAR_END', 'annualBonus15_5', 82, 1, 0, 0, 'nzj15.5', 82, '15.5薪'),
 ('ANNUAL_BONUS_16', '年终奖16薪', 1, 'INC_YEAR_END', 'annualBonus16', 83, 1, 0, 0, 'nzj16', 83, '16薪'),
-('ANNUAL_BONUS_16_5', '年终奖16.5薪', 1, 'INC_YEAR_END', 'annualBonus165', 84, 1, 0, 0, 'nzj165', 84, '16.5薪'),
+('ANNUAL_BONUS_16_5', '年终奖16.5薪', 1, 'INC_YEAR_END', 'annualBonus16_5', 84, 1, 0, 0, 'nzj16.5', 84, '16.5薪'),
 ('ANNUAL_BONUS_17', '年终奖17薪', 1, 'INC_YEAR_END', 'annualBonus17', 85, 1, 0, 0, 'nzj17', 85, '17薪'),
-('ANNUAL_BONUS_17_5', '年终奖17.5薪', 1, 'INC_YEAR_END', 'annualBonus175', 86, 1, 0, 0, 'nzj175', 86, '17.5薪'),
+('ANNUAL_BONUS_17_5', '年终奖17.5薪', 1, 'INC_YEAR_END', 'annualBonus17_5', 86, 1, 0, 0, 'nzj17.5', 86, '17.5薪'),
 ('ANNUAL_BONUS_18', '年终奖18薪', 1, 'INC_YEAR_END', 'annualBonus18', 87, 1, 0, 0, 'nzj18', 87, '18薪'),
 ('ANNUAL_BONUS_18_5', '年终奖18.5薪', 1, 'INC_YEAR_END', 'annualBonus185', 88, 1, 0, 0, 'nzj185', 88, '18.5薪'),
 ('ANNUAL_BONUS_19', '年终奖19薪', 1, 'INC_YEAR_END', 'annualBonus19', 89, 1, 0, 0, 'nzj19', 89, '19薪'),
@@ -428,7 +432,7 @@ VALUES
 ('FINE_DEDUCTION', '管理罚款', 2, 'DED_FINE', 'fineDeduction', 121, 0, 0, 0, 'glfk', 121, '税后扣'),
 ('PASSPORT_FEE_DEDUCTION', '护照费用代扣', 2, 'DED_OTHER', 'passportFeeDeduction', 122, 0, 0, 0, 'hzdk', 122, '护照费'),
 ('DEPOSIT_DEDUCTION_CURRENT', '本月押金扣除', 2, 'DED_OTHER', 'depositDeductionCurrent', 123, 0, 0, 0, 'byyj', 123, '押金扣'),
-
+('OTHER_DEDUCTION', '其他扣除', 2, 'DED_OTHER', 'otherDeduction', 124, 0, 0, 0, 'qtkc', 130, '通用非固定扣款'),
 -- ----------------------------------------------------------
 -- 【6】系统调整与结算
 -- ----------------------------------------------------------
@@ -476,6 +480,7 @@ VALUES
 ('MEAL_ALLOW', '餐补', 1, 'let allow = (mealAllow == nil) ? 0.0M : decimal(mealAllow); monthDays > 0M ? (allow / monthDays * attendanceDays) : 0.0M', 'Decimal', 12, 1, '餐补折算'),
 ('SHIFT_12H_ALLOWANCE', '12小时补贴', 1, 'shift12hAllowance == nil ? 0.0M : decimal(shift12hAllowance)', 'Decimal', 13, 1, '排班补贴'),
 ('QUARANTINE_ALLOWANCE', '隔离补贴', 1, 'quarantineAllowance == nil ? 0.0M : decimal(quarantineAllowance)', 'Decimal', 14, 1, '隔离补贴'),
+('OTHER_ALLOWANCE', '其他补贴', 1, 'otherAllowance == nil ? 0.0M : decimal(otherAllowance)', 'Decimal', 19, 1, '其他非固定补贴'),
 
 ('OVERTIME_PAY_DAY', '日加班工资', 1, 'overtimePayDay == nil ? 0.0M : decimal(overtimePayDay)', 'Decimal', 20, 1, '按天加班'),
 ('OVERTIME_PAY_HOUR', '时加班工资', 1, 'overtimePayHour == nil ? 0.0M : decimal(overtimePayHour)', 'Decimal', 21, 1, '按时加班'),
@@ -542,6 +547,7 @@ VALUES
 ('FINE_DEDUCTION', '管理罚款', 1, 'fineDeduction == nil ? 0.0M : decimal(fineDeduction)', 'Decimal', 121, 1, '税后扣'),
 ('PASSPORT_FEE_DEDUCTION', '护照费用代扣', 1, 'passportFeeDeduction == nil ? 0.0M : decimal(passportFeeDeduction)', 'Decimal', 122, 1, '护照代扣'),
 ('DEPOSIT_DEDUCTION_CURRENT', '本月押金扣除', 1, 'depositDeductionCurrent == nil ? 0.0M : decimal(depositDeductionCurrent)', 'Decimal', 123, 1, '押金扣'),
+('OTHER_DEDUCTION', '其他扣除', 1, 'otherDeduction == nil ? 0.0M : decimal(otherDeduction)', 'Decimal', 130, 1, '其他非固定扣款'),
 
 ('RESIGNATION_SETTLEMENT', '离职费用结算', 1, 'resignationSettlement == nil ? 0.0M : decimal(resignationSettlement)', 'Decimal', 140, 1, '离职清算扣款'),
 ('PREV_MONTH_ADJUSTMENT', '上月补发/续扣', 1, 'prevMonthAdjustment == nil ? 0.0M : decimal(prevMonthAdjustment)', 'Decimal', 141, 1, '人工回溯调账'),
@@ -558,6 +564,8 @@ VALUES
 ('ER_VISA_COMP', '海外签证费用', 1, 'erVisaComp == nil ? 0.0M : decimal(erVisaComp)', 'Decimal', 310, 1, '公司承担'),
 
 ('AUTO_TAX_CALC', '智能个税核算', 1, '0.0M', 'Decimal', 999, 1, '触发Java内置计税引擎');
+
+TRUNCATE TABLE `salary_calc_pipeline_step`;
 
 TRUNCATE TABLE `salary_calc_pipeline_step`;
 
@@ -583,6 +591,7 @@ VALUES
 ('OFFICIAL_STAFF_2026', 1, 'MEAL_ALLOW', '餐补', 1, NULL, 2, 110, 0, 1, 1),
 ('OFFICIAL_STAFF_2026', 1, 'SHIFT_12H_ALLOWANCE', '12小时补贴', 1, NULL, 2, 120, 0, 1, 1),
 ('OFFICIAL_STAFF_2026', 1, 'QUARANTINE_ALLOWANCE', '隔离补贴', 1, NULL, 2, 130, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'OTHER_ALLOWANCE', '其他补贴', 1, NULL, 2, 135, 0, 1, 1),
 
 ('OFFICIAL_STAFF_2026', 1, 'SAFETY_CARD_BONUS', '安全卡奖励', 1, NULL, 2, 140, 0, 1, 1),
 ('OFFICIAL_STAFF_2026', 1, 'ANNUAL_LEAVE_BONUS', '年假奖金', 1, NULL, 2, 150, 0, 1, 1),
@@ -626,6 +635,7 @@ VALUES
 ('OFFICIAL_STAFF_2026', 1, 'FINE_DEDUCTION', '管理罚款', 1, NULL, 3, 430, 0, 1, 1),
 ('OFFICIAL_STAFF_2026', 1, 'PASSPORT_FEE_DEDUCTION', '护照费用代扣', 1, NULL, 3, 440, 0, 1, 1),
 ('OFFICIAL_STAFF_2026', 1, 'DEPOSIT_DEDUCTION_CURRENT', '本月押金扣除', 1, NULL, 3, 450, 0, 1, 1),
+('OFFICIAL_STAFF_2026', 1, 'OTHER_DEDUCTION', '其他扣除', 1, NULL, 3, 455, 0, 1, 1),
 
 ('OFFICIAL_STAFF_2026', 1, 'SI_PENSION_IND', '养老保险(个人)', 1, NULL, 3, 460, 0, 1, 1),
 ('OFFICIAL_STAFF_2026', 1, 'SI_MED_IND', '医疗保险(个人)', 1, NULL, 3, 470, 0, 1, 1),

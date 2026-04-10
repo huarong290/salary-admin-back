@@ -37,7 +37,7 @@ public interface ISalaryCalcContextService extends IService<SalaryCalcContext> {
      * @param employeeId 员工ID
      * @return Aviator 引擎可执行的环境变量 Map
      */
-    Map<String, Object> buildEmployeeContext(Long periodId, Long employeeId, String pipelineCode, Integer pipelineVersion);
+    Map<String, Object> buildEmployeeContext(Long periodId, Long employeeId, String pipelineCode, Integer pipelineVersion,Long specifyArchiveId);
     // ======================== 2. 删除操作 (Delete) ========================
     /**
      * 删除上下文快照 (逻辑/物理双模式)
