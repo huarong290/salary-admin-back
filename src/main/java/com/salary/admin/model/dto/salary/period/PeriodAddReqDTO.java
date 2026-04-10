@@ -56,6 +56,11 @@ public class PeriodAddReqDTO implements Serializable {
      */
     @Schema(description = "非带薪假/欠勤天数")
     private BigDecimal unpaidLeaveDays;
+    /**
+     * 带薪假天数(如年假、调休)
+     */
+    @Schema(description = "带薪假天数(如年假、调休)")
+    private BigDecimal paidLeaveDays;
 
     /**
      * 是否满勤 (1:是, 0:否)

@@ -76,6 +76,12 @@ public class PeriodVO implements Serializable {
     private BigDecimal unpaidLeaveDays;
 
     /**
+     * 带薪假天数(如年假、调休)
+     */
+    @Schema(description = "带薪假天数(如年假、调休)")
+    private BigDecimal paidLeaveDays;
+
+    /**
      * 是否满勤 (1:是, 0:否)
      */
     @Schema(description = "是否满勤 (1:是, 0:否)")
