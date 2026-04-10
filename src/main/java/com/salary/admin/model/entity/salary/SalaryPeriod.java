@@ -77,6 +77,14 @@ public class SalaryPeriod extends BaseEntity<SalaryPeriod> {
     @Schema(description = "出勤天数")
     @TableField("attendance_days")
     private BigDecimal attendanceDays;
+
+    /**
+     * 非带薪假/欠勤天数
+     */
+    @Schema(description = "非带薪假/欠勤天数")
+    @TableField("unpaid_leave_days")
+    private BigDecimal unpaidLeaveDays;
+
     /**
      * 是否满勤 (1:是, 0:否)
      */

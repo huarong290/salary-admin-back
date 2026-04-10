@@ -421,6 +421,7 @@ CREATE TABLE `salary_period`
     `end_date`             DATE                   DEFAULT NULL COMMENT '结束日期',
     `month_days`           DECIMAL(6, 2) NOT NULL DEFAULT '0.00' COMMENT '月天数',
     `attendance_days`      DECIMAL(6, 2) NOT NULL DEFAULT '0.00' COMMENT '出勤天数',
+    `unpaid_leave_days`    DECIMAL(10, 2)NOT NULL DEFAULT '0.00' COMMENT '非带薪假/欠勤天数'
     `full_attendance_flag` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否满勤 (1:是, 0:否)',
     `delete_flag`          BIGINT UNSIGNED NOT NULL DEFAULT '0' COMMENT '删除标识',
     `create_by`            VARCHAR(64)   NOT NULL DEFAULT 'admin',

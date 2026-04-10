@@ -177,6 +177,9 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
             p.setAttendanceDays(reqDTO.getAttendanceDays() != null ?
                     reqDTO.getAttendanceDays() : null);
             p.setFullAttendanceFlag(null); // 建议初始化为 null，待考勤系统判定
+            // 透传并赋初值给“非带薪假/欠勤天数”
+            p.setUnpaidLeaveDays(reqDTO.getUnpaidLeaveDays() != null ?
+                    reqDTO.getUnpaidLeaveDays() : BigDecimal.ZERO);
             return p;
         }).collect(Collectors.toList());
 
