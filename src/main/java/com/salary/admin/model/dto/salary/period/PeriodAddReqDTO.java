@@ -52,6 +52,16 @@ public class PeriodAddReqDTO implements Serializable {
     @Schema(description = "出勤天数")
     private BigDecimal attendanceDays;
     /**
+     * 现场出勤天数
+     */
+    @Schema(description = "现场出勤天数")
+    private BigDecimal officeDays;
+    /**
+     * 居家出勤天数
+     */
+    @Schema(description = "居家出勤天数")
+    private BigDecimal wfhDays;
+    /**
      * 非带薪假/欠勤天数
      */
     @Schema(description = "非带薪假/欠勤天数")

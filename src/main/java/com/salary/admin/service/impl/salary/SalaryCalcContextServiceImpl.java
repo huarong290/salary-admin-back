@@ -79,10 +79,15 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         if (period != null) {
             env.put("monthDays", period.getMonthDays() != null ? period.getMonthDays() : BigDecimal.ZERO);
             env.put("attendanceDays", period.getAttendanceDays() != null ? period.getAttendanceDays() : BigDecimal.ZERO);
+            env.put("officeDays", period.getOfficeDays() != null ? period.getOfficeDays() : BigDecimal.ZERO);
+            env.put("wfhDays", period.getWfhDays() != null ? period.getWfhDays() : BigDecimal.ZERO);
             env.put("isFullAttendance", period.getFullAttendanceFlag() != null && period.getFullAttendanceFlag() == 1);
 
             // 将欠勤天数注入引擎，供 ABSENT_DEDUCTION 规则读取
             env.put("unpaidLeaveDays", period.getUnpaidLeaveDays() != null ? period.getUnpaidLeaveDays() : BigDecimal.ZERO);
+
+            // 把带薪假注入引擎！
+            env.put("paidLeaveDays", period.getPaidLeaveDays() != null ? period.getPaidLeaveDays() : BigDecimal.ZERO);
         } else {
             throw new BusinessException("上下文中找不到对应的薪资周期: " + periodId);
         }
