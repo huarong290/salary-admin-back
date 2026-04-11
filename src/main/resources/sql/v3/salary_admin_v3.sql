@@ -455,6 +455,7 @@ CREATE TABLE `salary_summary`
     `tax_total`         DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '税费合计（item_type=3）',
     `gross_salary`      DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '应发工资（税前）通常 = income_total',
     `net_salary`        DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '实发工资（最终） net = income - deduction - tax',
+    `manual_payment_amount` DECIMAL(18, 8) NOT NULL DEFAULT '0.00000000' COMMENT '手动发放总额',
     `calc_version`      INT            NOT NULL DEFAULT 1 COMMENT '计算版本号(用于重算/历史追溯)',
     `calc_status`       TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT ' 计算状态:0-未计算 1-成功 2-失败',
     `payment_status`    TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT '发放状态：0-未支付 1-已支付 2-支付失败',

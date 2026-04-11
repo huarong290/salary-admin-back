@@ -8,6 +8,7 @@ import com.salary.admin.convert.salary.summary.SalarySummaryConvert;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.mapper.ext.SalarySummaryExtMapper;
 import com.salary.admin.model.dto.salary.summary.SalarySummaryOperateDTO;
+import com.salary.admin.model.dto.salary.summary.SummaryAdjustReqDTO;
 import com.salary.admin.model.dto.salary.summary.SummaryQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalarySummary;
 import com.salary.admin.model.vo.salary.summary.SalarySummaryVO;
@@ -128,6 +129,37 @@ public class SalarySummaryServiceImpl extends ServiceImpl<SalarySummaryExtMapper
         }
 
         return summary;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean adjustManualAmount(SummaryAdjustReqDTO reqDTO) {
+        SalarySummary summary = this.getById(reqDTO.getId());
+        if (summary == null || summary.getDeleteFlag() > 0) {
+            throw new BusinessException("该薪资结算单不存在或已被删除！");
+        }
+
+        // 后端强制双重校验状态，防止越权恶意调用
+        if (Integer.valueOf(1).equals(summary.getLockFlag())) {
+            log.warn("越权操作拦截：尝试修改已锁定的薪资单，ID: {}", summary.getId());
+            throw new BusinessException("该单据已被锁定准备发薪，请先解除锁定！");
+        }
+        if (Integer.valueOf(1).equals(summary.getPaymentStatus())) {
+            log.warn("越权操作拦截：尝试修改已支付的薪资单，ID: {}", summary.getId());
+            throw new BusinessException("该单据已支付完毕，严禁篡改金额！");
+        }
+
+        // 执行资金覆写
+        summary.setManualPaymentAmount(reqDTO.getManualPaymentAmount());
+
+        // 追加审计留痕备注 (不覆盖原有备注，追加时间戳信息)
+        if (reqDTO.getRemark() != null && !reqDTO.getRemark().isBlank()) {
+            String logPrefix = "[手工账调整: " + reqDTO.getManualPaymentAmount() + "] ";
+            String currentRemark = summary.getRemark() == null ? "" : summary.getRemark() + " | ";
+            summary.setRemark(currentRemark + logPrefix + reqDTO.getRemark());
+        }
+
+        return this.updateById(summary);
     }
 
 

@@ -65,6 +65,9 @@ public class SalarySummaryVO implements Serializable {
     @Schema(description = "实发工资 (税后/最终)")
     private BigDecimal netSalary;
 
+    @Schema(description = "手动发放总额 (线下手工调整发放的金额)")
+    private BigDecimal manualPaymentAmount;
+
     // ==================== 4. 状态控制字段 ====================
 
     @Schema(description = "计算状态: 0-未计算, 1-成功, 2-失败")

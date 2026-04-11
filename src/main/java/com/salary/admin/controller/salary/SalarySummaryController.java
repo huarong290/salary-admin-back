@@ -3,6 +3,7 @@ package com.salary.admin.controller.salary;
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.summary.SalarySummaryOperateDTO;
+import com.salary.admin.model.dto.salary.summary.SummaryAdjustReqDTO;
 import com.salary.admin.model.dto.salary.summary.SummaryQueryReqDTO;
 import com.salary.admin.model.vo.salary.summary.SalarySummaryVO;
 import com.salary.admin.service.salary.ISalarySummaryService;
@@ -50,5 +51,11 @@ public class SalarySummaryController {
     @Operation(summary = "批量变更锁定状态", description = "统一处理锁定(1)与解锁(0)逻辑，支持单条或多条操作")
     public ApiResult<Boolean> changeLockStatus(@Validated @RequestBody SalarySummaryOperateDTO operateDTO) {
         return ApiResult.successResult(summaryService.updateLockStatus(operateDTO));
+    }
+
+    @PostMapping("/adjust-manual-amount")
+    @Operation(summary = "录入线下手工账", description = "修改手动发放总额(manualPaymentAmount)")
+    public ApiResult<Boolean> adjustManualAmount(@Validated @RequestBody SummaryAdjustReqDTO reqDTO) {
+        return ApiResult.successResult(summaryService.adjustManualAmount(reqDTO));
     }
 }

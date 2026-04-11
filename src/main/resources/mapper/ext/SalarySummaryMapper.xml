@@ -17,6 +17,7 @@
         <result column="tax_total" property="taxTotal" />
         <result column="gross_salary" property="grossSalary" />
         <result column="net_salary" property="netSalary" />
+        <result column="manual_payment_amount" property="manualPaymentAmount" />
         <result column="calc_version" property="calcVersion" />
         <result column="calc_status" property="calcStatus" />
         <result column="payment_status" property="paymentStatus" />
@@ -32,7 +33,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, employee_id, employee_code, employee_name, period_id, settlement_month, period_start_date, period_end_date, income_total, deduction_total, tax_total, gross_salary, net_salary, calc_version, calc_status, payment_status, lock_flag, detail_json, remark, delete_flag, create_by, create_time, update_by, update_time
+        id, employee_id, employee_code, employee_name, period_id, settlement_month, period_start_date, period_end_date, income_total, deduction_total, tax_total, gross_salary, net_salary,manual_payment_amount, calc_version, calc_status, payment_status, lock_flag, detail_json, remark, delete_flag, create_by, create_time, update_by, update_time
     </sql>
     <select id="selectSummaryPage" resultType="com.salary.admin.model.vo.salary.summary.SalarySummaryVO">
         SELECT
@@ -46,6 +47,7 @@
         tax_total,
         gross_salary,
         net_salary,
+        manual_payment_amount,
         calc_status,
         payment_status,
         lock_flag,

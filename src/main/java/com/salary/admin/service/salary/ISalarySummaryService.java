@@ -3,6 +3,7 @@ package com.salary.admin.service.salary;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.salary.admin.common.PageResult;
 import com.salary.admin.model.dto.salary.summary.SalarySummaryOperateDTO;
+import com.salary.admin.model.dto.salary.summary.SummaryAdjustReqDTO;
 import com.salary.admin.model.dto.salary.summary.SummaryQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalarySummary;
 import com.salary.admin.model.vo.salary.summary.SalarySummaryVO;
@@ -43,5 +44,13 @@ public interface ISalarySummaryService extends IService<SalarySummary> {
      * @return 薪资汇总实体
      */
     SalarySummary getSummaryByUnique(Long periodId, Long employeeId);
+
+
+    /**
+     * 录入线下手工账 (调整手动发放总额)
+     * @param reqDTO 包含调整金额与备注的参数
+     * @return 是否成功
+     */
+    boolean adjustManualAmount(SummaryAdjustReqDTO reqDTO);
 
 }

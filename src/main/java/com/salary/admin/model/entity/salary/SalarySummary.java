@@ -105,6 +105,12 @@ public class SalarySummary extends BaseEntity<SalarySummary> {
     @TableField("net_salary")
     private BigDecimal netSalary;
     /**
+     * 手动发放总额 (用于记录线下手动补发或手工调整的发放金额)
+     */
+    @Schema(description = "手动发放总额 (用于记录线下手动补发或手工调整的发放金额)")
+    @TableField("manual_payment_amount")
+    private BigDecimal manualPaymentAmount;
+    /**
      * 计算版本号(用于重算/历史追溯)
      */
     @Schema(description = "计算版本号(用于重算/历史追溯)")
