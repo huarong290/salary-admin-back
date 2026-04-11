@@ -29,7 +29,11 @@ public class KpiRecordQueryReqDTO extends PageQueryDTO implements Serializable {
      */
     @Schema(description = "搜索关键词 (支持员工姓名、员工编号模糊匹配)")
     private String keyword;
-
+    /**
+     * 结算年份
+     */
+    @Schema(description = "结算年份筛选 (例如: 2026，与 settlementMonth 互斥)")
+    private String year;
     /**
      * 结算月份
      */

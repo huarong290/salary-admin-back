@@ -278,7 +278,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         previewVO.setDeductionTotal(deductionTotal);
         previewVO.setTaxTotal(taxTotal);
         previewVO.setNetSalary(netSalary);
-
+        previewVO.setManualPaymentAmount(summary.getManualPaymentAmount());
         // 向前端 VO 注入档案溯源快照
         previewVO.setUsedArchives(usedArchives);
         // 挂载明细用于更深度的前端展示（如果需要）

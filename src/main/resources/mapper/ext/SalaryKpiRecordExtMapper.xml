@@ -4,27 +4,28 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.salary.admin.model.entity.salary.SalaryKpiRecord">
-        <id column="id" property="id" />
-        <result column="employee_id" property="employeeId" />
-        <result column="period_id" property="periodId" />
-        <result column="settlement_month" property="settlementMonth" />
-        <result column="kpi_grade" property="kpiGrade" />
-        <result column="kpi_score" property="kpiScore" />
-        <result column="kpi_coefficient" property="kpiCoefficient" />
-        <result column="evaluate_by" property="evaluateBy" />
-        <result column="evaluate_remark" property="evaluateRemark" />
-        <result column="audit_status" property="auditStatus" />
-        <result column="effective_flag" property="effectiveFlag" />
-        <result column="delete_flag" property="deleteFlag" />
-        <result column="create_by" property="createBy" />
-        <result column="create_time" property="createTime" />
-        <result column="update_by" property="updateBy" />
-        <result column="update_time" property="updateTime" />
+        <id column="id" property="id"/>
+        <result column="employee_id" property="employeeId"/>
+        <result column="period_id" property="periodId"/>
+        <result column="settlement_month" property="settlementMonth"/>
+        <result column="kpi_grade" property="kpiGrade"/>
+        <result column="kpi_score" property="kpiScore"/>
+        <result column="kpi_coefficient" property="kpiCoefficient"/>
+        <result column="evaluate_by" property="evaluateBy"/>
+        <result column="evaluate_remark" property="evaluateRemark"/>
+        <result column="audit_status" property="auditStatus"/>
+        <result column="effective_flag" property="effectiveFlag"/>
+        <result column="delete_flag" property="deleteFlag"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, employee_id, period_id, settlement_month, kpi_grade, kpi_score, kpi_coefficient, evaluate_by, evaluate_remark, audit_status, effective_flag, delete_flag, create_by, create_time, update_by, update_time
+        id
+        , employee_id, period_id, settlement_month, kpi_grade, kpi_score, kpi_coefficient, evaluate_by, evaluate_remark, audit_status, effective_flag, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 
@@ -51,10 +52,13 @@
         <where>
             k.delete_flag = 0
             AND e.delete_flag = 0
-            AND k.effective_flag = 1 <if test="req.settlementMonth != null and req.settlementMonth != ''">
-            AND k.settlement_month = #{req.settlementMonth}
-        </if>
-
+            AND k.effective_flag = 1
+            <if test="req.settlementMonth != null and req.settlementMonth != ''">
+                AND k.settlement_month = #{req.settlementMonth}
+            </if>
+            <if test="req.year != null and req.year != ''">
+                AND k.settlement_month LIKE CONCAT(#{req.year}, '%')
+            </if>
             <if test="req.auditStatus != null">
                 AND k.audit_status = #{req.auditStatus}
             </if>
