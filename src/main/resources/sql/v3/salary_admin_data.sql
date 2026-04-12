@@ -74,11 +74,14 @@ VALUES
 (124, '菜单删除', 'sys_menu_del', '', '', '', '', 'sys:menu:del', 3, 120, 4, 1, 1),
 -- 字典管理
 (130, '字典管理', 'sys_dict', 'dict', 'system/dict/DictPage', '', 'Collection', 'sys:dict:list', 2, 10, 4, 1, 1),
-(131, '字典查询', 'sys_dict_query', '', '', '', '', 'sys:dict:query', 3, 130, 1, 1, 1),
-(132, '字典新增', 'sys_dict_add', '', '', '', '', 'sys:dict:add', 3, 130, 2, 1, 1),
-(133, '字典修改', 'sys_dict_edit', '', '', '', '', 'sys:dict:edit', 3, 130, 3, 1, 1),
-(134, '字典删除', 'sys_dict_del', '', '', '', '', 'sys:dict:del', 3, 130, 4, 1, 1),
-(135, '字典刷新缓存', 'sys_dict_refresh', '', '', '', '', 'sys:dict:refresh', 3, 130, 5, 1, 1),
+(131, '新增字典类型', 'sys_dict_type_add', '', '', '', '', 'sys:dict_type:add', 3, 130, 1, 1, 1),
+(132, '删除字典类型', 'sys_dict_type_del', '', '', '', '', 'sys:dict_type:del', 3, 130, 2, 1, 1),
+(133, '修改字典类型', 'sys_dict_type_edit', '', '', '', '', 'sys:dict_type:edit', 3, 130, 3, 1, 1),
+(134, '查询字典类型', 'sys_dict_type_query', '', '', '', '', 'sys:dict_type:query', 3, 130, 4, 1, 1),
+(135, '新增字段项', 'sys_dict_item_add', '', '', '', '', 'sys:dict_item:add', 3, 130, 5, 1, 1),
+(136, '删除字典项', 'sys_dict_item_del', '', '', '', '', 'sys:dict_item:del', 3, 130, 6, 1, 1),
+(137, '修改字典项', 'sys_dict_item_edit', '', '', '', '', 'sys:dict_item:edit', 3, 130, 7, 1, 1),
+(138, '查询字典类型', 'sys_dict_item_query', '', '', '', '', 'sys:dict_item:query', 3, 130, 8, 1, 1),
 
 -- 【0】薪资管理 (父级主目录)
 (150, '薪资管理', 'salary_manage', '/salary', 'Layout', '', 'Money', '', 1, 0, 10, 1, 1),
@@ -237,7 +240,9 @@ VALUES (4, 10, 'system'),
 INSERT INTO `sys_dict_type` (`dict_type_code`, `dict_type_name`, `dict_category`, `remark`, `create_by`)
 VALUES
 -- 薪资模块 (salary)
-
+('salary_item_category', '薪资项目大类', 'salary', '定义薪资项的物理分类：收入、扣款、税费等', 'system'),
+('salary_item_sub_type', '薪资项目细类', 'salary', '定义具体的业务逻辑标识，用于代码或脚本识别', 'system'),
+-- ------------
 -- 财务模块 (finance)
 ('payment_channel', '支付打款渠道', 'finance', '出纳打款的资金渠道', 'system'),
 ('settlement_currency', '结算本位币种', 'finance', '用于薪资计算和发放的币种', 'system'),
@@ -254,37 +259,40 @@ VALUES
 INSERT INTO `sys_dict_item` (`dict_type_code`, `dict_item_value`, `dict_item_label`, `dict_item_sort`, `create_by`)
 VALUES
 
--- ==========================================
--- 1. 薪资收入大类 (对应 item_category = 1)
--- ==========================================
-('salary_income_type', 'base_pay', '固定工资', 10, 'system'),
-('salary_income_type', 'performance_bonus', '绩效奖金', 20, 'system'),
-('salary_income_type', 'allowance_subsidy', '津贴福利', 30, 'system'),
-('salary_income_type', 'attendance_income', '考勤相关', 40, 'system'),
-('salary_income_type', 'annual_bonus', '年终奖金类', 50, 'system'),
-('salary_income_type', 'special_award', '专项奖金', 60, 'system'),
-('salary_income_type', 'salary_adjustment', '薪资调整', 70, 'system'),
+    ('salary_item_category', '1', '收入', 10, 'system'),
+    ('salary_item_category', '2', '扣款', 20, 'system'),
+    ('salary_item_category', '3', '税费', 30, 'system'),
+    ('salary_item_category', '4', '公司支出', 40, 'system'),
+    ('salary_item_sub_type', 'INC_BASE', '基本工资', 10, 'system'),
+    ('salary_item_sub_type', 'INC_ALLOWANCE', '岗位津贴', 20, 'system'),
+    ('salary_item_sub_type', 'INC_OVERTIME', '加班工资', 30, 'system'),
+    ('salary_item_sub_type', 'INC_ATTENDANCE', '全勤奖', 35, 'system'),
+    ('salary_item_sub_type', 'INC_BONUS', '绩效奖金', 40, 'system'),
+    ('salary_item_sub_type', 'INC_YEAR_END', '年终奖', 50, 'system'),
+    ('salary_item_sub_type', 'INC_SUBSIDY', '补贴', 60, 'system'),
+    ('salary_item_sub_type', 'INC_FESTIVAL', '节日礼金', 70, 'system'),
+    ('salary_item_sub_type', 'INC_OTHER', '其他收入', 80, 'system'),
+    ('salary_item_sub_type', 'DED_ABSENT', '缺勤扣款', 100, 'system'),
+    ('salary_item_sub_type', 'DED_LATE', '迟到早退', 110, 'system'),
+    ('salary_item_sub_type', 'DED_FINE', '罚款', 115, 'system'),
+    ('salary_item_sub_type', 'DED_LOAN', '借款扣还', 118, 'system'),
+    ('salary_item_sub_type', 'DED_OTHER', '其他扣款', 120, 'system'),
 
--- ==========================================
--- 2. 薪资扣款大类 (对应 item_category = 2)
--- ==========================================
-('salary_deduction_type', 'attendance_deduct', '考勤相关', 10, 'system'),
-('salary_deduction_type', 'administrative_penalty', '行政罚款及押金', 20, 'system'),
-('salary_deduction_type', 'other_deduct', '其他代扣款项', 30, 'system'),
+    ('salary_item_sub_type', 'TAX_INCOME', '个人所得税', 200, 'system'),
+    ('salary_item_sub_type', 'SI_PENSION', '养老保险(个人)', 210, 'system'),
+    ('salary_item_sub_type', 'SI_MED', '医疗保险(个人)', 220, 'system'),
+    ('salary_item_sub_type', 'SI_UNEMPLOYMENT', '失业保险(个人)', 225, 'system'),
+    ('salary_item_sub_type', 'SI_HOUSING', '住房公积金(个人)', 230, 'system'),
+    ('salary_item_sub_type', 'PHP_SSS', 'SSS (菲律宾社保)', 240, 'system'),
+    ('salary_item_sub_type', 'TAX_LOCAL', '地方税', 250, 'system'),
 
--- ==========================================
--- 3. 税费与社保大类 (对应 item_category = 3)
--- ==========================================
-('salary_tax_social_type', 'social_security_personal', '社保代扣(个人部分)', 10, 'system'),
-('salary_tax_social_type', 'provident_fund_personal', '公积金代扣(个人部分)', 20, 'system'),
-('salary_tax_social_type', 'individual_income_tax', '个人所得税(含预扣预缴)', 30, 'system'),
-
--- ==========================================
--- 4. 公司统筹支出大类 (对应 item_category = 4)
--- ==========================================
-('salary_company_expense_type', 'social_security_company', '社保统筹(公司部分)', 10, 'system'),
-('salary_company_expense_type', 'provident_fund_company', '公积金统筹(公司部分)', 20, 'system'),
-('salary_company_expense_type', 'commercial_insurance', '商业补充险(公司承担)', 30, 'system'),
+    ('salary_item_sub_type', 'ER_PENSION', '养老保险(公司缴纳)', 300, 'system'),
+    ('salary_item_sub_type', 'ER_MED', '医疗保险(公司缴纳)', 310, 'system'),
+    ('salary_item_sub_type', 'ER_HOUSING', '住房公积金(公司缴纳)', 320, 'system'),
+    ('salary_item_sub_type', 'ER_VISA', '签证费用', 330, 'system'),
+    ('salary_item_sub_type', 'ER_TRAVEL', '差旅费', 340, 'system'),
+    ('salary_item_sub_type', 'ER_INSURANCE', '商业保险', 350, 'system'),
+    ('salary_item_sub_type', 'ER_OTHER', '其他公司支出', 360, 'system'),
 
 -- ==========================================
 -- 5. 支付打款渠道
@@ -314,19 +322,6 @@ VALUES
 ('employment_status', '0', '已离职', 50, 'system');
 
 
--- 字典管理目录 (挂在系统管理下)
-INSERT INTO `sys_menu` (`id`, `menu_name`, `menu_code`, `menu_path`, `menu_component`, `menu_redirect`, `menu_icon`,
-                        `menu_permission`, `menu_type`, `menu_parent_id`, `menu_sort`, `menu_visible`, `menu_status`)
-VALUES (130, '字典管理', 'sys_dict', 'dict', 'system/dict/DictPage', '', 'Collection', 'sys:dict:list', 2, 10, 4, 1, 1),
-       (131, '新增字典类型', 'sys_dict_type_add', '', '', '', '', 'sys:dict_type:add', 3, 130, 1, 1, 1),
-       (132, '删除字典类型', 'sys_dict_type_del', '', '', '', '', 'sys:dict_type:del', 3, 130, 2, 1, 1),
-       (133, '修改字典类型', 'sys_dict_type_edit', '', '', '', '', 'sys:dict_type:edit', 3, 130, 3, 1, 1),
-       (134, '查询字典类型', 'sys_dict_type_query', '', '', '', '', 'sys:dict_type:query', 3, 130, 4, 1, 1),
-       (135, '新增字段项', 'sys_dict_item_add', '', '', '', '', 'sys:dict_item:add', 3, 130, 5, 1, 1),
-       (136, '删除字典项', 'sys_dict_item_del', '', '', '', '', 'sys:dict_item:del', 3, 130, 6, 1, 1),
-       (137, '修改字典项', 'sys_dict_item_edit', '', '', '', '', 'sys:dict_item:edit', 3, 130, 7, 1, 1),
-
-       (138, '查询字典类型', 'sys_dict_item_query', '', '', '', '', 'sys:dict_item:query', 3, 130, 8, 1, 1);
 
 
 -- 分配给超级管理员 (SUPER_ADMIN ID: 1)
