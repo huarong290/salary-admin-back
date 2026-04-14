@@ -1,6 +1,7 @@
 package com.salary.admin.model.dto.salary.snapshot;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -69,4 +70,24 @@ public class SalaryDetailItemDTO {
      */
     @Schema(description = "展示排序号 (决定工资单上的显示顺序)")
     private Integer sort;
+
+    // =========================================================================
+    // 🌟 引擎内部流转扩展字段 (核心修复点)
+    // =========================================================================
+
+    /**
+     * 扩展字段：暂存字典配置的主键 ID。
+     * 仅供后端 Persistence 处理器使用，映射落库实体，绝对禁止序列化成 JSON。
+     */
+    @JsonIgnore
+    @Schema(hidden = true)
+    private Long extConfigId;
+
+    /**
+     * 扩展字段：暂存动态推导后的收支类型 (1-收入, 2-扣款, 3-税费, 4-公司支出)。
+     * 仅供后端 Persistence 处理器使用，映射落库实体，绝对禁止序列化成 JSON。
+     */
+    @JsonIgnore
+    @Schema(hidden = true)
+    private Integer extItemType;
 }

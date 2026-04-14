@@ -1,34 +1,28 @@
 package com.salary.admin.service.impl.salary;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.googlecode.aviator.AviatorEvaluator;
-import com.salary.admin.engine.SalaryRuleEngine;
-import com.salary.admin.event.CalcLogEvent;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.model.dto.engine.SalaryCalcBatchReqDTO;
 import com.salary.admin.model.dto.engine.SalaryCalcSingleReqDTO;
 import com.salary.admin.model.dto.salary.period.PeriodBatchInitReqDTO;
-import com.salary.admin.model.dto.salary.snapshot.ArchiveSnapshot;
-import com.salary.admin.model.dto.salary.snapshot.SalaryDetailItemDTO;
-import com.salary.admin.model.dto.salary.snapshot.SalarySnapshotDTO;
 import com.salary.admin.model.dto.salary.summary.SummaryInitReqDTO;
-import com.salary.admin.model.entity.salary.*;
-import com.salary.admin.model.vo.calcrule.CalcRuleVO;
+import com.salary.admin.model.entity.salary.SalaryEmployee;
+import com.salary.admin.model.entity.salary.SalaryPeriod;
+import com.salary.admin.model.entity.salary.SalarySummary;
 import com.salary.admin.model.vo.salary.summary.SalarySummaryVO;
-import com.salary.admin.service.salary.*;
-import jakarta.annotation.Resource;
+import com.salary.admin.service.impl.salary.engine.SalaryPersistProcessor;
+import com.salary.admin.service.impl.salary.engine.SalaryPreviewProcessor;
+import com.salary.admin.service.salary.ISalaryCoreEngine;
+import com.salary.admin.service.salary.ISalaryEmployeeService;
+import com.salary.admin.service.salary.ISalaryPeriodService;
+import com.salary.admin.service.salary.ISalarySummaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,23 +46,10 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     private final ISalaryEmployeeService iSalaryEmployeeService;
     private final ISalaryPeriodService iSalaryPeriodService;
     private final ISalarySummaryService iSalarySummaryService;
-    private final ISalaryArchiveService iSalaryArchiveService;
-    private final ISalaryArchiveItemService iSalaryArchiveItemService;
-    private final ISalaryItemConfigService iSalaryItemConfigService;
 
-    // 全新计算引擎核心 Service
-    private final SalaryRuleEngine salaryRuleEngine;
-    private final ISalaryCalcRuleService iSalaryCalcRuleService;
-    private final ISalaryCalcContextService iSalaryCalcContextService;
-    private final ISalaryCalcLogService iSalaryCalcLogService;
-    private final ISalaryItemDetailService iSalaryItemDetailService;
-    private final ISalaryCalcPipelineStepService iSalaryCalcPipelineStepService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final SalaryPersistProcessor salaryPersistProcessor;
+    private final SalaryPreviewProcessor salaryPreviewProcessor;
 
-    // 🌟 【架构师优化】：注入自身代理对象，解决 this 调用导致 @Transactional 本地事务失效的问题
-    @Lazy
-    @Resource
-    private ISalaryCoreEngine selfProxy;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -141,154 +122,21 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
         return iSalarySummaryService.saveBatch(newSummaries, 500);
     }
     /**
-     * 🌟 新增：单人核算数据实时预览 (仅内存计算，不落库)
+     * 单人核算数据实时预览 (仅内存计算，不落库)
      * 逻辑与 calculateEmployeeSalary 高度复用，但剥离了持久化操作
      */
     @Override
     public SalarySummaryVO previewCalculate(SalaryCalcSingleReqDTO reqDTO) {
-        // 0. 获取原始账套
+        // 1. 基础校验补全
         SalarySummary summary = iSalarySummaryService.getById(reqDTO.getSummaryId());
-        if (summary == null){
-            throw new BusinessException("薪资账套数据不存在！");
+        if (summary == null) throw new BusinessException("薪资账套数据不存在！");
+        // 将账套上的周期 ID 和员工 ID 补全到请求上下文中，防止底层查询查到 null
+        if (reqDTO.getPeriodId() == null || reqDTO.getEmployeeId() == null) {
+            reqDTO.setPeriodId(summary.getPeriodId());
+            reqDTO.setEmployeeId(summary.getEmployeeId());
         }
-
-        Long periodId = summary.getPeriodId();
-        Long employeeId = summary.getEmployeeId();
-        String pipelineCode = StringUtils.isNotBlank(reqDTO.getPipelineCode()) ? reqDTO.getPipelineCode() : "OFFICIAL_STAFF_2026";
-        Integer pipelineVersion = reqDTO.getPipelineVersion() != null ? reqDTO.getPipelineVersion() : 1;
-
-        log.info("🔍 [引擎预览] 周期: [{}], 员工: [{}], 管道: [{}-V{}]", periodId, employeeId, pipelineCode, pipelineVersion);
-
-        // 1. 获取图纸
-        List<SalaryCalcPipelineStep> steps = iSalaryCalcPipelineStepService.lambdaQuery()
-                .eq(SalaryCalcPipelineStep::getPipelineCode, pipelineCode)
-                .eq(SalaryCalcPipelineStep::getPipelineVersion, pipelineVersion)
-                .eq(SalaryCalcPipelineStep::getStatus, 1)
-                .orderByAsc(SalaryCalcPipelineStep::getStage)
-                .orderByAsc(SalaryCalcPipelineStep::getSortOrder)
-                .list();
-
-        if (steps.isEmpty()) throw new BusinessException("薪资管道未配置有效的核算步骤！");
-
-        // 2. 准备原材料
-        Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion,reqDTO.getArchiveId());
-        // 提取埋点注入的所用档案列表，用于审计溯源和UI展示
-        List<ArchiveSnapshot> usedArchives =
-                (List<ArchiveSnapshot>) env.get("_usedArchives");
-
-        // 提前全量查询字典配置，用于精准分类
-        Set<String> ruleCodes = steps.stream().map(SalaryCalcPipelineStep::getRuleCode).collect(Collectors.toSet());
-        Map<String, SalaryItemConfig> itemConfigMap = iSalaryItemConfigService.lambdaQuery()
-                .in(SalaryItemConfig::getItemCode, ruleCodes)
-                .list()
-                .stream()
-                .collect(Collectors.toMap(SalaryItemConfig::getItemCode, c -> c, (v1, v2) -> v1));
-        // 初始化累加器与快照
-        BigDecimal incomeTotal = BigDecimal.ZERO;
-        BigDecimal deductionTotal = BigDecimal.ZERO;
-        BigDecimal taxTotal = BigDecimal.ZERO;
-        BigDecimal companyExpenseTotal = BigDecimal.ZERO; // 公司成本累加器
-
-        SalarySnapshotDTO snapshot = new SalarySnapshotDTO();
-        snapshot.setIncome(new ArrayList<>());
-        snapshot.setDeduction(new ArrayList<>());
-        snapshot.setTax(new ArrayList<>());
-        snapshot.setCompanyExpense(new ArrayList<>()); // 防止 case 4 发生空指针异常
-        // 3. 驱动流水线 (纯内存试算)
-        for (SalaryCalcPipelineStep step : steps) {
-            String ruleCode = step.getRuleCode();
-            try {
-                if (StringUtils.isNotBlank(step.getConditionScript())) {
-                    Boolean shouldRun = (Boolean) AviatorEvaluator.execute(step.getConditionScript(), env);
-                    if (!shouldRun) {
-                        env.put(ruleCode, BigDecimal.ZERO);
-                        continue;
-                    }
-                }
-
-                CalcRuleVO rule = iSalaryCalcRuleService.getByRuleCode(ruleCode);
-                BigDecimal stepResult = salaryRuleEngine.execute(rule.getRuleScript(), env);
-
-                if (step.getSkipIfNull() == 1 && stepResult.compareTo(BigDecimal.ZERO) == 0) {
-                    env.put(ruleCode, BigDecimal.ZERO);
-                    continue;
-                }
-
-                env.put(ruleCode, stepResult);
-                // 抛弃按 Stage 死板判断分类的做法，直接取配置表的真实属性
-                SalaryItemConfig config = itemConfigMap.get(ruleCode);
-                int itemType = config != null ? config.getItemCategory() : 1;
-                // 🌟🌟🌟 架构师终极魔法：动态路由拦截 🌟🌟🌟
-                // 如果是收入类 (1)，但算出来是负数，强行将其“叛变”为扣款类 (2)，并取绝对值！
-                if (itemType == 1 && stepResult.compareTo(BigDecimal.ZERO) < 0) {
-                    itemType = 2; // 强行转化为扣款类
-                    stepResult = stepResult.abs(); // 金额转为正数，以符合扣款池的累加规则
-                }
-                // 针对不同类别，进行绝对值防御，并规范前端展示金额
-                BigDecimal displayAmount = (itemType == 1) ? stepResult : stepResult.abs();
-                SalaryDetailItemDTO snapshotItem = SalaryDetailItemDTO.builder()
-                        .itemCode(ruleCode)
-                        .itemName(step.getRuleName())
-                        .settlementAmount(displayAmount)
-                        .source("SYSTEM_CALC_PREVIEW")
-                        .calcLog("公式规则: " + ruleCode)
-                        .sort(step.getSortOrder())
-                        .build();
-
-                // 按类型放入快照，并进行动态防御累加
-                switch (itemType) {
-                    case 1:
-                        snapshot.getIncome().add(snapshotItem);
-                        // 收入类：正数加钱，负数减钱（如：PREV_MONTH_ADJUSTMENT 传入 -40），逻辑完美
-                        incomeTotal = incomeTotal.add(stepResult);
-                        break;
-                    case 2:
-                        snapshot.getDeduction().add(snapshotItem);
-                        // 扣款类防御：无论传入正负，一律转绝对值累加到扣款池！
-                        // 防止 subtract 时“负负得正”加钱
-                        deductionTotal = deductionTotal.add(stepResult.abs());
-                        break;
-                    case 3:
-                        snapshot.getTax().add(snapshotItem);
-                        // 税费类防御：同理转绝对值
-                        taxTotal = taxTotal.add(stepResult.abs());
-                        break;
-                    case 4:
-                        snapshot.getCompanyExpense().add(snapshotItem);
-                        //  公司成本防御
-                        companyExpenseTotal = companyExpenseTotal.add(stepResult.abs());
-                        break;
-                    default:
-                        break;
-                }
-            } catch (Exception e) {
-                if (step.getBlockFlag() == 1) throw new BusinessException("预览中断: [" + ruleCode + "] 异常 - " + e.getMessage());
-                env.put(ruleCode, BigDecimal.ZERO);
-            }
-        }
-
-        // 4. 组装展示视图 (无需 JSON 序列化和 DB 更新)
-        BigDecimal netSalary = incomeTotal.subtract(deductionTotal).subtract(taxTotal);
-
-        SalarySummaryVO previewVO = new SalarySummaryVO();
-        previewVO.setId(summary.getId());
-        previewVO.setEmployeeName(summary.getEmployeeName());
-        previewVO.setSettlementMonth(summary.getSettlementMonth());
-        previewVO.setGrossSalary(incomeTotal);
-        previewVO.setDeductionTotal(deductionTotal);
-        previewVO.setTaxTotal(taxTotal);
-        previewVO.setNetSalary(netSalary);
-        previewVO.setManualPaymentAmount(summary.getManualPaymentAmount());
-        // 向前端 VO 注入档案溯源快照
-        previewVO.setUsedArchives(usedArchives);
-        // 挂载明细用于更深度的前端展示（如果需要）
-        snapshot.setGrossSalary(incomeTotal);
-        snapshot.setDeductionTotal(deductionTotal);
-        snapshot.setTaxTotal(taxTotal);
-        snapshot.setNetSalary(netSalary);
-        previewVO.setDetails(snapshot);
-
-        return previewVO;
+        // 2. 路由到预览处理器
+        return salaryPreviewProcessor.process(reqDTO);
     }
     /**
      * 执行单人当月薪资核算 (瀑布流管道计算核心)
@@ -298,7 +146,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void calculateEmployeeSalary(SalaryCalcSingleReqDTO reqDTO) {
-        // 0. 参数补全逻辑 (如果直接调单人核算API，这里自动补全)
+        // 1. 参数补全逻辑 (如果直接调单人核算API，这里自动补全)
         if (reqDTO.getPeriodId() == null || reqDTO.getEmployeeId() == null) {
             SalarySummary summary = iSalarySummaryService.getById(reqDTO.getSummaryId());
             if (summary == null) throw new BusinessException("薪资账套数据不存在！");
@@ -308,228 +156,9 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             reqDTO.setEmployeeId(summary.getEmployeeId());
         }
 
-        Long periodId = reqDTO.getPeriodId();
-        Long employeeId = reqDTO.getEmployeeId();
+        // 2. 路由到落库处理器 (内部天然开启了本地事务)
+        salaryPersistProcessor.process(reqDTO);
 
-        // 管道降级策略：如果前端未指定管道，默认使用 V1 正式管道
-        String pipelineCode = StringUtils.isNotBlank(reqDTO.getPipelineCode()) ? reqDTO.getPipelineCode() : "OFFICIAL_STAFF_2026";
-        Integer pipelineVersion = reqDTO.getPipelineVersion() != null ? reqDTO.getPipelineVersion() : 1;
-
-        log.info("▶️ [引擎启动] 周期: [{}], 员工: [{}], 管道: [{}-V{}]", periodId, employeeId, pipelineCode, pipelineVersion);
-
-        // 1. 获取图纸 (按 stage 和 sortOrder 排序)
-        List<SalaryCalcPipelineStep> steps = iSalaryCalcPipelineStepService.lambdaQuery()
-                .eq(SalaryCalcPipelineStep::getPipelineCode, pipelineCode)
-                .eq(SalaryCalcPipelineStep::getPipelineVersion, pipelineVersion)
-                .eq(SalaryCalcPipelineStep::getStatus, 1)
-                .orderByAsc(SalaryCalcPipelineStep::getStage)
-                .orderByAsc(SalaryCalcPipelineStep::getSortOrder)
-                .list();
-
-        if (steps.isEmpty()) {
-            throw new BusinessException("薪资管道 [" + pipelineCode + "-V" + pipelineVersion + "] 未配置有效的核算步骤！");
-        }
-
-        // 2. 准备原材料 (Context Env)
-        Map<String, Object> env = iSalaryCalcContextService.buildEmployeeContext(periodId, employeeId,pipelineCode,pipelineVersion, reqDTO.getArchiveId());
-        // 提取档案溯源快照
-        List<ArchiveSnapshot> usedArchives =
-                (List<ArchiveSnapshot>) env.get("_usedArchives");
-        // 初始化数据载体
-        List<SalaryItemDetail> detailList = new ArrayList<>();
-
-        // 初始化 JSON Snapshot (防空指针)
-        SalarySnapshotDTO snapshot = new SalarySnapshotDTO();
-        snapshot.setIncome(new ArrayList<>());
-        snapshot.setDeduction(new ArrayList<>());
-        snapshot.setTax(new ArrayList<>());
-        snapshot.setCompanyExpense(new ArrayList<>());
-        // 注入档案快照到落库 JSON 中，彻底解决财务审计的后顾之忧
-        snapshot.setUsedArchives(usedArchives);
-        // 初始化累加器
-        BigDecimal incomeTotal = BigDecimal.ZERO;
-        BigDecimal deductionTotal = BigDecimal.ZERO;
-        BigDecimal taxTotal = BigDecimal.ZERO;
-        BigDecimal companyExpenseTotal = BigDecimal.ZERO;
-        // 在进循环前，根据流水线将要执行的 ruleCode，提前把字典配置里的 ID 查出来放入 Map 中
-        Set<String> ruleCodes = steps.stream().map(SalaryCalcPipelineStep::getRuleCode).collect(Collectors.toSet());
-        // 将 Map 的泛型改为 SalaryItemConfig 实体
-        Map<String, SalaryItemConfig> itemConfigMap = iSalaryItemConfigService.lambdaQuery()
-                .in(SalaryItemConfig::getItemCode, ruleCodes)
-                .list()
-                .stream()
-                // 将 value 映射为 c -> c (即实体本身)，而不是 SalaryItemConfig::getId
-                .collect(Collectors.toMap(SalaryItemConfig::getItemCode, c -> c, (v1, v2) -> v1));
-        // 3. 驱动流水线
-        for (SalaryCalcPipelineStep step : steps) {
-            //  记录开始时间
-            long startTime = System.currentTimeMillis();
-            BigDecimal stepResult = null;
-            String errorMsg = null;
-            String ruleCode = step.getRuleCode();
-
-            try {
-                // 3.1 前置拦截 (Condition Script)
-                if (StringUtils.isNotBlank(step.getConditionScript())) {
-                    Boolean shouldRun = (Boolean) AviatorEvaluator.execute(step.getConditionScript(), env);
-                    if (!shouldRun) {
-                        env.put(ruleCode, BigDecimal.ZERO);
-                        continue; // 条件不满足，跳过该规则执行
-                    }
-                }
-
-                // 3.2 查规则脚本
-                CalcRuleVO rule = iSalaryCalcRuleService.getByRuleCode(ruleCode);
-
-                // 3.3 Aviator 核心计算
-                 stepResult = salaryRuleEngine.execute(rule.getRuleScript(), env);
-
-                // 3.4 空值跳过
-                if (step.getSkipIfNull() == 1 && stepResult.compareTo(BigDecimal.ZERO) == 0) {
-                    env.put(ruleCode, BigDecimal.ZERO);
-                    continue;
-                }
-
-                env.put(ruleCode, stepResult);
-                SalaryItemConfig config = itemConfigMap.get(ruleCode);
-                Long itemConfigId = config != null ? config.getId() : 0L;
-                int itemType = config != null ? config.getItemCategory() : 1;
-                // 动态路由拦截
-                // 如果是收入类 (1)，但算出来是负数，强行将其“叛变”为扣款类 (2)，并取绝对值！
-                if (itemType == 1 && stepResult.compareTo(BigDecimal.ZERO) < 0) {
-                    itemType = 2; // 强行转化为扣款类
-                    stepResult = stepResult.abs(); // 金额转为正数，以符合扣款池的累加规则
-                }
-                // 针对不同类别，进行绝对值防御，确保落库和展示的金额干净无负号
-                BigDecimal displayAmount = (itemType == 1) ? stepResult : stepResult.abs();
-                SalaryItemDetail detail = new SalaryItemDetail()
-                        .setPeriodId(periodId)
-                        .setEmployeeId(employeeId)
-                        .setSummaryId(reqDTO.getSummaryId()) // 关联主表ID
-                        .setItemConfigId(itemConfigId)
-                        .setItemCode(ruleCode)
-                        .setItemName(step.getRuleName())
-                        .setSettlementAmount(displayAmount)
-                        .setSettlementCurrency("CNY")
-                        .setItemType(itemType)
-                        .setSourceType(2) // 2-引擎计算
-                        .setCalcPriority(step.getSortOrder());
-                detailList.add(detail);
-
-                // 组装 JSON 快照 DTO
-                SalaryDetailItemDTO snapshotItem = SalaryDetailItemDTO.builder()
-                        .itemCode(ruleCode)
-                        .itemName(step.getRuleName())
-                        .settlementAmount(displayAmount)
-                        .source("SYSTEM_CALC")
-                        .calcLog("公式规则: " + ruleCode) // 记录日志快照
-                        .sort(step.getSortOrder())
-                        .build();
-
-                // 按类型放入快照，并进行动态累加
-                switch (itemType) {
-                    case 1:
-                        snapshot.getIncome().add(snapshotItem);
-                        // 收入类：保持原逻辑，正数加钱，负数减钱
-                        incomeTotal = incomeTotal.add(stepResult);
-                        break;
-                    case 2:
-                        snapshot.getDeduction().add(snapshotItem);
-                        // 扣款类防御，转为绝对值累加到扣款池
-                        deductionTotal = deductionTotal.add(stepResult.abs());
-                        break;
-                    case 3:
-                        snapshot.getTax().add(snapshotItem);
-                        // 税费类防御，转为绝对值累加
-                        taxTotal = taxTotal.add(stepResult.abs());
-                        break;
-                    case 4:
-                        snapshot.getCompanyExpense().add(snapshotItem);
-                        // 公司支出防御，转为绝对值累加
-                        companyExpenseTotal = companyExpenseTotal.add(stepResult.abs());
-                        break;
-                    default:
-                        break;
-                }
-
-            } catch (Exception e) {
-                log.error("❌ 节点: {} 计算失败！原因: {}", ruleCode, e.getMessage());
-                if (step.getBlockFlag() == 1) {
-                    // 如果阻断开关开启，则抛出异常，中断整个个体的核算并回滚
-                    throw new BusinessException("核算中断: [" + ruleCode + "] 计算异常 - " + e.getMessage());
-                } else {
-                    // 容错模式：跳过并记为 0
-                    env.put(ruleCode, BigDecimal.ZERO);
-                }
-            }finally {
-                // 无论计算成功还是失败，都在 finally 块中推送异步审计日志
-                long executeTime = System.currentTimeMillis() - startTime;
-
-                SalaryCalcLog auditLog = new SalaryCalcLog();
-                auditLog.setEmployeeId(employeeId);
-                auditLog.setPeriodId(periodId);
-                auditLog.setRuleCode(ruleCode);
-                auditLog.setStage(step.getStage() != null ? step.getStage() : 1);
-                auditLog.setInputJson(JSONUtil.toJsonStr(env)); // 保存当时的计算环境变量
-                auditLog.setOutputValue(stepResult);
-                auditLog.setErrorMsg(errorMsg);
-                auditLog.setExecuteTime(executeTime);
-
-                // 发布事件 (交由后台线程异步落库)
-                eventPublisher.publishEvent(new CalcLogEvent(auditLog));
-            }
-        }
-
-        // =========================================================================
-        // 4. 成品包装：保存明细与主表汇总
-        // =========================================================================
-
-        // 4.1 删除历史明细 (支持重算覆写)
-        iSalaryItemDetailService.remove(new LambdaQueryWrapper<SalaryItemDetail>()
-                .eq(SalaryItemDetail::getPeriodId, periodId)
-                .eq(SalaryItemDetail::getEmployeeId, employeeId));
-
-        // 4.2 批量保存新明细
-        if (!detailList.isEmpty()) {
-            iSalaryItemDetailService.saveBatch(detailList);
-        }
-
-        // 4.3 汇总落盘
-        SalarySummary summary = iSalarySummaryService.getSummaryByUnique(periodId, employeeId);
-        if (summary != null) {
-            // 计算 Gross (应发) 和 Net (实发)
-            // 逻辑: 实发 = 收入合计 - 扣款合计 - 税费合计
-            BigDecimal grossSalary = incomeTotal;
-            BigDecimal netSalary = incomeTotal.subtract(deductionTotal).subtract(taxTotal);
-
-            // 补充全局 Snapshot 的汇总数据
-            snapshot.setGrossSalary(grossSalary);
-            snapshot.setDeductionTotal(deductionTotal);
-            snapshot.setTaxTotal(taxTotal);
-            snapshot.setNetSalary(netSalary);
-            snapshot.setSettlementCurrency("CNY");
-            // 记录核心引擎环境变量作为排查依据
-            snapshot.setCalcRemark("引擎计算成功，使用的管道: " + pipelineCode);
-            // 把 env 里的基础数据拿出来，真正塞进快照里！
-            snapshot.setAttendanceDays((BigDecimal) env.getOrDefault("attendanceDays", BigDecimal.ZERO));
-            snapshot.setMonthDays((BigDecimal) env.getOrDefault("monthDays", BigDecimal.ZERO));
-            snapshot.setBaseSalary((BigDecimal) env.getOrDefault("baseSalary", BigDecimal.ZERO));
-            // 将 DTO 序列化为 JSON 字符串
-            String detailJsonString = JSONUtil.toJsonStr(snapshot);
-
-            // 更新 Summary 主表
-            summary.setIncomeTotal(incomeTotal)
-                    .setDeductionTotal(deductionTotal)
-                    .setTaxTotal(taxTotal)
-                    .setGrossSalary(grossSalary)
-                    .setNetSalary(netSalary)
-                    .setCalcStatus(1) // 1-计算成功
-                    .setDetailJson(detailJsonString); // ：注入结构化工资条快照
-
-            iSalarySummaryService.updateById(summary);
-        }
-
-        log.info("⏹️ 员工 [{}] 薪资核算完毕。实发金额: {}", employeeId, snapshot.getNetSalary());
     }
 
     /**
