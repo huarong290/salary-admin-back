@@ -101,6 +101,7 @@ security:
     - /api/auth/login
     - /api/auth/refresh
     - /api/auth/captcha
+    - /api/ai/**
     # --- 下面是完整的 Swagger/Knife4j 放行清单 ---
     - /swagger-ui.html                   # 必须放行这个入口文件！
     - /swagger-ui/** # 放行 UI 静态资源

@@ -40,3 +40,28 @@ spring:
       timeout: 5000ms
       allow-fallback: false # 生产环境建议设为 false
 
+langchain4j:
+  # 1. 大模型配置 (Ollama - DeepSeek)
+  ollama:
+    chat-model:
+      base-url: http://localhost:11434
+      model-name: deepseek-r1:14b     # 确保与你 ollama list 看到的名称一致
+      temperature: 0.7                # 采样温度，0.7 适合兼顾创意与逻辑
+      timeout: PT60S                  # 推理时间可能较长，设置 60s 超时
+      log-requests: true              # 开发阶段开启，控制台可看发送给 AI 的原始报文
+      log-responses: true             # 开启，可看 AI 返回的原始报文（含 Reasoning 字段）
+
+    # 2. 向量化模型配置 (用于将文本转为数字向量)
+    embedding-model:
+      base-url: http://localhost:11434
+      model-name: nomic-embed-text    # 推荐使用这个，维度是 768
+
+  # 3. 向量数据库配置 (Milvus)
+  milvus:
+    uri: http://localhost:19530       # Milvus 默认端口
+    # token: "root:Milvus"            # 如果你设置了用户名密码则开启
+    collection-name: salary_kb        # 存储薪酬知识库的集合名称
+    dimension: 768                    # 必须与 nomic-embed-text 的输出维度一致
+    index-type: IVF_FLAT              # 索引类型，IVF_FLAT 适合本地中小型数据
+    metric-type: COSINE               # 相似度算法，推荐余弦相似度
+
