@@ -2,6 +2,7 @@ package com.salary.admin.service.impl.salary.engine;
 
 import cn.hutool.json.JSONUtil;
 import com.googlecode.aviator.AviatorEvaluator;
+import com.googlecode.aviator.Expression;
 import com.salary.admin.engine.SalaryRuleEngine;
 import com.salary.admin.event.CalcLogEvent;
 import com.salary.admin.exception.BusinessException;
@@ -43,7 +44,9 @@ public class PipelineStepExecutor {
         try {
             // 1. 前置动态阻断 (Condition Script)
             if (StringUtils.isNotBlank(step.getConditionScript())) {
-                Boolean shouldRun = (Boolean) AviatorEvaluator.execute(step.getConditionScript(), env);
+                // 使用 compile 并开启缓存 (true)。内部会将 script 的 md5 作为 key 缓存编译好的 Expression
+                Expression expression = AviatorEvaluator.getInstance().compile(step.getConditionScript(), step.getConditionScript(), true);
+                Boolean shouldRun = (Boolean) expression.execute(env);
                 if (!shouldRun){
                     // 条件不满足 -> 明确返回 skip()
                     return finalResult;

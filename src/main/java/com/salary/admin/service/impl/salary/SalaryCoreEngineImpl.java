@@ -17,8 +17,10 @@ import com.salary.admin.service.salary.ISalaryCoreEngine;
 import com.salary.admin.service.salary.ISalaryEmployeeService;
 import com.salary.admin.service.salary.ISalaryPeriodService;
 import com.salary.admin.service.salary.ISalarySummaryService;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +52,10 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
     private final SalaryPersistProcessor salaryPersistProcessor;
     private final SalaryPreviewProcessor salaryPreviewProcessor;
 
+    // 方案 A：在类中注入自身的代理对象（推荐，最优雅）
+    @Resource
+    @Lazy
+    private ISalaryCoreEngine iSalaryCoreEngineSelfProxy;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -194,7 +200,7 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
                         .setPipelineVersion(reqDTO.getPipelineVersion());
 
                 // 调用单人核算 (内层包含独立事务控制)
-                this.calculateEmployeeSalary(singleReq);
+                iSalaryCoreEngineSelfProxy.calculateEmployeeSalary(singleReq);
                 successCount++;
             } catch (Exception e) {
                 // 异常隔离：批量处理时，其中一人报错，不影响其他人的计算进度
