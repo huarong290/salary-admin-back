@@ -1,5 +1,7 @@
 package com.salary.admin.service;
 
+import com.salary.admin.model.dto.LoginResultDTO;
+import com.salary.admin.model.dto.MfaVerifyReqDTO;
 import com.salary.admin.model.dto.TokenResDTO;
 import com.salary.admin.model.dto.UserLoginReqDTO;
 
@@ -12,13 +14,22 @@ import java.util.Collection;
  */
 public interface IAuthService {
     /**
-     * 用户登录
+     * 用户登录 (第一阶段)
+     * 逻辑：校验账号密码。若需要MFA，下发临时Token；若不需要，直接下发真实Token。
      *
      * @param dto 用户登录请求参数
-     * @return TokenResDTO 包含 AccessToken、RefreshToken 等信息
+     * @return LoginResultDTO 包含是否需要MFA的标志及相应Token
      */
-    TokenResDTO login(UserLoginReqDTO dto);
-
+    LoginResultDTO login(UserLoginReqDTO dto);
+    /**
+     * MFA 二次验证 (第二阶段)
+     * 逻辑：校验临时Token和动态口令，通过后颁发真实的 AccessToken 和会话
+     *
+     * @param verifyDto MFA验证请求参数
+     * @param currentIp 当前IP
+     * @return TokenResDTO 真实的授权令牌
+     */
+    TokenResDTO verifyMfa(MfaVerifyReqDTO verifyDto, String currentIp);
     /**
      * 刷新 Token (安全增强版)
      * 逻辑：令牌轮转 + 复用检测 + 设备绑定校验

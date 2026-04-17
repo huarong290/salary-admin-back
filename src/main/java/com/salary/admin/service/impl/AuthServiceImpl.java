@@ -3,6 +3,8 @@ package com.salary.admin.service.impl;
 import com.salary.admin.constants.redis.RedisCacheConstants;
 import com.salary.admin.constants.security.JwtConstants;
 import com.salary.admin.exception.BusinessException;
+import com.salary.admin.model.dto.LoginResultDTO;
+import com.salary.admin.model.dto.MfaVerifyReqDTO;
 import com.salary.admin.model.dto.TokenResDTO;
 import com.salary.admin.model.dto.UserLoginReqDTO;
 import com.salary.admin.model.entity.sys.SysUser;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static com.salary.admin.constants.redis.RedisCacheConstants.AUTH_MFA_TOKEN_PREFIX;
 
 /**
  * 认证服务核心实现类 (安全增强版)
@@ -49,98 +53,104 @@ public class AuthServiceImpl implements IAuthService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtUtil jwtUtil;
-    /**
-     * 用户登录
-     *
-     * @param dto 用户登录请求参数
-     * @return TokenResDTO 包含 AccessToken、RefreshToken 等信息
-     */
+
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public TokenResDTO login(UserLoginReqDTO dto) {
+    public LoginResultDTO login(UserLoginReqDTO dto) {
         log.info("用户尝试登录: {}, 设备ID: {}, IP: {}", dto.getUsername(), dto.getClientInfo().getDeviceId(), dto.getLoginIp());
+
         // 1. 验证码校验
-        // 一行代码搞定验证码校验！报错会自动抛出，无需额外 if 判断
         iCaptchaService.validateCaptcha(dto.getCaptchaId(), dto.getCaptchaCode());
-        //2. 获取用户信息并校验
+
+        // 2. 获取用户信息并校验密码
         SysUser sysUser = iSysUserService.selectUserByUsername(dto.getUsername());
         if (sysUser == null || !passwordEncoder.matches(dto.getPassword().trim(), sysUser.getPassword())) {
-            // 生产建议：返回模糊错误信息，防止账号嗅探
             throw new BusinessException("用户名或密码错误");
         }
+
         // 3. 账号状态检查
         if (sysUser.getStatus() != 1) {
             throw new BusinessException("该账号已被禁用");
         }
-        // 4. 构建 JWT 自定义载荷 (Claims)
-        // 将设备ID和IP存入 Token，方便后续刷新时比对环境一致性
-        Map<String,Object> claims = Map.of(
-                "userId", sysUser.getId(),
-                "deviceId", dto.getClientInfo().getDeviceId(),
-                "loginIp", dto.getLoginIp()
-        );
 
-        // 5. 生成双 Token (Access & Refresh)
-        String accessToken = jwtUtil.generateAccessToken(sysUser.getUsername(), claims);
-        String refreshToken = jwtUtil.generateRefreshToken(sysUser.getUsername(), claims);
+        // ==========================================
+        // 🌟 4. 核心分流：检查是否开启了 MFA (两步验证)
+        // ==========================================
+        // TODO: 这里请替换为真实的业务逻辑（例如检查 sysUser 表里有没有存 Google Secret）
+        // 假设通过 sysUser.getMfaSecret() != null 来判断
+        boolean isMfaEnabled = checkUserMfaStatus(sysUser);
 
-        // 6. 获取 JTI (JWT唯一标识) 用于管理 Refresh Token 生命周期
-        String accessJti = jwtUtil.getJti(accessToken);
-        String refreshJti = jwtUtil.getJti(refreshToken);
-        //7. 执行5表联查
-        Set<String> permissions = iSysMenuService.selectPermissionsByUserId(sysUser.getId());
-        if (permissions != null && !permissions.isEmpty()) {
-            // 存入 Redis，Key 为 auth:permission:{userId}
-            iRedisService.setEx(RedisCacheConstants.AUTH_USER_PERMISSIONS + sysUser.getId(),
-                    permissions, 7, TimeUnit.DAYS);
+        if (isMfaEnabled) {
+            log.info("用户 {} 已开启 MFA，进入二次验证流程", sysUser.getUsername());
+
+            // 生成临时 mfaToken (UUID)
+            String mfaToken = UUID.randomUUID().toString().replace("-", "");
+
+            // 将后续核发 Token 所需的环境信息暂存到 Redis，有效期 5 分钟
+            String mfaContextValue = sysUser.getId() + ":" + dto.getClientInfo().getDeviceId() + ":" + dto.getClientInfo().getClientType();
+            iRedisService.setEx(AUTH_MFA_TOKEN_PREFIX + mfaToken, mfaContextValue, 5, TimeUnit.MINUTES);
+
+            // 返回第一阶段结果 (不含真实 Token)
+            LoginResultDTO result = new LoginResultDTO();
+            result.setRequireMfa(true);
+            result.setMfaToken(mfaToken);
+            // 假设从数据库得知他绑定了谷歌和海月盾盾
+            result.setSupportedTypes(Arrays.asList("GOOGLE", "HAIYUE"));
+            return result;
         }
-        //8.角色缓存 ======
-        Set<String> roles = iSysRoleService.selectRoleCodesByUserId(sysUser.getId());
-        if (roles != null) {
-            iRedisService.setEx(
-                    RedisCacheConstants.AUTH_USER_ROLES + sysUser.getId(),
-                    roles,
-                    7,
-                    TimeUnit.DAYS
-            );
-        }
-        // 9. 存储 Refresh Token 映射关系 (Fail-Secure 策略)
-        // Key: auth:refresh:{jti} -> Value: {userId}:{deviceId}
-        String refreshKey = RedisCacheConstants.AUTH_REFRESH_TOKEN + refreshJti;
 
-        // 修改存储到 Redis 的 Value 格式：userId:deviceId:clientType
-        String refreshValue = sysUser.getId() + ":" + dto.getClientInfo().getDeviceId() + ":" + dto.getClientInfo().getClientType();
+        // ==========================================
+        // 5. 无需 MFA，直接走原来的发证流程
+        // ==========================================
+        TokenResDTO tokenRes = completeLoginProcess(sysUser, dto.getClientInfo().getDeviceId(), dto.getClientInfo().getClientType(), dto.getLoginIp());
 
-        // 保存至 Redis，时间与 RefreshToken 有效期一致（如 7 天）
-        boolean stored = iRedisService.setEx(refreshKey, refreshValue, jwtUtil.getRefreshTokenTtl(), TimeUnit.SECONDS);
-        if (!stored) {
-            log.error("Redis 写入失败，阻断登录。User: {}", sysUser.getUsername());
-            throw new BusinessException("系统繁忙，登录会话创建失败");
-        }
-        // 10. 处理设备会话 (全端挤兑)
-        // 如果需要同一账号同一端只能一个在线，可以在这里清理旧的 deviceKey
-        handleDeviceSession(sysUser.getId(), dto.getClientInfo().getDeviceId(), accessJti, refreshJti);
-
-        // 11. 更新数据库最后登录信息 (虚拟线程会处理好阻塞)
-        iSysUserService.updateById(new SysUser()
-                .setId(sysUser.getId())
-                .setLastLoginTime(LocalDateTime.now()));
-
-        // 12. 组装返回 (符合 OAuth 2.0 规范版)
-        return TokenResDTO.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                // 显式设置 tokenType，方便前端拦截器直接拼接 header
-                .tokenType(JwtConstants.JWT_BEARER_PREFIX.trim())
-                // 🚨 如果你和前端约定使用秒，记得 / 1000；如果约定毫秒则保持原样
-                .expiresIn(jwtUtil.getAccessTokenTtl())
-                .refreshExpiresIn(jwtUtil.getRefreshTokenTtl())
-                .deviceId(dto.getClientInfo().getDeviceId())
-                .clientType(dto.getClientInfo().getClientType())
-                .ip(dto.getLoginIp())
-                .build();
+        LoginResultDTO result = new LoginResultDTO();
+        result.setRequireMfa(false);
+        result.setAccessToken(tokenRes.getAccessToken());
+        result.setRefreshToken(tokenRes.getRefreshToken());
+        result.setTokenType(tokenRes.getTokenType());
+        result.setExpiresIn(tokenRes.getExpiresIn());
+        result.setRefreshExpiresIn(tokenRes.getRefreshExpiresIn());
+        result.setDeviceId(tokenRes.getDeviceId());
+        return result;
     }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TokenResDTO verifyMfa(MfaVerifyReqDTO verifyDto, String currentIp) {
+        String mfaKey = RedisCacheConstants.AUTH_MFA_TOKEN_PREFIX + verifyDto.getMfaToken();
 
+        // 1. 获取临时上下文
+        String contextValue = iRedisService.get(mfaKey, String.class);
+        if (StringUtils.isBlank(contextValue)) {
+            throw new BusinessException("安全验证已超时或非法请求，请重新登录");
+        }
+
+        // 解析上下文：userId : deviceId : clientType
+        String[] parts = contextValue.split(":");
+        Long userId = Long.valueOf(parts[0]);
+        String deviceId = parts[1];
+        String clientType = parts[2];
+
+        SysUser sysUser = iSysUserService.getById(userId);
+        if (sysUser == null || sysUser.getStatus() != 1) {
+            throw new BusinessException("账号状态异常");
+        }
+
+        // 2. 调用真实的 OTP 校验逻辑 (谷歌或海月盾盾)
+        boolean isCodeValid = verifyDynamicCode(verifyDto.getMfaType(), verifyDto.getCode(), sysUser);
+        if (!isCodeValid) {
+            // 失败时不要删 Redis，让用户在 5 分钟内可以重试
+            throw new BusinessException("动态验证码错误，请检查后重试");
+        }
+
+        // 3. 验证通过，阅后即焚，销毁临时 Token
+        iRedisService.del(mfaKey);
+
+        log.info("用户 {} MFA二次验证通过，下发真实令牌", sysUser.getUsername());
+
+        // 4. 下发真实的 AccessToken 和 RefreshToken
+        return completeLoginProcess(sysUser, deviceId, clientType, currentIp);
+    }
     /**
      * 刷新 Token (安全增强版)
      * 逻辑：令牌轮转 + 复用检测 + 设备绑定校验
@@ -334,5 +344,90 @@ public class AuthServiceImpl implements IAuthService {
         // 5. 记录设备绑定 (环境校验)
         String deviceKey = RedisCacheConstants.AUTH_DEVICE_BIND + userId + ":" + deviceId;
         iRedisService.setEx(deviceKey, refreshJti, 7, TimeUnit.DAYS);
+    }
+
+    /**
+     * 🌟 私有核心方法：完成颁发 Token 及会话初始化的所有逻辑
+     * 无论是普通登录还是 MFA 验证通过，最终都调用这里收口。
+     */
+    private TokenResDTO completeLoginProcess(SysUser sysUser, String deviceId, String clientType, String loginIp) {
+        // 构建 JWT 自定义载荷 (Claims)
+        Map<String,Object> claims = Map.of(
+                "userId", sysUser.getId(),
+                "deviceId", deviceId,
+                "loginIp", loginIp
+        );
+
+        // 生成双 Token
+        String accessToken = jwtUtil.generateAccessToken(sysUser.getUsername(), claims);
+        String refreshToken = jwtUtil.generateRefreshToken(sysUser.getUsername(), claims);
+
+        String accessJti = jwtUtil.getJti(accessToken);
+        String refreshJti = jwtUtil.getJti(refreshToken);
+
+        // 执行5表联查与权限缓存
+        Set<String> permissions = iSysMenuService.selectPermissionsByUserId(sysUser.getId());
+        if (permissions != null && !permissions.isEmpty()) {
+            iRedisService.setEx(RedisCacheConstants.AUTH_USER_PERMISSIONS + sysUser.getId(), permissions, 7, TimeUnit.DAYS);
+        }
+
+        // 角色缓存
+        Set<String> roles = iSysRoleService.selectRoleCodesByUserId(sysUser.getId());
+        if (roles != null) {
+            iRedisService.setEx(RedisCacheConstants.AUTH_USER_ROLES + sysUser.getId(), roles, 7, TimeUnit.DAYS);
+        }
+
+        // 存储 Refresh Token 映射关系 (Fail-Secure 策略)
+        String refreshKey = RedisCacheConstants.AUTH_REFRESH_TOKEN + refreshJti;
+        String refreshValue = sysUser.getId() + ":" + deviceId + ":" + clientType;
+        boolean stored = iRedisService.setEx(refreshKey, refreshValue, jwtUtil.getRefreshTokenTtl(), TimeUnit.SECONDS);
+        if (!stored) {
+            throw new BusinessException("系统繁忙，登录会话创建失败");
+        }
+
+        // 处理设备互踢会话
+        handleDeviceSession(sysUser.getId(), deviceId, accessJti, refreshJti);
+
+        // 更新数据库最后登录时间
+        iSysUserService.updateById(new SysUser().setId(sysUser.getId()).setLastLoginTime(LocalDateTime.now()));
+
+        return TokenResDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType(JwtConstants.JWT_BEARER_PREFIX.trim())
+                .expiresIn(jwtUtil.getAccessTokenTtl())
+                .refreshExpiresIn(jwtUtil.getRefreshTokenTtl())
+                .deviceId(deviceId)
+                .clientType(clientType)
+                .ip(loginIp)
+                .build();
+    }
+
+    // ==========================================
+    // 🛡️ 占位方法：请根据实际使用的 MFA 厂商 SDK 进行实现
+    // ==========================================
+
+    /**
+     * 判断用户是否开启了两步验证
+     */
+    private boolean checkUserMfaStatus(SysUser sysUser) {
+        // TODO: 替换为实际数据库字段判断
+        // return StringUtils.isNotBlank(sysUser.getGoogleSecret());
+        return true; // 演示环境强制开启
+    }
+
+    /**
+     * 校验动态验证码是否正确
+     */
+    private boolean verifyDynamicCode(String mfaType, String code, SysUser sysUser) {
+        if ("GOOGLE".equals(mfaType)) {
+            // TODO: 调用 Google Authenticator SDK 校验口令
+            // return GoogleAuthenticatorUtil.checkCode(sysUser.getGoogleSecret(), Long.parseLong(code));
+            return "123456".equals(code); // 演示环境：输入123456即通过
+        } else if ("HAIYUE".equals(mfaType)) {
+            // TODO: 调用海月盾盾云端 API 校验
+            return "88888888".equals(code);
+        }
+        return false;
     }
 }

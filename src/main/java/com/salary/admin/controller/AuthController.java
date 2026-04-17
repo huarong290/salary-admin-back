@@ -3,9 +3,7 @@ package com.salary.admin.controller;
 
 import com.salary.admin.annotation.Loggable;
 import com.salary.admin.common.ApiResult;
-import com.salary.admin.model.dto.TokenRefreshReqDTO;
-import com.salary.admin.model.dto.TokenResDTO;
-import com.salary.admin.model.dto.UserLoginReqDTO;
+import com.salary.admin.model.dto.*;
 import com.salary.admin.model.dto.captcha.CaptchaResDTO;
 import com.salary.admin.service.IAuthService;
 import com.salary.admin.service.ICaptchaService;
@@ -37,14 +35,22 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "用户登录")
     @Loggable(title = "用户登录")
-    public ApiResult<TokenResDTO> login(@Validated @RequestBody UserLoginReqDTO loginDto, HttpServletRequest request) {
+    public ApiResult<LoginResultDTO> login(@Validated @RequestBody UserLoginReqDTO loginDto, HttpServletRequest request) {
         // 1. 手动注入由后端控制的属性
         loginDto.setLoginIp(IpUtils.getClientIp(request));
 
         // 2. 调用自定义 AuthService
         return ApiResult.successResult(iAuthService.login(loginDto));
     }
-
+    // 🌟 新增：MFA 二次验证接口
+    @PostMapping("/verify-mfa")
+    @Operation(summary = "MFA二次验证(第二阶段)")
+    @Loggable(title = "MFA安全验证")
+    public ApiResult<TokenResDTO> verifyMfa(@Validated @RequestBody MfaVerifyReqDTO verifyDto, HttpServletRequest request) {
+        String currentIp = IpUtils.getClientIp(request);
+        // 校验动态口令并颁发真实的 AccessToken
+        return ApiResult.successResult(iAuthService.verifyMfa(verifyDto, currentIp));
+    }
     @PostMapping("/refresh")
     @Operation(summary = "令牌续期")
     @Loggable(title = "令牌续期", logResponse = false)

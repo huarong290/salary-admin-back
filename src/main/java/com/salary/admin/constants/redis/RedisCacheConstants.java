@@ -186,7 +186,6 @@ public final class RedisCacheConstants {
 
     /**
      * 用户角色缓存
-     *
      * auth:roles:{userId} -> Set<String>
      */
     public static final String AUTH_USER_ROLES = AUTH_ROOT + "roles:";
@@ -194,18 +193,17 @@ public final class RedisCacheConstants {
 
     /**
      * 用户权限综合缓存
-     *
      * auth:user:auth:{userId} -> {roles, permissions}
-     *
      * 用途：
      * 1. 减少 Redis 查询次数
      * 2. 高并发权限查询优化
      */
-    public static final String AUTH_USER_AUTH = AUTH_ROOT + "user:auth:";  // ⭐ 新增
+    public static final String AUTH_USER_AUTH = AUTH_ROOT + "user:auth:";
 
 
     // ============================ 安全控制 ============================
-
+    // MFA 临时令牌的 Redis 前缀 (你可以将它移到 RedisCacheConstants 中)
+    public static final String AUTH_MFA_TOKEN_PREFIX = "auth:mfa:token:";
     /**
      * 验证码缓存
      *
