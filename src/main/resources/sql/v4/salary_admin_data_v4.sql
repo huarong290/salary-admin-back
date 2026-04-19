@@ -183,8 +183,9 @@ VALUES
 (251, '查看汇总列表', 'salary_summary_query', '', '', '', '', 'salary:summary:query', 3, 250, 1, 1, 1),
 (252, '查看工资条明细', 'salary_summary_detail', '', '', '', '', 'salary:summary:detail', 3, 250, 2, 1, 1),
 (253, '锁定与解锁单据', 'salary_summary_lock', '', '', '', '', 'salary:summary:lock', 3, 250, 3, 1, 1),
-(254, '执行引擎核算', 'salary_summary_calc', '', '', '', '', 'salary:summary:calc', 3, 250, 4, 1, 1);
-
+(254, '执行引擎核算', 'salary_summary_calc', '', '', '', '', 'salary:summary:calc', 3, 250, 4, 1, 1),
+(255, '初始化本月账套', 'salary_summary_init', '', '', '', '', 'salary:summary:init', 3, 250, 5, 1, 1),
+(256, '手工发放总金额', 'salary_summary_adjust', '', '', '', '', 'salary:summary:adjust', 3, 250, 6, 1, 1);
 -- 5. 初始化角色菜单关联 (sys_role_menu)
 -- ==========================================================
 

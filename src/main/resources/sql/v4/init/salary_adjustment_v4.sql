@@ -1,4 +1,4 @@
-INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (6,14,'UTILITY_DEDUCTION','水电扣款','CNY',134.1100,1.000000,134.1100,2,1,1,'2024年5月水电网扣费',0,'system','2026-04-07 12:36:19','system','2026-04-07 09:31:02'),
 	 (6,22,'UTILITY_DEDUCTION','水电网扣款','CNY',5.6200,1.000000,5.6200,2,1,1,'2024年6月水电网扣费',0,'system','2026-04-07 15:59:47','system','2026-04-07 09:31:02'),
 	 (6,22,'EVENT_EURO_CUP','欧洲杯激励奖金','CNY',21000.0000,1.000000,21000.0000,1,1,1,'2024年6月欧洲杯激励',0,'system','2026-04-07 16:00:54','system','2026-04-07 09:31:02'),
@@ -9,7 +9,7 @@ INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,i
 	 (6,38,'DEPOSIT_DEDUCTION_CURRENT','本月押金扣除','CNY',2000.0000,1.000000,2000.0000,2,1,1,'2024年8月本月押金扣除',0,'system','2026-04-08 11:08:33','system','2026-04-08 03:12:24'),
 	 (6,38,'FINE_DEDUCTION','管理罚款','CNY',1273.8900,1.000000,1273.8900,2,1,1,'2024年8月各类罚款',0,'system','2026-04-08 11:09:52','system','2026-04-08 03:12:24'),
 	 (6,38,'HOUSING_ALLOW','住房补贴','CNY',1614.9600,1.000000,1614.9600,1,1,1,'2024年8月住房补贴',0,'system','2026-04-08 11:11:27','system','2026-04-08 03:12:24');
-INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (6,46,'UTILITY_DEDUCTION','水电网扣款','CNY',6.8200,1.000000,6.8200,2,1,1,'2024年9月水电网扣款',0,'system','2026-04-08 11:15:58','system','2026-04-08 03:27:13'),
 	 (6,46,'HOUSING_ALLOW','住房补贴','CNY',2292.9900,1.000000,2292.9900,1,1,1,'2024年9月外宿房补',0,'system','2026-04-08 11:17:05','system','2026-04-08 03:27:13'),
 	 (6,46,'FESTIVAL_MID_AUTUMN_GIFT','中秋节福利','CNY',2800.0000,1.000000,2800.0000,1,1,1,'2024年9月中秋节福利',0,'system','2026-04-08 11:17:55','system','2026-04-08 03:27:13'),
@@ -20,7 +20,7 @@ INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,i
 	 (6,62,'DEPOSIT_DEDUCTION_CURRENT','本月押金扣除','USDT',439.8300,1.000000,439.8300,2,1,1,'2024年月11月本月押金扣除',0,'system','2026-04-08 11:46:34','system','2026-04-08 03:46:45'),
 	 (6,70,'PREV_MONTH_ADJUSTMENT','上月补发/续扣','USDT',40.0000,1.000000,40.0000,2,1,1,'2024年12月扣款',0,'system','2026-04-08 11:57:07','system','2026-04-08 04:27:26'),
 	 (6,78,'FESTIVAL_SPRING_BONUS','春节礼金','USDT',150.0000,1.000000,150.0000,1,1,1,'2025年1月春节礼金',0,'system','2026-04-08 13:19:14','system','2026-04-08 05:20:29');
-INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (6,78,'FESTIVAL_SPRING_GIFT','春节福利','USDT',753.5500,1.000000,753.5500,1,1,1,'2025年1月春节值班双薪4天',0,'system','2026-04-08 13:20:03','system','2026-04-08 05:24:17'),
 	 (6,86,'FESTIVAL_SPRING_GIFT','春节福利','USDT',625.7100,1.000000,625.7100,1,1,1,'2025年2月春节值班双薪3天',0,'system','2026-04-08 13:27:42','system','2026-04-08 05:30:25'),
 	 (6,86,'ABSENT_DEDUCTION','缺勤扣款','USDT',250.2800,1.000000,250.2800,2,1,1,'2025年2月考勤扣款,多休一天,计算公式=(底薪+绩效)/28',0,'system','2026-04-08 13:30:03','system','2026-04-08 05:30:25'),
@@ -31,7 +31,7 @@ INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,i
 	 (6,118,'DEPOSIT_REFUND_CURRENT','本月押金返还','USD',420.0000,1.000000,420.0000,1,1,1,'2025年6月本月返还420',0,'system','2026-04-08 14:00:09','system','2026-04-08 09:34:18'),
 	 (6,126,'DEPOSIT_REFUND_CURRENT','本月押金返还','USDT',560.0000,1.000000,560.0000,1,1,1,'2025年7月本月押金返还560',0,'system','2026-04-08 14:56:25','system','2026-04-08 09:34:18'),
 	 (6,134,'PREV_MONTH_ADJUSTMENT','上月补发/续扣','CNY',859.0500,1.000000,859.0500,1,1,0,'2025年8月本月补发 （底薪+绩效)*0.2/月天数*场地出勤天数',0,'system','2026-04-08 15:02:00','system','2026-04-11 03:42:24');
-INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (6,150,'FESTIVAL_MID_AUTUMN_GIFT','中秋节福利','USDT',452.1300,1.000000,452.1300,1,1,1,'2025年10月中秋节值班福利',0,'system','2026-04-08 15:15:35','system','2026-04-08 07:17:23'),
 	 (6,150,'FESTIVAL_MID_AUTUMN_BONUS','中秋节礼金','USDT',180.0000,1.000000,180.0000,1,1,1,'2025年10月中秋节礼金',0,'system','2026-04-08 15:16:14','system','2026-04-08 07:17:23'),
 	 (6,150,'ANNUAL_LEAVE_BONUS','年假奖金','USDT',1500.0000,1.000000,1500.0000,1,1,1,'2025年10月年假奖金',0,'system','2026-04-08 15:17:01','system','2026-04-08 07:17:23'),
@@ -42,7 +42,7 @@ INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,i
 	 (5,77,'FESTIVAL_SPRING_GIFT','春节福利','USDT',806.4500,1.000000,806.4500,1,1,1,'2025年1月春节值班双薪4天',0,'system','2026-04-08 16:24:22','system','2026-04-08 08:31:45'),
 	 (5,77,'FESTIVAL_SPRING_BONUS','春节礼金','USDT',150.0000,1.000000,150.0000,1,1,1,'2025年1月春节礼金',0,'system','2026-04-08 16:25:30','system','2026-04-08 08:25:35'),
 	 (5,85,'ANNUAL_BONUS_13','年终奖13薪','USDT',4687.5000,1.000000,4687.5000,1,1,1,'2025年2月年终奖13薪资、计算公式=底薪*(入职月份/年月份)',0,'system','2026-04-08 16:36:44','system','2026-04-08 08:41:02');
-INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,85,'FESTIVAL_SPRING_GIFT','春节福利','USDT',669.6400,1.000000,669.6400,1,1,1,'2025年2月春节值班双薪3天',0,'system','2026-04-08 16:37:25','system','2026-04-08 08:41:02'),
 	 (5,85,'ABSENT_DEDUCTION','缺勤扣款','USDT',334.8200,1.000000,334.8200,2,1,1,'2025年2月考勤扣款,多休一天,计算公式=(底薪+绩效)/28',0,'system','2026-04-08 16:39:13','system','2026-04-08 08:41:02'),
 	 (5,101,'PREV_MONTH_ADJUSTMENT','上月补发/续扣','USDT',360.0000,1.000000,360.0000,1,1,1,'2025年4月未知补贴',0,'system','2026-04-08 16:59:03','system','2026-04-08 09:25:44'),
@@ -53,7 +53,7 @@ INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,i
 	 (5,125,'PREV_MONTH_ADJUSTMENT','上月补发/续扣','USDT',147.1500,1.000000,147.1500,1,1,1,'2025年7月未知补贴',0,'system','2026-04-08 18:36:55','system','2026-04-08 10:37:00'),
 	 (5,133,'PREV_MONTH_ADJUSTMENT','上月补发/续扣','USDT',15.0000,1.000000,15.0000,1,1,1,'2025年8月 未知补贴',0,'system','2026-04-08 18:41:30','system','2026-04-08 10:41:56'),
 	 (5,141,'OTHER_ALLOWANCE','其他补贴','USDT',570.0000,1.000000,570.0000,1,1,1,'2025年9月其他补贴',0,'system','2026-04-10 13:27:57','system','2026-04-10 05:28:02');
-INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,149,'FESTIVAL_DRAGON_BOAT_BONUS','端午节礼金','USDT',180.0000,1.000000,180.0000,1,1,1,'2025年10月中秋节礼金',0,'system','2026-04-10 13:29:57','system','2026-04-10 05:32:05'),
 	 (5,149,'FESTIVAL_MID_AUTUMN_GIFT','中秋节福利','USDT',403.2300,1.000000,403.2300,1,1,1,'2025年10月中秋节福利',0,'system','2026-04-10 13:31:49','system','2026-04-10 05:32:05'),
 	 (5,109,'OTHER_ALLOWANCE','其他补贴','USDT',15.0000,1.000000,15.0000,1,1,1,'2025年5月其他补贴',0,'system','2026-04-10 13:49:28','system','2026-04-10 05:50:09'),
@@ -64,7 +64,7 @@ INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,i
 	 (5,173,'PREV_MONTH_ADJUSTMENT','上月补发/续扣','USDT',610.0000,1.000000,610.0000,1,1,1,'2026年1月上月补发续扣',0,'system','2026-04-10 14:28:31','system','2026-04-10 06:28:36'),
 	 (5,181,'ANNUAL_BONUS_13','年终奖13薪','USDT',6250.0000,1.000000,6250.0000,1,1,1,'2026年2月年终奖13薪',0,'system','2026-04-10 14:42:45','system','2026-04-10 06:46:53'),
 	 (5,181,'FESTIVAL_SPRING_GIFT','春节福利','USDT',1562.5000,1.000000,1562.5000,1,1,1,'2026年2月7天春节值班双薪',0,'system','2026-04-10 14:46:44','system','2026-04-10 06:46:53');
-INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,181,'OTHER_ALLOWANCE','其他补贴','USDT',1033.5000,1.000000,1033.5000,1,1,1,'2026年2月其他补贴',0,'system','2026-04-10 14:53:14','system','2026-04-10 06:55:43'),
 	 (7,63,'DEPOSIT_DEDUCTION_CURRENT','本月押金扣除','USDT',468.8900,1.000000,468.8900,2,1,1,'2024年11月本月押金扣除',0,'system','2026-04-10 15:13:27','system','2026-04-10 07:13:32'),
 	 (7,71,'OTHER_DEDUCTION','其他扣除','USDT',40.0000,1.000000,40.0000,2,1,1,'2024年12月其他扣除',0,'system','2026-04-10 15:16:16','system','2026-04-10 07:16:25'),
@@ -75,7 +75,7 @@ INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,i
 	 (7,87,'ANNUAL_BONUS_13','年终奖13薪','USDT',3706.6700,1.000000,3706.6700,1,1,1,'2025年2月年终奖13薪资、计算公式=底薪*(入职月份/年月份)',0,'system','2026-04-10 16:10:55','system','2026-04-10 08:46:26'),
 	 (7,87,'FESTIVAL_SPRING_GIFT','春节福利','USDT',595.7100,1.000000,595.7100,1,1,1,'2025年2月春节值班双薪3天',0,'system','2026-04-10 16:12:21','system','2026-04-10 08:12:27'),
 	 (7,87,'OTHER_DEDUCTION','其他扣除','USDT',246.8900,1.000000,246.8900,2,1,1,'未知扣款',0,'system','2026-04-10 16:19:47','system','2026-04-10 09:02:01');
-INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,95,'OTHER_ALLOWANCE','其他补贴','USDT',321.2900,1.000000,321.2900,1,1,1,'2025年3月其他补贴',0,'system','2026-04-10 18:46:29','system','2026-04-10 10:49:08'),
 	 (7,111,'FESTIVAL_DRAGON_BOAT_BONUS','端午节礼金','USDT',180.0000,1.000000,180.0000,1,1,1,'2025年5月端午节礼金',0,'system','2026-04-11 10:16:15','system','2026-04-11 02:23:02'),
 	 (7,111,'FESTIVAL_DRAGON_BOAT_GIFT','端午节福利','USDT',358.8100,1.000000,358.8100,1,1,1,'2025年5月端午节福利',0,'system','2026-04-11 10:22:00','system','2026-04-11 02:32:22'),
@@ -86,7 +86,7 @@ INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,i
 	 (7,127,'OTHER_ALLOWANCE','其他补贴','USDT',15.0000,1.000000,15.0000,1,1,1,'2025年7月其他补贴',0,'system','2026-04-11 10:42:14','system','2026-04-11 02:42:19'),
 	 (7,135,'OTHER_ALLOWANCE','其他补贴','USDT',197.5800,1.000000,197.5800,1,1,1,'2025年8月其他补贴',0,'system','2026-04-11 10:58:46','system','2026-04-11 02:58:51'),
 	 (7,151,'FESTIVAL_MID_AUTUMN_BONUS','中秋节礼金','USDT',180.0000,1.000000,180.0000,1,1,1,'2025年10月中秋节礼金',0,'system','2026-04-11 11:18:51','system','2026-04-11 03:21:00');
-INSERT INTO salary_admin_v3.salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_adjustment (employee_id,period_id,item_code,item_name,currency,original_amount,exchange_rate,settlement_amount,adjust_type,source_type,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,151,'FESTIVAL_MID_AUTUMN_GIFT','中秋节福利','USDT',358.7100,1.000000,358.7100,1,1,1,'2025年10月中秋节福利',0,'system','2026-04-11 11:20:55','system','2026-04-11 03:21:00'),
 	 (7,151,'OTHER_ALLOWANCE','其他补贴','USDT',15.0000,1.000000,15.0000,1,1,1,'2025年10月其他补贴',0,'system','2026-04-11 11:23:28','system','2026-04-11 03:23:39'),
 	 (7,167,'OTHER_ALLOWANCE','其他补贴','USDT',15.0000,1.000000,15.0000,1,1,1,'2025年12月其他补贴',0,'system','2026-04-11 11:33:34','system','2026-04-11 03:33:43'),

@@ -20,6 +20,10 @@ public class SummaryQueryReqDTO extends PageQueryDTO {
     @Schema(description = "指定查询的薪资周期ID")
     private Long periodId;
 
+    // 核算年份查询条件 (如: 2025)
+    @Schema(description = "结算年份 (如: 2025)")
+    private String settlementYear;
+
     @Schema(description = "结算月份 (如: 202603)")
     private String settlementMonth;
 

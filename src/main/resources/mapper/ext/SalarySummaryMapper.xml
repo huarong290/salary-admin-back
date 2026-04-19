@@ -58,6 +58,9 @@
             <if test="query.settlementMonth != null and query.settlementMonth != ''">
                 AND settlement_month = #{query.settlementMonth}
             </if>
+            <if test="query.settlementYear != null and query.settlementYear != ''">
+                AND settlement_month LIKE CONCAT(#{query.settlementYear}, '%')
+            </if>
             <if test="query.calcStatus != null">
                 AND calc_status = #{query.calcStatus}
             </if>
@@ -71,6 +74,6 @@
                 )
             </if>
         </where>
-        ORDER BY id DESC
+        ORDER BY settlement_month DESC,id DESC
     </select>
 </mapper>
