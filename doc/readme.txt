@@ -1,3 +1,8 @@
+十六万人人同城约反馈群：https://t.me/+35NWameh1AQxODIx 双向联系机器人 @juanjie666bot 加我飞机好友，加我好友永不失联
+@yuepao22222
+@yuepaogirl
+@yuepao_id
+
 三层模型
 ① 档案层（规则层）
 salary_archive
@@ -106,3 +111,6 @@ A:6555 B：5304
 202512  5304
 202601  4352
 202602  10627
+202603  10627
+
+
