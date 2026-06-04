@@ -65,7 +65,6 @@ public class RedisConfig implements InitializingBean {
         mapper.registerModule(new JavaTimeModule());
         // 禁用将日期序列化为时间戳，改用标准 ISO-8601 格式
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // 注意：此处不开启全局 activateDefaultTyping 以规避反序列化漏洞，建议在 DTO 上按需配置 @JsonTypeInfo
         return mapper;
     }
 
@@ -90,41 +89,31 @@ public class RedisConfig implements InitializingBean {
         });
         log.info("===========================================");
     }
+
     /**
      * 获取连接池配置
-     * 明确泛型为 GenericObjectPoolConfig<?> 以适配 Lettuce 内部的捕获逻辑
      */
     private GenericObjectPoolConfig<StatefulConnection<?, ?>> getPoolConfig() {
-        // 明确声明泛型类型
         GenericObjectPoolConfig<StatefulConnection<?, ?>> poolConfig = new GenericObjectPoolConfig<>();
-
         Optional.ofNullable(redisProperties.getLettuce())
                 .map(RedisProperties.Lettuce::getPool)
                 .ifPresent(p -> {
                     poolConfig.setMaxTotal(p.getMaxActive());
                     poolConfig.setMaxIdle(p.getMaxIdle());
                     poolConfig.setMinIdle(p.getMinIdle());
-                    // 优雅处理超时时间
                     Duration maxWait = p.getMaxWait() != null ? p.getMaxWait() : Duration.ofSeconds(2);
                     poolConfig.setMaxWait(maxWait);
                 });
         return poolConfig;
     }
+
     /**
      * 构建 LettuceConnectionFactory 的统一方法
-     * 包含连接池配置、命令超时、优雅停机超时等参数
-     *
-     * @param config Redis模式配置（Standalone/Sentinel/Cluster）
-     * @param mode 当前模式描述
-     * @param nodeDetails 节点详情（IP:Port 列表）
-     * @return LettuceConnectionFactory
      */
     private LettuceConnectionFactory createFactory(RedisConfiguration config, String mode, String nodeDetails) {
         log.info("正在初始化 Redis 连接工厂 | 模式: {} | 详细节点详情: [{}]", mode, nodeDetails);
-        // 1. 获取配置并明确指定泛型或使用原始类型以规避编译器捕获错误
         GenericObjectPoolConfig<StatefulConnection<?, ?>> poolConfig = getPoolConfig();
 
-        // 2.Lettuce 客户端配置
         LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
                 .commandTimeout(Optional.ofNullable(redisProperties.getTimeout()).orElse(Duration.ofSeconds(2)))
                 .shutdownTimeout(Duration.ofMillis(500)) // 优雅停机超时
@@ -141,13 +130,14 @@ public class RedisConfig implements InitializingBean {
      * 当配置 spring.data.redis.sentinel.master 时生效
      */
     @Bean
+    @Primary // 🔄 调整点 1-1：增加 @Primary。当加载 Mac 的哨兵配置时，确保优先使用该高可用工厂作为主装配源
     @ConditionalOnProperty(prefix = "spring.data.redis.sentinel", name = "master")
     public RedisConnectionFactory sentinelConnectionFactory() {
         RedisProperties.Sentinel sentinel = redisProperties.getSentinel();
         if (sentinel == null || CollectionUtils.isEmpty(sentinel.getNodes())) {
             if (allowFallback) {
                 log.warn("⚠️ Sentinel 节点配置缺失，尝试降级至 Standalone...");
-                return standaloneConnectionFactory();
+                return createFallbackStandaloneFactory(); // 🔄 调整点 1-2：改用独立的硬降级方法
             }
             throw new IllegalArgumentException("Redis Sentinel nodes are required!");
         }
@@ -170,7 +160,7 @@ public class RedisConfig implements InitializingBean {
         if (cluster == null || CollectionUtils.isEmpty(cluster.getNodes())) {
             if (allowFallback) {
                 log.warn("⚠️ Cluster 节点配置缺失，尝试降级至 Standalone...");
-                return standaloneConnectionFactory();
+                return createFallbackStandaloneFactory(); // 🔄 调整点 2：统一改用硬降级私有方法
             }
             throw new IllegalArgumentException("Redis Cluster nodes are required!");
         }
@@ -186,25 +176,33 @@ public class RedisConfig implements InitializingBean {
      * 默认模式，作为所有场景的兜底方案
      */
     @Bean
-    @Primary
-    // 只有当配置中显式存在 host 且不存在 sentinel 时，才初始化单机工厂
-    @ConditionalOnProperty(prefix = "spring.data.redis", name = "host")
-    @ConditionalOnMissingBean(RedisSentinelConfiguration.class)
+    // 🔄 调整点 3：把原先错误的缺失注解，改成对 Factory 接口本身的缺失校验
+    @ConditionalOnMissingBean(RedisConnectionFactory.class)
     public RedisConnectionFactory standaloneConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(
-                redisProperties.getHost(), redisProperties.getPort());
+        String host = Optional.ofNullable(redisProperties.getHost()).orElse("127.0.0.1");
+        int port = redisProperties.getPort() != 0 ? redisProperties.getPort() : 6379;
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         config.setDatabase(redisProperties.getDatabase());
         Optional.ofNullable(redisProperties.getPassword()).ifPresent(config::setPassword);
 
-        return createFactory(config, "STANDALONE", redisProperties.getHost() + ":" + redisProperties.getPort());
+        return createFactory(config, "STANDALONE", host + ":" + port);
+    }
+
+    /**
+     * 🔄 调整点 4：完全新增的方法。
+     * 专门用于哨兵或集群配置在运行时意外缺失时，执行纯粹的“硬编码降级”逻辑。
+     */
+    private RedisConnectionFactory createFallbackStandaloneFactory() {
+        String host = Optional.ofNullable(redisProperties.getHost()).orElse("127.0.0.1");
+        int port = redisProperties.getPort() != 0 ? redisProperties.getPort() : 6379;
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+        config.setDatabase(redisProperties.getDatabase());
+        Optional.ofNullable(redisProperties.getPassword()).ifPresent(config::setPassword);
+        return createFactory(config, "STANDALONE-FALLBACK", host + ":" + port);
     }
 
     // ==================== RedisTemplate 定义 ====================
 
-    /**
-     * 通用 RedisTemplate
-     * Key 使用 String 序列化，Value 使用 JSON 序列化
-     */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory, ObjectMapper redisObjectMapper) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
@@ -214,10 +212,6 @@ public class RedisConfig implements InitializingBean {
         return template;
     }
 
-    /**
-     * Long 类型专用 RedisTemplate
-     * 避免数字转成 JSON 字符串的冗余
-     */
     @Bean
     public RedisTemplate<String, Long> longRedisTemplate(RedisConnectionFactory factory) {
         RedisTemplate<String, Long> template = new RedisTemplate<>();
@@ -227,10 +221,6 @@ public class RedisConfig implements InitializingBean {
         return template;
     }
 
-    /**
-     * String 类型专用 RedisTemplate
-     * 常用于简单的 KV 存储
-     */
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory factory) {
         return new StringRedisTemplate(factory);

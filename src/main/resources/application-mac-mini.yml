@@ -1,0 +1,40 @@
+# ======================================================================================
+# Mac mini 专属开发环境配置 (profile: mac-mini)
+# 适配场景：Mac 本地 OrbStack 分别独立运行的 MySQL InnoDB 集群与 Redis 哨兵高可用集群
+# ======================================================================================
+spring:
+  config:
+    activate:
+      on-profile: mac-mini
+
+  # ------------------------------------------------------
+  # 1. MySQL 集群连接（通过本地映射的 Router 读写分离端口 6446 接入）
+  # ------------------------------------------------------
+  datasource:
+    url: jdbc:mysql://127.0.0.1:6446/salary_admin_v6?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # ------------------------------------------------------
+  # 2. Redis 哨兵拓扑连接（自动继承主文件的 Lettuce 连接池参数）
+  # ------------------------------------------------------
+  data:
+    redis:
+      sentinel:
+        master: mymaster          # ⚠️ 必须严格对齐你本地 sentinel.conf 中的集群主节点别名
+        nodes:
+          - 127.0.0.1:26379
+          - 127.0.0.1:26380
+          - 127.0.0.1:26381
+      password: ${REDIS_PASSWORD:123456}
+      database: 0
+      timeout: 3000ms             # 本地集群涉及拓扑寻址，稍微放宽超时时间
+
+# ------------------------------------------------------
+# 3. 针对本地开发体验的微调
+# ------------------------------------------------------
+salary:
+  security:
+    captcha:
+      enabled: false              # 💡 提示：在本地 Mac 调试接口时建议关闭验证码，用 Bruno 测接口更爽
