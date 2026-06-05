@@ -1,4 +1,4 @@
-INSERT INTO salary_admin_v4.sys_dict_type (dict_type_code,dict_type_name,dict_category,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_dict_type (dict_type_code,dict_type_name,dict_category,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('salary_item_category','薪资项目大类','salary',1,'定义薪资项的物理分类：收入、扣款、税费等',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','薪资项目细类','salary',1,'定义具体的业务逻辑标识，用于代码或脚本识别',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_calc_stage','薪资核算阶段','salary',1,'定义薪资瀑布流引擎执行的物理次序阶段',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),

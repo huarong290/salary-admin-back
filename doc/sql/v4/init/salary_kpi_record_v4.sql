@@ -1,4 +1,4 @@
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,1,'202401','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:09:55','system','2026-04-19 10:09:55'),
 	 (2,2,'202401','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:09:55','system','2026-04-19 10:09:55'),
 	 (3,3,'202401','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:09:55','system','2026-04-19 10:09:55'),
@@ -9,7 +9,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (8,8,'202401','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:09:55','system','2026-04-19 10:09:55'),
 	 (1,9,'202402','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:03','system','2026-04-19 10:10:03'),
 	 (2,10,'202402','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:03','system','2026-04-19 10:10:03');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,11,'202402','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:03','system','2026-04-19 10:10:03'),
 	 (4,12,'202402','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:03','system','2026-04-19 10:10:03'),
 	 (5,13,'202402','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:03','system','2026-04-19 10:10:03'),
@@ -20,7 +20,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (2,18,'202403','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:08','system','2026-04-19 10:10:08'),
 	 (3,19,'202403','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:08','system','2026-04-19 10:10:08'),
 	 (4,20,'202403','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:08','system','2026-04-19 10:10:08');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,21,'202403','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:08','system','2026-04-19 10:10:08'),
 	 (6,22,'202403','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:08','system','2026-04-19 10:10:08'),
 	 (7,23,'202403','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:08','system','2026-04-19 10:10:08'),
@@ -31,7 +31,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (4,28,'202404','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:13','system','2026-04-19 10:10:13'),
 	 (5,29,'202404','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:13','system','2026-04-19 10:10:13'),
 	 (6,30,'202404','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:13','system','2026-04-19 10:10:13');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,31,'202404','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:13','system','2026-04-19 10:10:13'),
 	 (8,32,'202404','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:13','system','2026-04-19 10:10:13'),
 	 (1,33,'202405','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:18','system','2026-04-19 10:10:18'),
@@ -42,7 +42,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (6,38,'202405','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:18','system','2026-04-19 10:10:18'),
 	 (7,39,'202405','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:18','system','2026-04-19 10:10:18'),
 	 (8,40,'202405','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:18','system','2026-04-19 10:10:18');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,41,'202406','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:23','system','2026-04-19 10:10:23'),
 	 (2,42,'202406','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:23','system','2026-04-19 10:10:23'),
 	 (3,43,'202406','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:23','system','2026-04-19 10:10:23'),
@@ -53,7 +53,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (8,48,'202406','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:23','system','2026-04-19 10:10:23'),
 	 (1,49,'202407','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:27','system','2026-04-19 10:10:27'),
 	 (2,50,'202407','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:27','system','2026-04-19 10:10:27');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,51,'202407','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:27','system','2026-04-19 10:10:27'),
 	 (4,52,'202407','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:27','system','2026-04-19 10:10:27'),
 	 (5,53,'202407','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:27','system','2026-04-19 10:10:27'),
@@ -64,7 +64,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (2,58,'202408','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:31','system','2026-04-19 10:10:31'),
 	 (3,59,'202408','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:31','system','2026-04-19 10:10:31'),
 	 (4,60,'202408','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:31','system','2026-04-19 10:10:31');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,61,'202408','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:31','system','2026-04-19 10:10:31'),
 	 (6,62,'202408','A',0.00,0.5000,'','2024年8月KPI绩效A级',1,1,0,'system','2026-04-19 10:10:31','system','2026-04-19 10:10:31'),
 	 (7,63,'202408','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:31','system','2026-04-19 10:10:31'),
@@ -75,7 +75,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (4,68,'202409','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:36','system','2026-04-19 10:10:36'),
 	 (5,69,'202409','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:36','system','2026-04-19 10:10:36'),
 	 (6,70,'202409','B',0.00,0.2000,'','2024年9月KPI绩效B级',1,1,0,'system','2026-04-19 10:10:36','system','2026-04-19 10:10:36');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,71,'202409','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:36','system','2026-04-19 10:10:36'),
 	 (8,72,'202409','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:36','system','2026-04-19 10:10:36'),
 	 (1,73,'202410','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:40','system','2026-04-19 10:10:40'),
@@ -86,7 +86,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (6,78,'202410','A',0.00,0.5000,'','2024年10月KPI绩效A级',1,1,0,'system','2026-04-19 10:10:40','system','2026-04-19 10:10:40'),
 	 (7,79,'202410','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:40','system','2026-04-19 10:10:40'),
 	 (8,80,'202410','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:40','system','2026-04-19 10:10:40');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,81,'202411','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:44','system','2026-04-19 10:10:44'),
 	 (2,82,'202411','B',0.00,0.2000,'','2024年11月KPI绩效B级',0,1,0,'system','2026-04-19 10:10:44','system','2026-04-19 10:10:44'),
 	 (3,83,'202411','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:44','system','2026-04-19 10:10:44'),
@@ -97,7 +97,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (8,88,'202411','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:44','system','2026-04-19 10:10:44'),
 	 (1,89,'202412','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:49','system','2026-04-19 10:10:49'),
 	 (2,90,'202412','B',0.00,0.2000,'','2024年12月KPI绩效B级',0,1,0,'system','2026-04-19 10:10:49','system','2026-04-19 10:10:49');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,91,'202412','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:49','system','2026-04-19 10:10:49'),
 	 (4,92,'202412','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:49','system','2026-04-19 10:10:49'),
 	 (5,93,'202412','B',0.00,0.2000,'','2024年12月KPI绩效B级',0,1,0,'system','2026-04-19 10:10:49','system','2026-04-19 10:10:49'),
@@ -108,7 +108,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (2,98,'202501','B',0.00,0.2000,'','2025年1月KPI绩效B级',0,1,0,'system','2026-04-19 10:10:57','system','2026-04-19 10:10:57'),
 	 (3,99,'202501','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:57','system','2026-04-19 10:10:57'),
 	 (4,100,'202501','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:10:57','system','2026-04-19 10:10:57');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,101,'202501','B',0.00,0.2000,'','2025年1月KPI绩效B级',0,1,0,'system','2026-04-19 10:10:57','system','2026-04-19 10:10:57'),
 	 (6,102,'202501','B',0.00,0.2000,'','2025年1月KPI绩效B级',0,1,0,'system','2026-04-19 10:10:57','system','2026-04-19 10:10:57'),
 	 (7,103,'202501','A',0.00,0.5000,'','2025年1月KPI绩效A级',0,1,0,'system','2026-04-19 10:10:57','system','2026-04-19 10:10:57'),
@@ -119,7 +119,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (4,108,'202502','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:01','system','2026-04-19 10:11:01'),
 	 (5,109,'202502','A',0.00,0.5000,'','2025年2月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:01','system','2026-04-19 10:11:01'),
 	 (6,110,'202502','B',0.00,0.2000,'','2025年2月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:01','system','2026-04-19 10:11:01');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,111,'202502','B',0.00,0.2000,'','2025年2月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:01','system','2026-04-19 10:11:01'),
 	 (8,112,'202502','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:01','system','2026-04-19 10:11:01'),
 	 (1,113,'202503','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:05','system','2026-04-19 10:11:05'),
@@ -130,7 +130,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (6,118,'202503','A',0.00,0.5000,'','2025年3月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:05','system','2026-04-19 10:11:05'),
 	 (7,119,'202503','B',0.00,0.2000,'','2025年3月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:05','system','2026-04-19 10:11:05'),
 	 (8,120,'202503','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:05','system','2026-04-19 10:11:05');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,121,'202504','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:10','system','2026-04-19 10:11:10'),
 	 (2,122,'202504','A',0.00,0.5000,'','2025年4月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:10','system','2026-04-19 10:11:10'),
 	 (3,123,'202504','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:10','system','2026-04-19 10:11:10'),
@@ -141,7 +141,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (8,128,'202504','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:10','system','2026-04-19 10:11:10'),
 	 (1,129,'202505','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:15','system','2026-04-19 10:11:15'),
 	 (2,130,'202505','B',0.00,0.2000,'','2025年5月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:15','system','2026-04-19 10:11:15');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,131,'202505','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:15','system','2026-04-19 10:11:15'),
 	 (4,132,'202505','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:15','system','2026-04-19 10:11:15'),
 	 (5,133,'202505','B',0.00,0.2000,'','2025年5月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:15','system','2026-04-19 10:11:15'),
@@ -152,7 +152,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (2,138,'202506','B',0.00,0.2000,'','2025年6月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:19','system','2026-04-19 10:11:19'),
 	 (3,139,'202506','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:19','system','2026-04-19 10:11:19'),
 	 (4,140,'202506','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:19','system','2026-04-19 10:11:19');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,141,'202506','B',0.00,0.2000,'','2025年6月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:19','system','2026-04-19 10:11:19'),
 	 (6,142,'202506','B',0.00,0.2000,'','2025年6月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:19','system','2026-04-19 10:11:19'),
 	 (7,143,'202506','A',0.00,0.5000,'','2025年6月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:19','system','2026-04-19 10:11:19'),
@@ -163,7 +163,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (4,148,'202507','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:22','system','2026-04-19 10:11:22'),
 	 (5,149,'202507','A',0.00,0.5000,'','2025年07月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:22','system','2026-04-19 10:11:22'),
 	 (6,150,'202507','A',0.00,0.5000,'','2025年07月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:22','system','2026-04-19 10:11:22');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,151,'202507','B',0.00,0.2000,'','2025年07月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:22','system','2026-04-19 10:11:22'),
 	 (8,152,'202507','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:22','system','2026-04-19 10:11:22'),
 	 (1,153,'202508','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:27','system','2026-04-19 10:11:27'),
@@ -174,7 +174,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (6,158,'202508','B',0.00,0.2000,'','2025年8月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:27','system','2026-04-19 10:11:27'),
 	 (7,159,'202508','C',0.00,0.0000,'','2025年8月KPI绩效C级',0,1,0,'system','2026-04-19 10:11:27','system','2026-04-19 10:11:27'),
 	 (8,160,'202508','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:27','system','2026-04-19 10:11:27');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,161,'202509','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:31','system','2026-04-19 10:11:31'),
 	 (2,162,'202509','B',0.00,0.2000,'','2025年9月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:31','system','2026-04-19 10:11:31'),
 	 (3,163,'202509','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:31','system','2026-04-19 10:11:31'),
@@ -185,7 +185,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (8,168,'202509','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:31','system','2026-04-19 10:11:31'),
 	 (1,169,'202510','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:35','system','2026-04-19 10:11:35'),
 	 (2,170,'202510','A',0.00,0.5000,'','2025年10月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:35','system','2026-04-19 10:11:35');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,171,'202510','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:35','system','2026-04-19 10:11:35'),
 	 (4,172,'202510','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:35','system','2026-04-19 10:11:35'),
 	 (5,173,'202510','A',0.00,0.5000,'','2025年10月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:35','system','2026-04-19 10:11:35'),
@@ -196,7 +196,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (2,178,'202511','A',0.00,0.5000,'','2025年11月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:39','system','2026-04-19 10:11:39'),
 	 (3,179,'202511','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:39','system','2026-04-19 10:11:39'),
 	 (4,180,'202511','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:39','system','2026-04-19 10:11:39');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,181,'202511','B',0.00,0.2000,'','2025年11月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:39','system','2026-04-19 10:11:39'),
 	 (6,182,'202511','B',0.00,0.2000,'','2025年11月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:39','system','2026-04-19 10:11:39'),
 	 (7,183,'202511','A',0.00,0.5000,'','2025年11月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:39','system','2026-04-19 10:11:39'),
@@ -207,7 +207,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (4,188,'202512','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:43','system','2026-04-19 10:11:43'),
 	 (5,189,'202512','B',0.00,0.2000,'','2025年12月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:43','system','2026-04-19 10:11:43'),
 	 (6,190,'202512','A',0.00,0.5000,'','2025年12月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:43','system','2026-04-19 10:11:43');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,191,'202512','B',0.00,0.2000,'','2025年12月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:43','system','2026-04-19 10:11:43'),
 	 (8,192,'202512','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:43','system','2026-04-19 10:11:43'),
 	 (1,193,'202601','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:52','system','2026-04-19 10:11:52'),
@@ -218,7 +218,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (6,198,'202601','B',0.00,0.2000,'','2026年1月KPI绩效B级',0,1,0,'system','2026-04-19 10:11:52','system','2026-04-19 10:11:52'),
 	 (7,199,'202601','A',0.00,0.5000,'','2026年1月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:52','system','2026-04-19 10:11:52'),
 	 (8,200,'202601','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:52','system','2026-04-19 10:11:52');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,201,'202602','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:56','system','2026-04-19 10:11:56'),
 	 (2,202,'202602','A',0.00,0.5000,'','2026年2月KPI绩效A级',0,1,0,'system','2026-04-19 10:11:56','system','2026-04-19 10:11:56'),
 	 (3,203,'202602','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:56','system','2026-04-19 10:11:56'),
@@ -229,7 +229,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (8,208,'202602','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:11:56','system','2026-04-19 10:11:56'),
 	 (1,209,'202603','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:00','system','2026-04-19 10:12:00'),
 	 (2,210,'202603','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:00','system','2026-04-19 10:12:00');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,211,'202603','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:00','system','2026-04-19 10:12:00'),
 	 (4,212,'202603','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:00','system','2026-04-19 10:12:00'),
 	 (5,213,'202603','A',0.00,0.5000,'','2026年3月KPI绩效A级',0,1,0,'system','2026-04-19 10:12:00','system','2026-04-19 10:12:00'),
@@ -240,7 +240,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (2,218,'202604','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:03','system','2026-04-19 10:12:03'),
 	 (3,219,'202604','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:03','system','2026-04-19 10:12:03'),
 	 (4,220,'202604','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:03','system','2026-04-19 10:12:03');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,221,'202604','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:03','system','2026-04-19 10:12:03'),
 	 (6,222,'202604','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:03','system','2026-04-19 10:12:03'),
 	 (7,223,'202604','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:03','system','2026-04-19 10:12:03'),
@@ -251,7 +251,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (4,228,'202605','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:08','system','2026-04-19 10:12:08'),
 	 (5,229,'202605','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:08','system','2026-04-19 10:12:08'),
 	 (6,230,'202605','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:08','system','2026-04-19 10:12:08');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,231,'202605','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:08','system','2026-04-19 10:12:08'),
 	 (8,232,'202605','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:08','system','2026-04-19 10:12:08'),
 	 (1,233,'202606','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:13','system','2026-04-19 10:12:13'),
@@ -262,7 +262,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (6,238,'202606','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:13','system','2026-04-19 10:12:13'),
 	 (7,239,'202606','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:13','system','2026-04-19 10:12:13'),
 	 (8,240,'202606','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:13','system','2026-04-19 10:12:13');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,241,'202607','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:17','system','2026-04-19 10:12:17'),
 	 (2,242,'202607','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:17','system','2026-04-19 10:12:17'),
 	 (3,243,'202607','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:17','system','2026-04-19 10:12:17'),
@@ -273,7 +273,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (8,248,'202607','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:17','system','2026-04-19 10:12:17'),
 	 (1,249,'202608','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:22','system','2026-04-19 10:12:22'),
 	 (2,250,'202608','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:22','system','2026-04-19 10:12:22');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,251,'202608','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:22','system','2026-04-19 10:12:22'),
 	 (4,252,'202608','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:22','system','2026-04-19 10:12:22'),
 	 (5,253,'202608','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:22','system','2026-04-19 10:12:22'),
@@ -284,7 +284,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (2,258,'202609','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:26','system','2026-04-19 10:12:26'),
 	 (3,259,'202609','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:26','system','2026-04-19 10:12:26'),
 	 (4,260,'202609','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:26','system','2026-04-19 10:12:26');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,261,'202609','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:26','system','2026-04-19 10:12:26'),
 	 (6,262,'202609','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:26','system','2026-04-19 10:12:26'),
 	 (7,263,'202609','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:26','system','2026-04-19 10:12:26'),
@@ -295,7 +295,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (4,268,'202610','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:30','system','2026-04-19 10:12:30'),
 	 (5,269,'202610','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:30','system','2026-04-19 10:12:30'),
 	 (6,270,'202610','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:30','system','2026-04-19 10:12:30');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,271,'202610','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:30','system','2026-04-19 10:12:30'),
 	 (8,272,'202610','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:30','system','2026-04-19 10:12:30'),
 	 (1,273,'202611','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:34','system','2026-04-19 10:12:34'),
@@ -306,7 +306,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (6,278,'202611','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:34','system','2026-04-19 10:12:34'),
 	 (7,279,'202611','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:34','system','2026-04-19 10:12:34'),
 	 (8,280,'202611','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:34','system','2026-04-19 10:12:34');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,281,'202612','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:37','system','2026-04-19 10:12:37'),
 	 (2,282,'202612','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:37','system','2026-04-19 10:12:37'),
 	 (3,283,'202612','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:37','system','2026-04-19 10:12:37'),
@@ -317,7 +317,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (8,288,'202612','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:37','system','2026-04-19 10:12:37'),
 	 (1,289,'202701','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:44','system','2026-04-19 10:12:44'),
 	 (2,290,'202701','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:44','system','2026-04-19 10:12:44');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,291,'202701','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:44','system','2026-04-19 10:12:44'),
 	 (4,292,'202701','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:44','system','2026-04-19 10:12:44'),
 	 (5,293,'202701','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:44','system','2026-04-19 10:12:44'),
@@ -328,7 +328,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (2,298,'202702','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:48','system','2026-04-19 10:12:48'),
 	 (3,299,'202702','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:48','system','2026-04-19 10:12:48'),
 	 (4,300,'202702','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:48','system','2026-04-19 10:12:48');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,301,'202702','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:48','system','2026-04-19 10:12:48'),
 	 (6,302,'202702','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:48','system','2026-04-19 10:12:48'),
 	 (7,303,'202702','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:48','system','2026-04-19 10:12:48'),
@@ -339,7 +339,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (4,308,'202703','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:52','system','2026-04-19 10:12:52'),
 	 (5,309,'202703','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:52','system','2026-04-19 10:12:52'),
 	 (6,310,'202703','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:52','system','2026-04-19 10:12:52');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,311,'202703','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:52','system','2026-04-19 10:12:52'),
 	 (8,312,'202703','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:52','system','2026-04-19 10:12:52'),
 	 (1,313,'202704','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:56','system','2026-04-19 10:12:56'),
@@ -350,7 +350,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (6,318,'202704','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:56','system','2026-04-19 10:12:56'),
 	 (7,319,'202704','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:56','system','2026-04-19 10:12:56'),
 	 (8,320,'202704','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:12:56','system','2026-04-19 10:12:56');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,321,'202705','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:00','system','2026-04-19 10:13:00'),
 	 (2,322,'202705','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:00','system','2026-04-19 10:13:00'),
 	 (3,323,'202705','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:00','system','2026-04-19 10:13:00'),
@@ -361,7 +361,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (8,328,'202705','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:00','system','2026-04-19 10:13:00'),
 	 (1,329,'202706','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:04','system','2026-04-19 10:13:04'),
 	 (2,330,'202706','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:04','system','2026-04-19 10:13:04');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,331,'202706','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:04','system','2026-04-19 10:13:04'),
 	 (4,332,'202706','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:04','system','2026-04-19 10:13:04'),
 	 (5,333,'202706','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:04','system','2026-04-19 10:13:04'),
@@ -372,7 +372,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (2,338,'202707','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:08','system','2026-04-19 10:13:08'),
 	 (3,339,'202707','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:08','system','2026-04-19 10:13:08'),
 	 (4,340,'202707','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:08','system','2026-04-19 10:13:08');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,341,'202707','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:08','system','2026-04-19 10:13:08'),
 	 (6,342,'202707','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:08','system','2026-04-19 10:13:08'),
 	 (7,343,'202707','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:08','system','2026-04-19 10:13:08'),
@@ -383,7 +383,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (4,348,'202708','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:12','system','2026-04-19 10:13:12'),
 	 (5,349,'202708','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:12','system','2026-04-19 10:13:12'),
 	 (6,350,'202708','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:12','system','2026-04-19 10:13:12');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,351,'202708','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:12','system','2026-04-19 10:13:12'),
 	 (8,352,'202708','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:12','system','2026-04-19 10:13:12'),
 	 (1,353,'202709','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:16','system','2026-04-19 10:13:16'),
@@ -394,7 +394,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (6,358,'202709','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:16','system','2026-04-19 10:13:16'),
 	 (7,359,'202709','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:16','system','2026-04-19 10:13:16'),
 	 (8,360,'202709','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:16','system','2026-04-19 10:13:16');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,361,'202710','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:20','system','2026-04-19 10:13:20'),
 	 (2,362,'202710','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:20','system','2026-04-19 10:13:20'),
 	 (3,363,'202710','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:20','system','2026-04-19 10:13:20'),
@@ -405,7 +405,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (8,368,'202710','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:20','system','2026-04-19 10:13:20'),
 	 (1,369,'202711','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:23','system','2026-04-19 10:13:23'),
 	 (2,370,'202711','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:23','system','2026-04-19 10:13:23');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,371,'202711','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:23','system','2026-04-19 10:13:23'),
 	 (4,372,'202711','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:23','system','2026-04-19 10:13:23'),
 	 (5,373,'202711','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:23','system','2026-04-19 10:13:23'),
@@ -416,7 +416,7 @@ INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_
 	 (2,378,'202712','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:27','system','2026-04-19 10:13:27'),
 	 (3,379,'202712','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:27','system','2026-04-19 10:13:27'),
 	 (4,380,'202712','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:27','system','2026-04-19 10:13:27');
-INSERT INTO salary_admin_v4.salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_kpi_record (employee_id,period_id,settlement_month,kpi_grade,kpi_score,kpi_coefficient,evaluate_by,evaluate_remark,audit_status,effective_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,381,'202712','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:27','system','2026-04-19 10:13:27'),
 	 (6,382,'202712','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:27','system','2026-04-19 10:13:27'),
 	 (7,383,'202712','WAITING',0.00,0.0000,'','',0,1,0,'system','2026-04-19 10:13:27','system','2026-04-19 10:13:27'),

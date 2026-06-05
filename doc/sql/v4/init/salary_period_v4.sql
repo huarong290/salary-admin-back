@@ -1,4 +1,4 @@
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,53,'202401','2024-01-01','2024-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:22:55','system','2026-04-17 14:22:55'),
 	 (2,1,'202401','2024-01-01','2024-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:22:55','system','2026-04-17 14:22:55'),
 	 (3,1,'202401','2024-01-01','2024-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:22:55','system','2026-04-17 14:22:55'),
@@ -9,7 +9,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (8,1,'202401','2024-01-01','2024-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:22:55','system','2026-04-17 14:22:55'),
 	 (1,54,'202402','2024-02-01','2024-02-29',29.00,29.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:19','system','2026-04-17 14:23:19'),
 	 (2,1,'202402','2024-02-01','2024-02-29',29.00,29.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:19','system','2026-04-17 14:23:19');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,1,'202402','2024-02-01','2024-02-29',29.00,29.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:19','system','2026-04-17 14:23:19'),
 	 (4,5,'202402','2024-02-01','2024-02-29',29.00,29.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:19','system','2026-04-17 14:23:19'),
 	 (5,1,'202402','2024-02-01','2024-02-29',29.00,29.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:19','system','2026-04-17 14:23:19'),
@@ -20,7 +20,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (2,2,'202403','2024-03-01','2024-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:27','system','2026-04-17 14:23:27'),
 	 (3,2,'202403','2024-03-01','2024-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:27','system','2026-04-17 14:23:27'),
 	 (4,6,'202403','2024-03-01','2024-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:27','system','2026-04-17 14:23:27');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,1,'202403','2024-03-01','2024-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:27','system','2026-04-17 14:23:27'),
 	 (6,1,'202403','2024-03-01','2024-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:27','system','2026-04-17 14:23:27'),
 	 (7,1,'202403','2024-03-01','2024-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:27','system','2026-04-17 14:23:27'),
@@ -31,7 +31,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (4,7,'202404','2024-04-01','2024-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:33','system','2026-04-17 14:23:33'),
 	 (5,1,'202404','2024-04-01','2024-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:33','system','2026-04-17 14:23:33'),
 	 (6,1,'202404','2024-04-01','2024-04-30',30.00,17.00,17.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:33','system','2026-04-19 17:01:27');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,1,'202404','2024-04-01','2024-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:33','system','2026-04-17 14:23:33'),
 	 (8,1,'202404','2024-04-01','2024-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:33','system','2026-04-17 14:23:33'),
 	 (1,57,'202405','2024-05-01','2024-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:39','system','2026-04-17 14:23:39'),
@@ -42,7 +42,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (6,2,'202405','2024-05-01','2024-05-31',31.00,31.00,31.00,0.00,0.00,0.00,1,0,'system','2026-04-17 14:23:39','system','2026-04-19 17:08:11'),
 	 (7,2,'202405','2024-05-01','2024-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:39','system','2026-04-17 14:23:39'),
 	 (8,1,'202405','2024-05-01','2024-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:39','system','2026-04-17 14:23:39');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,58,'202406','2024-06-01','2024-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:45','system','2026-04-17 14:23:45'),
 	 (2,5,'202406','2024-06-01','2024-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:45','system','2026-04-17 14:23:45'),
 	 (3,5,'202406','2024-06-01','2024-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:45','system','2026-04-17 14:23:45'),
@@ -53,7 +53,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (8,2,'202406','2024-06-01','2024-06-30',30.00,30.00,30.00,0.00,0.00,0.00,1,0,'system','2026-04-17 14:23:45','system','2026-04-19 17:16:00'),
 	 (1,59,'202407','2024-07-01','2024-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:51','system','2026-04-17 14:23:51'),
 	 (2,6,'202407','2024-07-01','2024-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:51','system','2026-04-17 14:23:51');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,6,'202407','2024-07-01','2024-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:51','system','2026-04-17 14:23:51'),
 	 (4,10,'202407','2024-07-01','2024-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:51','system','2026-04-17 14:23:51'),
 	 (5,4,'202407','2024-07-01','2024-07-31',31.00,31.00,31.00,0.00,0.00,0.00,1,0,'system','2026-04-17 14:23:51','system','2026-04-19 17:19:17'),
@@ -64,7 +64,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (2,7,'202408','2024-08-01','2024-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:58','system','2026-04-17 14:23:58'),
 	 (3,7,'202408','2024-08-01','2024-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:58','system','2026-04-17 14:23:58'),
 	 (4,11,'202408','2024-08-01','2024-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:23:58','system','2026-04-17 14:23:58');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,5,'202408','2024-08-01','2024-08-31',31.00,31.00,31.00,0.00,0.00,0.00,1,0,'system','2026-04-17 14:23:58','system','2026-04-19 17:23:13'),
 	 (6,5,'202408','2024-08-01','2024-08-31',31.00,31.00,31.00,0.00,0.00,0.00,1,0,'system','2026-04-17 14:23:58','system','2026-04-19 17:22:50'),
 	 (7,5,'202408','2024-08-01','2024-08-31',31.00,31.00,31.00,0.00,0.00,0.00,1,0,'system','2026-04-17 14:23:58','system','2026-04-19 17:22:56'),
@@ -75,7 +75,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (4,12,'202409','2024-09-01','2024-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:05','system','2026-04-17 14:24:05'),
 	 (5,6,'202409','2024-09-01','2024-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:05','system','2026-04-17 14:24:05'),
 	 (6,6,'202409','2024-09-01','2024-09-30',30.00,30.00,30.00,0.00,0.00,0.00,1,0,'system','2026-04-17 14:24:05','system','2026-04-19 17:26:49');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,6,'202409','2024-09-01','2024-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:05','system','2026-04-17 14:24:05'),
 	 (8,5,'202409','2024-09-01','2024-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:05','system','2026-04-17 14:24:05'),
 	 (1,62,'202410','2024-10-01','2024-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:11','system','2026-04-17 14:24:11'),
@@ -86,7 +86,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (6,7,'202410','2024-10-01','2024-10-31',31.00,31.00,13.00,18.00,0.00,0.00,0,0,'system','2026-04-17 14:24:11','system','2026-04-19 17:29:45'),
 	 (7,7,'202410','2024-10-01','2024-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:11','system','2026-04-17 14:24:11'),
 	 (8,6,'202410','2024-10-01','2024-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:11','system','2026-04-17 14:24:11');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,63,'202411','2024-11-01','2024-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:17','system','2026-04-17 14:24:17'),
 	 (2,10,'202411','2024-11-01','2024-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:17','system','2026-04-17 14:24:17'),
 	 (3,10,'202411','2024-11-01','2024-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:17','system','2026-04-17 14:24:17'),
@@ -97,7 +97,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (8,7,'202411','2024-11-01','2024-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:17','system','2026-04-17 14:24:17'),
 	 (1,64,'202412','2024-12-01','2024-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:24','system','2026-04-17 14:24:24'),
 	 (2,11,'202412','2024-12-01','2024-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:24','system','2026-04-17 14:24:24');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,11,'202412','2024-12-01','2024-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:24','system','2026-04-17 14:24:24'),
 	 (4,15,'202412','2024-12-01','2024-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:24','system','2026-04-17 14:24:24'),
 	 (5,9,'202412','2024-12-01','2024-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:24','system','2026-04-17 14:24:24'),
@@ -108,7 +108,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (2,12,'202501','2025-01-01','2025-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:46','system','2026-04-17 14:24:46'),
 	 (3,12,'202501','2025-01-01','2025-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:46','system','2026-04-17 14:24:46'),
 	 (4,16,'202501','2025-01-01','2025-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:46','system','2026-04-17 14:24:46');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,10,'202501','2025-01-01','2025-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:46','system','2026-04-17 14:24:46'),
 	 (6,10,'202501','2025-01-01','2025-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:46','system','2026-04-17 14:24:46'),
 	 (7,10,'202501','2025-01-01','2025-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:46','system','2026-04-17 14:24:46'),
@@ -119,7 +119,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (4,17,'202502','2025-02-01','2025-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:52','system','2026-04-17 14:24:52'),
 	 (5,11,'202502','2025-02-01','2025-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:52','system','2026-04-17 14:24:52'),
 	 (6,11,'202502','2025-02-01','2025-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:52','system','2026-04-17 14:24:52');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,11,'202502','2025-02-01','2025-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:52','system','2026-04-17 14:24:52'),
 	 (8,10,'202502','2025-02-01','2025-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:52','system','2026-04-17 14:24:52'),
 	 (1,67,'202503','2025-03-01','2025-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:57','system','2026-04-17 14:24:57'),
@@ -130,7 +130,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (6,12,'202503','2025-03-01','2025-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:57','system','2026-04-17 14:24:57'),
 	 (7,12,'202503','2025-03-01','2025-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:57','system','2026-04-17 14:24:57'),
 	 (8,11,'202503','2025-03-01','2025-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:24:57','system','2026-04-17 14:24:57');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,68,'202504','2025-04-01','2025-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:06','system','2026-04-17 14:25:06'),
 	 (2,15,'202504','2025-04-01','2025-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:06','system','2026-04-17 14:25:06'),
 	 (3,15,'202504','2025-04-01','2025-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:06','system','2026-04-17 14:25:06'),
@@ -141,7 +141,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (8,12,'202504','2025-04-01','2025-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:06','system','2026-04-17 14:25:06'),
 	 (1,69,'202505','2025-05-01','2025-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:11','system','2026-04-17 14:25:11'),
 	 (2,16,'202505','2025-05-01','2025-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:11','system','2026-04-17 14:25:11');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,16,'202505','2025-05-01','2025-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:11','system','2026-04-17 14:25:11'),
 	 (4,20,'202505','2025-05-01','2025-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:11','system','2026-04-17 14:25:11'),
 	 (5,14,'202505','2025-05-01','2025-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:11','system','2026-04-17 14:25:11'),
@@ -152,7 +152,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (2,17,'202506','2025-06-01','2025-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:18','system','2026-04-17 14:25:18'),
 	 (3,17,'202506','2025-06-01','2025-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:18','system','2026-04-17 14:25:18'),
 	 (4,21,'202506','2025-06-01','2025-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:18','system','2026-04-17 14:25:18');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,15,'202506','2025-06-01','2025-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:18','system','2026-04-17 14:25:18'),
 	 (6,15,'202506','2025-06-01','2025-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:18','system','2026-04-17 14:25:18'),
 	 (7,15,'202506','2025-06-01','2025-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:18','system','2026-04-17 14:25:18'),
@@ -163,7 +163,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (4,22,'202507','2025-07-01','2025-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:25','system','2026-04-17 14:25:25'),
 	 (5,16,'202507','2025-07-01','2025-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:25','system','2026-04-17 14:25:25'),
 	 (6,16,'202507','2025-07-01','2025-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:25','system','2026-04-17 14:25:25');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,16,'202507','2025-07-01','2025-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:25','system','2026-04-17 14:25:25'),
 	 (8,15,'202507','2025-07-01','2025-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:25','system','2026-04-17 14:25:25'),
 	 (1,72,'202508','2025-08-01','2025-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:30','system','2026-04-17 14:25:30'),
@@ -174,7 +174,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (6,17,'202508','2025-08-01','2025-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:30','system','2026-04-17 14:25:30'),
 	 (7,17,'202508','2025-08-01','2025-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:30','system','2026-04-17 14:25:30'),
 	 (8,16,'202508','2025-08-01','2025-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:30','system','2026-04-17 14:25:30');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,73,'202509','2025-09-01','2025-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:36','system','2026-04-17 14:25:36'),
 	 (2,20,'202509','2025-09-01','2025-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:36','system','2026-04-17 14:25:36'),
 	 (3,20,'202509','2025-09-01','2025-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:36','system','2026-04-17 14:25:36'),
@@ -185,7 +185,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (8,17,'202509','2025-09-01','2025-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:36','system','2026-04-17 14:25:36'),
 	 (1,74,'202510','2025-10-01','2025-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:42','system','2026-04-17 14:25:42'),
 	 (2,21,'202510','2025-10-01','2025-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:42','system','2026-04-17 14:25:42');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,21,'202510','2025-10-01','2025-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:42','system','2026-04-17 14:25:42'),
 	 (4,25,'202510','2025-10-01','2025-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:42','system','2026-04-17 14:25:42'),
 	 (5,19,'202510','2025-10-01','2025-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:42','system','2026-04-17 14:25:42'),
@@ -196,7 +196,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (2,22,'202511','2025-11-01','2025-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:47','system','2026-04-17 14:25:47'),
 	 (3,22,'202511','2025-11-01','2025-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:47','system','2026-04-17 14:25:47'),
 	 (4,26,'202511','2025-11-01','2025-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:47','system','2026-04-17 14:25:47');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,20,'202511','2025-11-01','2025-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:47','system','2026-04-17 14:25:47'),
 	 (6,20,'202511','2025-11-01','2025-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:47','system','2026-04-17 14:25:47'),
 	 (7,20,'202511','2025-11-01','2025-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:47','system','2026-04-17 14:25:47'),
@@ -207,7 +207,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (4,27,'202512','2025-12-01','2025-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:54','system','2026-04-17 14:25:54'),
 	 (5,21,'202512','2025-12-01','2025-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:54','system','2026-04-17 14:25:54'),
 	 (6,21,'202512','2025-12-01','2025-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:54','system','2026-04-17 14:25:54');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,21,'202512','2025-12-01','2025-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:54','system','2026-04-17 14:25:54'),
 	 (8,20,'202512','2025-12-01','2025-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:25:54','system','2026-04-17 14:25:54'),
 	 (1,77,'202601','2026-01-01','2026-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:02','system','2026-04-17 14:26:02'),
@@ -218,7 +218,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (6,22,'202601','2026-01-01','2026-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:02','system','2026-04-17 14:26:02'),
 	 (7,22,'202601','2026-01-01','2026-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:02','system','2026-04-17 14:26:02'),
 	 (8,21,'202601','2026-01-01','2026-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:02','system','2026-04-17 14:26:02');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,78,'202602','2026-02-01','2026-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:11','system','2026-04-17 14:26:11'),
 	 (2,25,'202602','2026-02-01','2026-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:11','system','2026-04-17 14:26:11'),
 	 (3,25,'202602','2026-02-01','2026-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:11','system','2026-04-17 14:26:11'),
@@ -229,7 +229,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (8,22,'202602','2026-02-01','2026-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:11','system','2026-04-17 14:26:11'),
 	 (1,79,'202603','2026-03-01','2026-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:18','system','2026-04-17 14:26:18'),
 	 (2,26,'202603','2026-03-01','2026-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:18','system','2026-04-17 14:26:18');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,26,'202603','2026-03-01','2026-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:18','system','2026-04-17 14:26:18'),
 	 (4,30,'202603','2026-03-01','2026-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:18','system','2026-04-17 14:26:18'),
 	 (5,24,'202603','2026-03-01','2026-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:18','system','2026-04-17 14:26:18'),
@@ -240,7 +240,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (2,27,'202604','2026-04-01','2026-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:24','system','2026-04-17 14:26:24'),
 	 (3,27,'202604','2026-04-01','2026-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:24','system','2026-04-17 14:26:24'),
 	 (4,31,'202604','2026-04-01','2026-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:24','system','2026-04-17 14:26:24');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,25,'202604','2026-04-01','2026-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:24','system','2026-04-17 14:26:24'),
 	 (6,25,'202604','2026-04-01','2026-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:24','system','2026-04-17 14:26:24'),
 	 (7,25,'202604','2026-04-01','2026-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:24','system','2026-04-17 14:26:24'),
@@ -251,7 +251,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (4,32,'202605','2026-05-01','2026-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:30','system','2026-04-17 14:26:30'),
 	 (5,26,'202605','2026-05-01','2026-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:30','system','2026-04-17 14:26:30'),
 	 (6,26,'202605','2026-05-01','2026-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:30','system','2026-04-17 14:26:30');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,26,'202605','2026-05-01','2026-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:30','system','2026-04-17 14:26:30'),
 	 (8,25,'202605','2026-05-01','2026-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:30','system','2026-04-17 14:26:30'),
 	 (1,82,'202606','2026-06-01','2026-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:35','system','2026-04-17 14:26:35'),
@@ -262,7 +262,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (6,27,'202606','2026-06-01','2026-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:35','system','2026-04-17 14:26:35'),
 	 (7,27,'202606','2026-06-01','2026-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:35','system','2026-04-17 14:26:35'),
 	 (8,26,'202606','2026-06-01','2026-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:35','system','2026-04-17 14:26:35');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,83,'202607','2026-07-01','2026-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:41','system','2026-04-17 14:26:41'),
 	 (2,30,'202607','2026-07-01','2026-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:41','system','2026-04-17 14:26:41'),
 	 (3,30,'202607','2026-07-01','2026-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:41','system','2026-04-17 14:26:41'),
@@ -273,7 +273,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (8,27,'202607','2026-07-01','2026-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:41','system','2026-04-17 14:26:41'),
 	 (1,84,'202608','2026-08-01','2026-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:46','system','2026-04-17 14:26:46'),
 	 (2,31,'202608','2026-08-01','2026-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:46','system','2026-04-17 14:26:46');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,31,'202608','2026-08-01','2026-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:46','system','2026-04-17 14:26:46'),
 	 (4,35,'202608','2026-08-01','2026-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:46','system','2026-04-17 14:26:46'),
 	 (5,29,'202608','2026-08-01','2026-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:46','system','2026-04-17 14:26:46'),
@@ -284,7 +284,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (2,32,'202609','2026-09-01','2026-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:51','system','2026-04-17 14:26:51'),
 	 (3,32,'202609','2026-09-01','2026-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:51','system','2026-04-17 14:26:51'),
 	 (4,36,'202609','2026-09-01','2026-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:51','system','2026-04-17 14:26:51');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,30,'202609','2026-09-01','2026-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:51','system','2026-04-17 14:26:51'),
 	 (6,30,'202609','2026-09-01','2026-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:51','system','2026-04-17 14:26:51'),
 	 (7,30,'202609','2026-09-01','2026-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:51','system','2026-04-17 14:26:51'),
@@ -295,7 +295,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (4,37,'202610','2026-10-01','2026-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:57','system','2026-04-17 14:26:57'),
 	 (5,31,'202610','2026-10-01','2026-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:57','system','2026-04-17 14:26:57'),
 	 (6,31,'202610','2026-10-01','2026-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:57','system','2026-04-17 14:26:57');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,31,'202610','2026-10-01','2026-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:57','system','2026-04-17 14:26:57'),
 	 (8,30,'202610','2026-10-01','2026-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:26:57','system','2026-04-17 14:26:57'),
 	 (1,87,'202611','2026-11-01','2026-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:04','system','2026-04-17 14:27:04'),
@@ -306,7 +306,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (6,32,'202611','2026-11-01','2026-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:04','system','2026-04-17 14:27:04'),
 	 (7,32,'202611','2026-11-01','2026-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:04','system','2026-04-17 14:27:04'),
 	 (8,31,'202611','2026-11-01','2026-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:04','system','2026-04-17 14:27:04');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,88,'202612','2026-12-01','2026-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:09','system','2026-04-17 14:27:09'),
 	 (2,35,'202612','2026-12-01','2026-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:09','system','2026-04-17 14:27:09'),
 	 (3,35,'202612','2026-12-01','2026-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:09','system','2026-04-17 14:27:09'),
@@ -317,7 +317,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (8,32,'202612','2026-12-01','2026-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:09','system','2026-04-17 14:27:09'),
 	 (1,89,'202701','2027-01-01','2027-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:18','system','2026-04-17 14:27:18'),
 	 (2,36,'202701','2027-01-01','2027-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:18','system','2026-04-17 14:27:18');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,36,'202701','2027-01-01','2027-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:18','system','2026-04-17 14:27:18'),
 	 (4,40,'202701','2027-01-01','2027-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:18','system','2026-04-17 14:27:18'),
 	 (5,34,'202701','2027-01-01','2027-01-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:18','system','2026-04-17 14:27:18'),
@@ -328,7 +328,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (2,37,'202702','2027-02-01','2027-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:23','system','2026-04-17 14:27:23'),
 	 (3,37,'202702','2027-02-01','2027-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:23','system','2026-04-17 14:27:23'),
 	 (4,41,'202702','2027-02-01','2027-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:23','system','2026-04-17 14:27:23');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,35,'202702','2027-02-01','2027-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:23','system','2026-04-17 14:27:23'),
 	 (6,35,'202702','2027-02-01','2027-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:23','system','2026-04-17 14:27:23'),
 	 (7,35,'202702','2027-02-01','2027-02-28',28.00,28.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:23','system','2026-04-17 14:27:23'),
@@ -339,7 +339,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (4,42,'202703','2027-03-01','2027-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:28','system','2026-04-17 14:27:28'),
 	 (5,36,'202703','2027-03-01','2027-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:28','system','2026-04-17 14:27:28'),
 	 (6,36,'202703','2027-03-01','2027-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:28','system','2026-04-17 14:27:28');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,36,'202703','2027-03-01','2027-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:28','system','2026-04-17 14:27:28'),
 	 (8,35,'202703','2027-03-01','2027-03-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:28','system','2026-04-17 14:27:28'),
 	 (1,92,'202704','2027-04-01','2027-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:33','system','2026-04-17 14:27:33'),
@@ -350,7 +350,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (6,37,'202704','2027-04-01','2027-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:33','system','2026-04-17 14:27:33'),
 	 (7,37,'202704','2027-04-01','2027-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:33','system','2026-04-17 14:27:33'),
 	 (8,36,'202704','2027-04-01','2027-04-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:33','system','2026-04-17 14:27:33');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,93,'202705','2027-05-01','2027-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:38','system','2026-04-17 14:27:38'),
 	 (2,40,'202705','2027-05-01','2027-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:38','system','2026-04-17 14:27:38'),
 	 (3,40,'202705','2027-05-01','2027-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:38','system','2026-04-17 14:27:38'),
@@ -361,7 +361,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (8,37,'202705','2027-05-01','2027-05-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:38','system','2026-04-17 14:27:38'),
 	 (1,94,'202706','2027-06-01','2027-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:44','system','2026-04-17 14:27:44'),
 	 (2,41,'202706','2027-06-01','2027-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:44','system','2026-04-17 14:27:44');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,41,'202706','2027-06-01','2027-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:44','system','2026-04-17 14:27:44'),
 	 (4,45,'202706','2027-06-01','2027-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:44','system','2026-04-17 14:27:44'),
 	 (5,39,'202706','2027-06-01','2027-06-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:44','system','2026-04-17 14:27:44'),
@@ -372,7 +372,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (2,42,'202707','2027-07-01','2027-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:50','system','2026-04-17 14:27:50'),
 	 (3,42,'202707','2027-07-01','2027-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:50','system','2026-04-17 14:27:50'),
 	 (4,46,'202707','2027-07-01','2027-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:50','system','2026-04-17 14:27:50');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,40,'202707','2027-07-01','2027-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:50','system','2026-04-17 14:27:50'),
 	 (6,40,'202707','2027-07-01','2027-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:50','system','2026-04-17 14:27:50'),
 	 (7,40,'202707','2027-07-01','2027-07-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:27:50','system','2026-04-17 14:27:50'),
@@ -383,7 +383,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (4,47,'202708','2027-08-01','2027-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:03','system','2026-04-17 14:28:03'),
 	 (5,41,'202708','2027-08-01','2027-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:03','system','2026-04-17 14:28:03'),
 	 (6,41,'202708','2027-08-01','2027-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:03','system','2026-04-17 14:28:03');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (7,41,'202708','2027-08-01','2027-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:03','system','2026-04-17 14:28:03'),
 	 (8,40,'202708','2027-08-01','2027-08-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:03','system','2026-04-17 14:28:03'),
 	 (1,97,'202709','2027-09-01','2027-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:08','system','2026-04-17 14:28:08'),
@@ -394,7 +394,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (6,42,'202709','2027-09-01','2027-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:08','system','2026-04-17 14:28:08'),
 	 (7,42,'202709','2027-09-01','2027-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:08','system','2026-04-17 14:28:08'),
 	 (8,41,'202709','2027-09-01','2027-09-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:08','system','2026-04-17 14:28:08');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,98,'202710','2027-10-01','2027-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:14','system','2026-04-17 14:28:14'),
 	 (2,45,'202710','2027-10-01','2027-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:14','system','2026-04-17 14:28:14'),
 	 (3,45,'202710','2027-10-01','2027-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:14','system','2026-04-17 14:28:14'),
@@ -405,7 +405,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (8,42,'202710','2027-10-01','2027-10-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:14','system','2026-04-17 14:28:14'),
 	 (1,99,'202711','2027-11-01','2027-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:19','system','2026-04-17 14:28:19'),
 	 (2,46,'202711','2027-11-01','2027-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:19','system','2026-04-17 14:28:19');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,46,'202711','2027-11-01','2027-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:19','system','2026-04-17 14:28:19'),
 	 (4,50,'202711','2027-11-01','2027-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:19','system','2026-04-17 14:28:19'),
 	 (5,44,'202711','2027-11-01','2027-11-30',30.00,30.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:19','system','2026-04-17 14:28:19'),
@@ -416,7 +416,7 @@ INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_mon
 	 (2,47,'202712','2027-12-01','2027-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:25','system','2026-04-17 14:28:25'),
 	 (3,47,'202712','2027-12-01','2027-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:25','system','2026-04-17 14:28:25'),
 	 (4,51,'202712','2027-12-01','2027-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:25','system','2026-04-17 14:28:25');
-INSERT INTO salary_admin_v4.salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_period (employee_id,work_month,settlement_month,start_date,end_date,month_days,attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days,full_attendance_flag,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (5,45,'202712','2027-12-01','2027-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:25','system','2026-04-17 14:28:25'),
 	 (6,45,'202712','2027-12-01','2027-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:25','system','2026-04-17 14:28:25'),
 	 (7,45,'202712','2027-12-01','2027-12-31',31.00,31.00,0.00,0.00,0.00,0.00,0,0,'system','2026-04-17 14:28:25','system','2026-04-17 14:28:25'),

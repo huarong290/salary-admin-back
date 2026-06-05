@@ -1,4 +1,4 @@
-INSERT INTO salary_admin_v4.sys_user (username,password,salt,nickname,email,phone,sex,avatar,status,last_login_time,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_user (username,password,salt,nickname,email,phone,sex,avatar,status,last_login_time,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('system','$2a$10$4FGmjRDysGbW1t0yPDGxg.99sA3Qf97aHM0yhB6R4vektOZ/d3GFu','','系统维护员','system@example.com','13800000001',1,'',1,'2026-04-19 11:11:32',0,'system','2026-04-17 05:34:33','anonymous','2026-04-19 11:11:32'),
 	 ('admin','$2a$10$4FGmjRDysGbW1t0yPDGxg.99sA3Qf97aHM0yhB6R4vektOZ/d3GFu','','薪资管理员','admin@example.com','13800000002',2,'',1,'2026-04-25 11:44:00',0,'system','2026-04-17 05:34:33','anonymous','2026-04-25 11:44:00'),
 	 ('user','$2a$10$4FGmjRDysGbW1t0yPDGxg.99sA3Qf97aHM0yhB6R4vektOZ/d3GFu','','普通员工','user@example.com','13800000003',1,'',1,'1000-01-01 00:00:00',0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),

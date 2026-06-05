@@ -1,4 +1,4 @@
-INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('salary_item_category','1','收入',10,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_category','2','扣款',20,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_category','3','税费',30,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
@@ -9,7 +9,7 @@ INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_i
 	 ('salary_item_sub_type','INC_ATTENDANCE','全勤奖',35,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','INC_BONUS','绩效奖金',40,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','INC_YEAR_END','年终奖',50,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10');
-INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('salary_item_sub_type','INC_SUBSIDY','补贴',60,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','INC_FESTIVAL','节日礼金',70,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','INC_OTHER','其他收入',80,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
@@ -20,7 +20,7 @@ INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_i
 	 ('salary_item_sub_type','DED_OTHER','其他扣款',120,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','TAX_INCOME','个人所得税',200,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','SI_PENSION','养老保险(个人)',210,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10');
-INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('salary_item_sub_type','SI_MED','医疗保险(个人)',220,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','SI_UNEMPLOYMENT','失业保险(个人)',225,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','SI_HOUSING','住房公积金(个人)',230,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
@@ -31,7 +31,7 @@ INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_i
 	 ('salary_item_sub_type','ER_HOUSING','住房公积金(公司缴纳)',320,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','ER_VISA','签证费用',330,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','ER_TRAVEL','差旅费',340,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10');
-INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('salary_item_sub_type','ER_INSURANCE','商业保险',350,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_item_sub_type','ER_OTHER','其他公司支出',360,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_calc_stage','1','基础薪资阶段',10,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
@@ -42,7 +42,7 @@ INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_i
 	 ('salary_tax_rule','TAX_RESIDENT_CN','中国居民综合所得税',10,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_tax_rule','TAX_LABOR','劳务报酬所得税',20,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('salary_tax_rule','NO_TAX','不计税(外包/免税)',30,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10');
-INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('payment_channel','bank_transfer_cmb','招商银行企业代发',10,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('payment_channel','bank_transfer_icbc','工商银行企业代发',20,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('payment_channel','bank_transfer_bdo','BDO Unibank',30,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
@@ -53,7 +53,7 @@ INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_i
 	 ('settlement_currency','PHP','菲律宾比索 (PHP)',20,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('settlement_currency','USDT','泰达币(USDT)',30,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('settlement_currency','USD','美元 (USD)',40,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10');
-INSERT INTO salary_admin_v4.sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_dict_item (dict_type_code,dict_item_value,dict_item_label,dict_item_sort,status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('employment_status','1','正式员工',10,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('employment_status','2','试用期员工',20,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),
 	 ('employment_status','3','实习生',30,1,'',0,'system','2026-04-17 06:16:10','admin','2026-04-17 06:16:10'),

@@ -1,4 +1,4 @@
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,10,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,150,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -9,7 +9,7 @@ INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by
 	 (1,130,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,101,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,102,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,103,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,104,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,105,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -20,7 +20,7 @@ INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by
 	 (1,115,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,121,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,122,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,123,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,124,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,131,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -31,7 +31,7 @@ INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by
 	 (1,136,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,137,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,138,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,160,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,170,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,180,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -42,7 +42,7 @@ INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by
 	 (1,250,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,161,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,162,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,163,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,164,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,165,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -53,7 +53,7 @@ INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by
 	 (1,175,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,181,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,182,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,183,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,184,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,191,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -64,7 +64,7 @@ INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by
 	 (1,201,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,202,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,203,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,204,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,220,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,230,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -75,7 +75,7 @@ INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by
 	 (1,231,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,232,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,233,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,234,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,235,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,236,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -86,7 +86,7 @@ INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by
 	 (1,244,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,245,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,251,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (1,252,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,253,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (1,254,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -97,7 +97,7 @@ INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by
 	 (2,101,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (2,102,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (2,103,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (2,105,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (2,110,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (2,111,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -108,7 +108,7 @@ INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by
 	 (2,122,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (2,123,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (3,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_role_menu (role_id,menu_id,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 (3,2,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (4,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 (4,2,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),

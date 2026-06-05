@@ -1,4 +1,4 @@
-INSERT INTO salary_admin_v4.salary_employee (employee_code,employee_name,company_name,department,job_title,employment_status,entry_date,probation_end_date,actual_leave_date,transfer_flag,accommodation_status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO salary_employee (employee_code,employee_name,company_name,department,job_title,employment_status,entry_date,probation_end_date,actual_leave_date,transfer_flag,accommodation_status,remark,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('202525','TEST_O','集团总部','研发中心','高级JAVA开发工程',1,'2019-09-01',NULL,NULL,0,1,'',0,'system','2026-04-06 13:51:31','system','2026-04-06 13:51:31'),
 	 ('205771','TEST_B','集团总部','研发中心','高级JAVA开发',1,'2024-02-01',NULL,NULL,0,2,'',0,'system','2026-04-06 13:53:43','system','2026-04-06 13:53:43'),
 	 ('206331','TEST_M','集团总部','研发中心','高级JAVA工程师',1,'2024-02-01',NULL,NULL,0,0,'',0,'system','2026-04-06 13:56:23','system','2026-04-06 13:56:23'),

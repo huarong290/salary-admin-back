@@ -1,4 +1,4 @@
-INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('工作台','dashboard_dir','/dashboard','Layout','/dashboard/index','Odometer','',1,0,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('工作台面板','dashboard_index','index','dashboard/index','','DataBoard','',2,1,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('系统管理','sys_dir','/system','Layout','','Setting','',1,0,2,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -9,7 +9,7 @@ INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_compone
 	 ('用户删除','sys_user_del','','','','','sys:user:del',3,100,4,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('分配角色','sys_user_assign','','','','','sys:user:assign',3,100,5,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('角色管理','sys_role','role','system/role/RolePage','','Avatar','sys:role:list',2,10,2,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('角色查询','sys_role_query','','','','','sys:role:query',3,110,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('角色新增','sys_role_add','','','','','sys:role:add',3,110,2,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('角色修改','sys_role_edit','','','','','sys:role:edit',3,110,3,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -20,7 +20,7 @@ INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_compone
 	 ('菜单新增','sys_menu_add','','','','','sys:menu:add',3,120,2,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('菜单修改','sys_menu_edit','','','','','sys:menu:edit',3,120,3,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('菜单删除','sys_menu_del','','','','','sys:menu:del',3,120,4,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('字典管理','sys_dict','dict','system/dict/DictPage','','Collection','sys:dict:list',2,10,4,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('新增字典类型','sys_dict_type_add','','','','','sys:dict_type:add',3,130,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('删除字典类型','sys_dict_type_del','','','','','sys:dict_type:del',3,130,2,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -31,7 +31,7 @@ INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_compone
 	 ('修改字典项','sys_dict_item_edit','','','','','sys:dict_item:edit',3,130,7,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('查询字典类型','sys_dict_item_query','','','','','sys:dict_item:query',3,130,8,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('薪资管理','salary_manage','/salary','Layout','','Money','',1,0,10,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('员工基础档案','salary_employee','employee','salary/employee/EmployeePage','','User','salary:employee:list',2,150,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('查看员工列表','salary_employee_query','','','','','salary:employee:query',3,160,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('新增员工档案','salary_employee_add','','','','','salary:employee:add',3,160,2,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -42,7 +42,7 @@ INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_compone
 	 ('查看周期列表','salary_period_query','','','','','salary:period:query',3,170,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('新增/开启周期','salary_period_add','','','','','salary:period:add',3,170,2,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('修改周期数据','salary_period_edit','','','','','salary:period:edit',3,170,3,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('批量初始化周期','salary_period_init','','','','','salary:period:init',3,170,4,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('删除/销毁周期','salary_period_del','','','','','salary:period:del',3,170,5,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('薪资项目配置','salary_item_config','itemconfig','salary/itemconfig/ItemConfigPage','','Setting','salary:item_config:list',2,150,3,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -53,7 +53,7 @@ INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_compone
 	 ('薪资档案管理','salary_archive','archive','salary/archive/ArchivePage','','Document','salary:archive:list',2,150,4,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('新员工定薪','salary_archive_init','','','','','salary:archive:init',3,190,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('调薪申请','salary_archive_adjust','','','','','salary:archive:adjust',3,190,2,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('调薪审批','salary_archive_audit','','','','','salary:archive:audit',3,190,3,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('查看详情','salary_archive_detail','','','','','salary:archive:detail',3,190,4,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('导出档案','salary_archive_export','','','','','salary:archive:export',3,190,5,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -64,7 +64,7 @@ INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_compone
 	 ('审核定稿','salary_kpi_record_confirm','','','','','salary:kpi_record:confirm',3,200,4,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('薪资引擎配置','salary_engine','engine','','','Operation','',1,150,6,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('计算规则库','salary_calc_rule','calc-rule','salary/calcrule/CalcRulePage','','Collection','salary:rule:list',2,210,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('查询规则','salary_rule_query','','','','','salary:rule:query',3,220,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('新增规则','salary_rule_add','','','','','salary:rule:add',3,220,2,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('修改规则','salary_rule_edit','','','','','salary:rule:edit',3,220,3,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -75,7 +75,7 @@ INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_compone
 	 ('修改管道元数据','salary_pipeline_edit','','','','','salary:pipeline:edit',3,230,3,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('删除管道','salary_pipeline_del','','','','','salary:pipeline:del',3,230,4,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('发布瀑布流配置','salary_pipeline_design','','','','','salary:pipeline:design',3,230,5,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('设为系统默认','salary_pipeline_default','','','','','salary:pipeline:default',3,230,6,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('升级新版本','salary_pipeline_upgrade','','','','','salary:pipeline:upgrade',3,230,7,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('专项调整(手工账)','salary_adjustment','adjustment','salary/adjustment/AdjustmentPage','','PriceTag','salary:adjustment:list',2,150,7,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
@@ -86,7 +86,7 @@ INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_compone
 	 ('批量生效/撤回','salary_adjustment_audit','','','','','salary:adjustment:audit',3,240,5,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('薪资汇总与发薪','salary_summary','summary','salary/summary/SummaryPage','','Wallet','salary:summary:list',2,150,8,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('查看汇总列表','salary_summary_query','','','','','salary:summary:query',3,250,1,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33');
-INSERT INTO salary_admin_v4.sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
+INSERT INTO sys_menu (menu_name,menu_code,menu_path,menu_component,menu_redirect,menu_icon,menu_permission,menu_type,menu_parent_id,menu_sort,menu_visible,menu_status,delete_flag,create_by,create_time,update_by,update_time) VALUES
 	 ('查看工资条明细','salary_summary_detail','','','','','salary:summary:detail',3,250,2,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('锁定与解锁单据','salary_summary_lock','','','','','salary:summary:lock',3,250,3,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
 	 ('执行引擎核算','salary_summary_calc','','','','','salary:summary:calc',3,250,4,1,1,0,'system','2026-04-17 05:34:33','system','2026-04-17 05:34:33'),
