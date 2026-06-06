@@ -61,15 +61,23 @@ public class SalaryArchiveItem extends BaseEntity<SalaryArchiveItem> {
     @TableField("category_dict_value")
     private String categoryDictValue;
     /**
+     * 计算模式
+     * 1-按月固定, 2-按出勤天数计算, 3-按现场出勤天数计算, 4-按居家出勤天数计算
+     */
+    @Schema(description = "计算模式: 1-按月固定, 2-按出勤天数计算, 3-按现场出勤天数计算, 4-按居家出勤天数计算", example = "1")
+    @TableField("calc_mode")
+    private Integer calcMode;
+    /**
      * 表达式脚本
      */
     @Schema(description = "表达式脚本")
     @TableField("rule_script")
     private String ruleScript;
     /**
-     * 固定金额
+     * 基准标准金额
+     * 若按月固定则代表月总额（如500）；若按天计算则代表日单价（如20）
      */
-    @Schema(description = "固定金额")
+    @Schema(description = "基准标准金额 (若按月固定则代表月总额；若按天计算则代表日单价)", example = "500.00")
     @TableField("amount")
     private BigDecimal amount;
 

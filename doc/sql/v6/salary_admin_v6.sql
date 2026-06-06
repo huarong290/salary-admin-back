@@ -266,7 +266,7 @@ CREATE TABLE `salary_archive`
     KEY                     `idx_emp_time_slice` (`employee_id`, `effective_date`, `expiry_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工薪资标准配置表(含版本历史)';
 -- ==========================================================
--- 12. 薪资档案固定项明细表 (档案从表) (🚀 表达式 + 字典规范版)
+-- 12. 薪资档案固定项明细表 (档案从表) (🚀 动态模式增强版)
 -- ==========================================================
 CREATE TABLE `salary_archive_item`
 (
@@ -276,8 +276,9 @@ CREATE TABLE `salary_archive_item`
     `item_config_id`      BIGINT UNSIGNED NOT NULL COMMENT '关联salary_item_config.id',
     `type_name`           VARCHAR(64)    NOT NULL COMMENT '项目名称快照',
     `category_dict_value` VARCHAR(64)    NOT NULL COMMENT '分类字典值快照',
-    `rule_script`         TEXT COMMENT '表达式脚本',
-    `amount`              DECIMAL(18, 8) NOT NULL DEFAULT '0.00' COMMENT '固定金额',
+    `calc_mode`           TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '计算模式: 1-按月固定, 2-按出勤天数计算, 3-按现场出勤天数计算,4-按居家出勤天数计算',
+    `rule_script`         TEXT COMMENT '特异性自定义表达式脚本（留空则默认走全局规则库）',
+    `amount`              DECIMAL(18, 8) NOT NULL DEFAULT '0.00' COMMENT '基准标准金额 (若按月固定则代表月总额，如500; 若按天计算则代表日单价，如20)',
     `delete_flag`         BIGINT UNSIGNED NOT NULL DEFAULT '0',
     `create_by`           VARCHAR(64)    NOT NULL DEFAULT 'admin',
     `create_time`         DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,

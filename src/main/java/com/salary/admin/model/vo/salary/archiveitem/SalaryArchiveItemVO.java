@@ -59,6 +59,17 @@ public class SalaryArchiveItemVO implements Serializable {
     @Schema(description = "项目名称快照 (如：餐补、全勤奖)", example = "餐补")
     private String typeName;
     /**
+     * 计算模式
+     */
+    @Schema(description = "计算模式 (1:按月固定, 2:按出勤天数, 3:按现场出勤, 4:按居家出勤)", example = "1")
+    private Integer calcMode;
+
+    /**
+     * 计算模式文本
+     */
+    @Schema(description = "计算模式文本 (字典翻译: 按月固定/按出勤天数等)", example = "按出勤天数计算")
+    private String calcModeLabel;
+    /**
      * 保留小数位数 (来源于配置表快照)
      */
     @Schema(description = "保留小数位数")
@@ -80,9 +91,9 @@ public class SalaryArchiveItemVO implements Serializable {
     @Schema(description = "分类字典标签 (字典翻译: 基本工资项、缺勤扣款项)")
     private String categoryDictLabel;
     /**
-     * 固定金额 (若为比例计算，此字段可作为计算结果缓存)
+     * 💡 基准标准金额 (若按月固定则代表月总额；若按天计算则代表日单价
      */
-    @Schema(description = "固定金额 (若为比例计算，此字段可作为计算结果缓存)")
+    @Schema(description = "基准标准金额 (若按月固定则代表月总额；若按天计算则代表日单价)", example = "500.00")
     private BigDecimal amount;
     /**
      *表达式脚本快照

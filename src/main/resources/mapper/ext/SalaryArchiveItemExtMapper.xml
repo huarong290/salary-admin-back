@@ -10,6 +10,7 @@
         <result column="item_config_id" property="itemConfigId" />
         <result column="type_name" property="typeName" />
         <result column="category_dict_value" property="categoryDictValue" />
+        <result column="calc_mode" property="calcMode" />
         <result column="rule_script" property="ruleScript" />
         <result column="amount" property="amount" />
         <result column="delete_flag" property="deleteFlag" />
@@ -21,7 +22,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, archive_id, item_type, item_config_id, type_name, category_dict_value, rule_script, amount, delete_flag, create_by, create_time, update_by, update_time
+        id, archive_id, item_type, item_config_id, type_name, category_dict_value, calc_mode,rule_script, amount, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 </mapper>

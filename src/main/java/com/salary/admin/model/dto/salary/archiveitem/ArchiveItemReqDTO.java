@@ -24,7 +24,17 @@ public class ArchiveItemReqDTO {
     @Schema(description = "项目类型 (1:收入, 2:扣款)", hidden = true)
     private Integer itemType;
 
-    @Schema(description = "固定金额", example = "500.00")
+    /**
+     * 计算模式 (1:按月固定, 2:按出勤天数, 3:按现场出勤, 4:按居家出勤)
+     */
+    @Schema(description = "计算模式 (1:按月固定, 2:按出勤天数, 3:按现场出勤, 4:按居家出勤)", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    @NotNull(message = "计算模式不能为空")
+    private Integer calcMode;
+
+    /**
+     * 💡 基准标准金额 (按月固定传月总额，按天计算传日单价)
+     */
+    @Schema(description = "基准标准金额 (按月固定传月总额，按天计算传日单价)", example = "500.00", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "金额不能为空")
     @DecimalMin(value = "0.00", message = "金额不能为负数")
     private BigDecimal amount;

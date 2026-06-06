@@ -39,7 +39,7 @@ public abstract class AbstractSalaryProcessor<T> {
      */
     public T process(SalaryCalcSingleReqDTO reqDTO) {
         // 1. 解析管道版本
-        String pipelineCode = StringUtils.isNotBlank(reqDTO.getPipelineCode()) ? reqDTO.getPipelineCode() : "OFFICIAL_STAFF_2026";
+        String pipelineCode = StringUtils.isNotBlank(reqDTO.getPipelineCode()) ? reqDTO.getPipelineCode() : "OFFICIAL_STAFF_2024";
         Integer pipelineVersion = reqDTO.getPipelineVersion() != null ? reqDTO.getPipelineVersion() : 1;
 
         // 2. 获取编排图纸
