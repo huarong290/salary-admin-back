@@ -153,6 +153,19 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         } else {
             // 【默认模式】：取该员工当前最新生效的托底档案
             archive = iSalaryArchiveService.getLatestEffectiveArchive(employeeId);
+            // ====================================================================
+            // >>>>>>> 🚀 【核心修复变动部分：开始】 <<<<<<<
+            // 原因：getLatestEffectiveArchive 内部仅查询了档案主表，未联动或二次查询明细子表。
+            //       导致在预览（specifyArchiveId 为 null）时，拿到的是缺失 archiveItems 的空壳 VO。
+            // 修复方案：在此处进行高可用防御性装配，若明细为空，则通过主表 ID 重新回补完整的明细项。
+            if (archive != null && CollectionUtils.isEmpty(archive.getArchiveItems())) {
+                log.warn("⚠️ 发现预览断层：getLatestEffectiveArchive 未携带明细数据，触发手动二次装配。档案主键 ID: {}", archive.getId());
+                // 调用已确信可以查出 items 明细的详情接口进行覆盖填充
+                SalaryArchiveVO fullDetail = iSalaryArchiveService.getArchiveDetail(archive.getId());
+                if (fullDetail != null) {
+                    archive.setArchiveItems(fullDetail.getArchiveItems());
+                }
+            }
         }
 
         if (archive == null) {
@@ -179,8 +192,15 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
                     SalaryItemConfig config = configMap.get(item.getItemConfigId());
                     // 必须使用 envVarName (例如 "housingAllowance") 作为键！
                     if (config != null && StringUtils.isNotBlank(config.getEnvVarName())) {
+                        // 1. 注入基准标准金额（可以是月总额，也可以是日单价）
                         env.put(config.getEnvVarName(), item.getAmount());
+                        //  核心新增：动态注入该薪资项的计算模式，变量名规则为：环境变量名 + "_calcMode"
+                        // 例如：housingAllowance_calcMode 或 mealAllowance_calcMode
+                        env.put(config.getEnvVarName() + "_calcMode", item.getCalcMode());
+                        log.debug("🔧 薪资档案项注入上下文: {} = {}, {}_calcMode = {}",
+                                config.getEnvVarName(), item.getAmount(), config.getEnvVarName(), item.getCalcMode());
                     }
+
                 });
             }
         }

@@ -73,13 +73,17 @@ VALUES
 (123, '菜单修改', 'sys_menu_edit', '', '', '', '', 'sys:menu:edit', 3, 120, 3, 1, 1),
 (124, '菜单删除', 'sys_menu_del', '', '', '', '', 'sys:menu:del', 3, 120, 4, 1, 1),
 -- 字典管理
-(130, '字典管理', 'sys_dict', 'dict', 'system/dict/DictPage', '', 'Collection', 'sys:dict:list', 2, 10, 4, 1, 1),
-(131, '字典查询', 'sys_dict_query', '', '', '', '', 'sys:dict:query', 3, 130, 1, 1, 1),
-(132, '字典新增', 'sys_dict_add', '', '', '', '', 'sys:dict:add', 3, 130, 2, 1, 1),
-(133, '字典修改', 'sys_dict_edit', '', '', '', '', 'sys:dict:edit', 3, 130, 3, 1, 1),
-(134, '字典删除', 'sys_dict_del', '', '', '', '', 'sys:dict:del', 3, 130, 4, 1, 1),
-(135, '字典刷新缓存', 'sys_dict_refresh', '', '', '', '', 'sys:dict:refresh', 3, 130, 5, 1, 1),
 
+(130,'字典管理','sys_dict','dict','system/dict/DictPage','','Collection','sys:dict:list',2,10,4,1,1),
+(131,'新增字典类型','sys_dict_type_add','','','','','sys:dict_type:add',3,130,1,1,1),
+(132,'删除字典类型','sys_dict_type_del','','','','','sys:dict_type:del',3,130,2,1,1),
+(133,'修改字典类型','sys_dict_type_edit','','','','','sys:dict_type:edit',3,130,3,1,1),
+(134,'查询字典类型','sys_dict_type_query','','','','','sys:dict_type:query',3,130,4,1,1),
+(135,'新增字段项','sys_dict_item_add','','','','','sys:dict_item:add',3,130,5,1,1),
+(136,'删除字典项','sys_dict_item_del','','','','','sys:dict_item:del',3,130,6,1,1),
+(137,'修改字典项','sys_dict_item_edit','','','','','sys:dict_item:edit',3,130,7,1,1),
+(138,'查询字典类型','sys_dict_item_query','','','','','sys:dict_item:query',3,130,8,1,1),
+(139, '字典刷新缓存', 'sys_dict_refresh', '', '', '', '', 'sys:dict:refresh', 3, 130, 5, 1, 1),
 -- 【0】薪资管理 (父级主目录)
 (150, '薪资管理', 'salary_manage', '/salary', 'Layout', '', 'Money', '', 1, 0, 10, 1, 1),
 
