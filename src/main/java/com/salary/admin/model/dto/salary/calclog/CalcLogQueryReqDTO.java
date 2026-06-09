@@ -1,4 +1,4 @@
-package com.salary.admin.model.dto.calclog;
+package com.salary.admin.model.dto.salary.calclog;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

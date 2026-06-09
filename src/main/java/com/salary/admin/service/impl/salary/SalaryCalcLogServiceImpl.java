@@ -8,7 +8,7 @@ import com.salary.admin.common.PageResult;
 import com.salary.admin.convert.salary.calclog.CalcLogConvert;
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.mapper.ext.SalaryCalcLogExtMapper;
-import com.salary.admin.model.dto.calclog.CalcLogQueryReqDTO;
+import com.salary.admin.model.dto.salary.calclog.CalcLogQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcLog;
 import com.salary.admin.model.vo.calclog.CalcLogVO;
 import com.salary.admin.service.salary.ISalaryCalcLogService;

@@ -1,8 +1,8 @@
 package com.salary.admin.convert.salary.calccontext;
 
 
-import com.salary.admin.model.dto.calccontext.CalcContextAddReqDTO;
-import com.salary.admin.model.dto.calccontext.CalcContextEditReqDTO;
+import com.salary.admin.model.dto.salary.calccontext.CalcContextAddReqDTO;
+import com.salary.admin.model.dto.salary.calccontext.CalcContextEditReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcContext;
 import com.salary.admin.model.vo.calccontext.CalcContextVO;
 import org.mapstruct.Mapper;

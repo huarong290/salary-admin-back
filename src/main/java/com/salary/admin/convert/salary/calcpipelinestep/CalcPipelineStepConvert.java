@@ -1,9 +1,9 @@
 package com.salary.admin.convert.salary.calcpipelinestep;
 
 
-import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepAddReqDTO;
-import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepBatchItemDTO;
-import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepEditReqDTO;
+import com.salary.admin.model.dto.salary.calcpipelinestep.CalcPipelineStepAddReqDTO;
+import com.salary.admin.model.dto.salary.calcpipelinestep.CalcPipelineStepBatchItemDTO;
+import com.salary.admin.model.dto.salary.calcpipelinestep.CalcPipelineStepEditReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcPipelineStep;
 import com.salary.admin.model.vo.calcpipelinestep.CalcPipelineStepVO;
 import org.mapstruct.Mapper;

@@ -1,4 +1,4 @@
-package com.salary.admin.model.dto.adjustment;
+package com.salary.admin.model.dto.salary.adjustment;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.salary.admin.model.dto.PageQueryDTO;

@@ -3,7 +3,7 @@ package com.salary.admin.mapper.ext;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.salary.admin.mapper.auto.SalaryAdjustmentMapper;
-import com.salary.admin.model.dto.adjustment.AdjustmentQueryDTO;
+import com.salary.admin.model.dto.salary.adjustment.AdjustmentQueryDTO;
 import com.salary.admin.model.vo.salary.adjustment.SalaryAdjustmentVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

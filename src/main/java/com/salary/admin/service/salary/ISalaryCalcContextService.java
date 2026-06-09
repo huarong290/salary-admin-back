@@ -1,9 +1,9 @@
 package com.salary.admin.service.salary;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.salary.admin.model.dto.calccontext.CalcContextAddReqDTO;
-import com.salary.admin.model.dto.calccontext.CalcContextEditReqDTO;
-import com.salary.admin.model.dto.calccontext.CalcContextQueryReqDTO;
+import com.salary.admin.model.dto.salary.calccontext.CalcContextAddReqDTO;
+import com.salary.admin.model.dto.salary.calccontext.CalcContextEditReqDTO;
+import com.salary.admin.model.dto.salary.calccontext.CalcContextQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcContext;
 import com.salary.admin.model.vo.calccontext.CalcContextVO;
 

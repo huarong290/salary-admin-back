@@ -1,7 +1,7 @@
 package com.salary.admin.convert.salary.calcrule;
 
-import com.salary.admin.model.dto.calcrule.CalcRuleAddReqDTO;
-import com.salary.admin.model.dto.calcrule.CalcRuleEditReqDTO;
+import com.salary.admin.model.dto.salary.calcrule.CalcRuleAddReqDTO;
+import com.salary.admin.model.dto.salary.calcrule.CalcRuleEditReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcRule;
 import com.salary.admin.model.vo.calcrule.CalcRuleOptionVO;
 import com.salary.admin.model.vo.calcrule.CalcRuleVO;

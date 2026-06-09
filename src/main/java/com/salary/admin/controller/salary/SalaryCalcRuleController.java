@@ -2,9 +2,9 @@ package com.salary.admin.controller.salary;
 
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.common.PageResult;
-import com.salary.admin.model.dto.calcrule.CalcRuleAddReqDTO;
-import com.salary.admin.model.dto.calcrule.CalcRuleEditReqDTO;
-import com.salary.admin.model.dto.calcrule.CalcRuleQueryReqDTO;
+import com.salary.admin.model.dto.salary.calcrule.CalcRuleAddReqDTO;
+import com.salary.admin.model.dto.salary.calcrule.CalcRuleEditReqDTO;
+import com.salary.admin.model.dto.salary.calcrule.CalcRuleQueryReqDTO;
 import com.salary.admin.model.vo.calcrule.CalcRuleVO;
 import com.salary.admin.service.salary.ISalaryCalcRuleService;
 import io.swagger.v3.oas.annotations.Operation;

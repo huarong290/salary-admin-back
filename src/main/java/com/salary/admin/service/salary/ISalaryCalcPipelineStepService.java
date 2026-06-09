@@ -1,7 +1,7 @@
 package com.salary.admin.service.salary;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepBatchItemDTO;
+import com.salary.admin.model.dto.salary.calcpipelinestep.CalcPipelineStepBatchItemDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcPipelineStep;
 import com.salary.admin.model.vo.calcpipelinestep.CalcPipelineStepVO;
 

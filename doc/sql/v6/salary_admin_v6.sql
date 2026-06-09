@@ -421,6 +421,7 @@ CREATE TABLE `salary_period`
     `start_date`           DATE                   DEFAULT NULL COMMENT '开始日期',
     `end_date`             DATE                   DEFAULT NULL COMMENT '结束日期',
     `month_days`           DECIMAL(10, 2) NOT NULL DEFAULT '0.00' COMMENT '月天数',
+    `standard_rest_days`   DECIMAL(10, 2) NOT NULL DEFAULT '0.00' COMMENT '标准/制度月休天数 (如4.00, 6.00, 8.00)',
     `attendance_days`      DECIMAL(10, 2) NOT NULL DEFAULT '0.00' COMMENT '出勤天数',
     `office_days`          DECIMAL(10, 2) NOT NULL DEFAULT '0.00' COMMENT '现场出勤天数',
     `wfh_days`             DECIMAL(10, 2) NOT NULL DEFAULT '0.00' COMMENT '居家出勤天数',

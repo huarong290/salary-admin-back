@@ -1,21 +1,17 @@
-package com.salary.admin.model.dto.calcrule;
-
+package com.salary.admin.model.dto.salary.calcrule;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
- * 薪资计算规则修改请求参数
+ * 薪资计算规则新增请求参数
  */
 @Data
-@Schema(description = "薪资计算规则修改请求参数")
+@Schema(description = "薪资计算规则新增请求参数")
 //架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CalcRuleEditReqDTO {
-
-    @Schema(description = "规则主键ID")
-    private Long id;
+public class CalcRuleAddReqDTO {
 
     @Schema(description = "规则编码")
     private String ruleCode;
@@ -44,7 +40,7 @@ public class CalcRuleEditReqDTO {
     @Schema(description = "参数配置 (JSON字符串)")
     private String paramJson;
 
-    @Schema(description = "所属阶段 (1.基础薪资阶段 2.津贴与奖金阶段 3扣款与社保阶段 4税务核算阶段 5汇总)")
+    @Schema(description = "所属阶段 (1基础 2补贴 3扣款 4税 5汇总)")
     private Integer stage;
 
     @Schema(description = "备注")

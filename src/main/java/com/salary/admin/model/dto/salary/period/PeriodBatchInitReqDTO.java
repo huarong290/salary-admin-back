@@ -43,6 +43,11 @@ public class PeriodBatchInitReqDTO implements Serializable {
     @Schema(description = "月天数")
     private BigDecimal monthDays;
     /**
+     * 标准/制度月休天数 (如4.00, 6.00, 8.00)
+     */
+    @Schema(description = "标准/制度月休天数 (如4.00, 6.00, 8.00)")
+    private BigDecimal standardRestDays;
+    /**
      * 出勤天数
      */
     @Schema(description = "出勤天数")

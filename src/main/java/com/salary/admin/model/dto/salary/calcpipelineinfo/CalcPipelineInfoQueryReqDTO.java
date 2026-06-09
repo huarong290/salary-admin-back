@@ -1,4 +1,4 @@
-package com.salary.admin.model.dto.calcpipelineinfo;
+package com.salary.admin.model.dto.salary.calcpipelineinfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.salary.admin.model.dto.PageQueryDTO;

@@ -1,7 +1,7 @@
 package com.salary.admin.convert.salary.adjustment;
 
-import com.salary.admin.model.dto.adjustment.AdjustmentAddReqDTO;
-import com.salary.admin.model.dto.adjustment.AdjustmentEditReqDTO;
+import com.salary.admin.model.dto.salary.adjustment.AdjustmentAddReqDTO;
+import com.salary.admin.model.dto.salary.adjustment.AdjustmentEditReqDTO;
 import com.salary.admin.model.entity.salary.SalaryAdjustment;
 import com.salary.admin.model.vo.salary.adjustment.SalaryAdjustmentVO;
 import org.mapstruct.Mapper;

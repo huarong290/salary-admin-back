@@ -2,9 +2,9 @@ package com.salary.admin.service.salary;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.salary.admin.common.PageResult;
-import com.salary.admin.model.dto.calcpipelineinfo.CalcPipelineInfoAddReqDTO;
-import com.salary.admin.model.dto.calcpipelineinfo.CalcPipelineInfoEditReqDTO;
-import com.salary.admin.model.dto.calcpipelineinfo.CalcPipelineInfoQueryReqDTO;
+import com.salary.admin.model.dto.salary.calcpipelineinfo.CalcPipelineInfoAddReqDTO;
+import com.salary.admin.model.dto.salary.calcpipelineinfo.CalcPipelineInfoEditReqDTO;
+import com.salary.admin.model.dto.salary.calcpipelineinfo.CalcPipelineInfoQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcPipelineInfo;
 import com.salary.admin.model.vo.calcpipelineinfo.CalcPipelineInfoVO;
 

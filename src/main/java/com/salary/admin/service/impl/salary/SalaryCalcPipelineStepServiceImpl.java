@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.convert.salary.calcpipelinestep.CalcPipelineStepConvert;
 import com.salary.admin.mapper.ext.SalaryCalcPipelineStepExtMapper;
-import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepBatchItemDTO;
+import com.salary.admin.model.dto.salary.calcpipelinestep.CalcPipelineStepBatchItemDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcPipelineStep;
 import com.salary.admin.model.vo.calcpipelinestep.CalcPipelineStepVO;
 import com.salary.admin.service.salary.ISalaryCalcPipelineStepService;

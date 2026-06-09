@@ -2,7 +2,7 @@ package com.salary.admin.service.salary;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.salary.admin.common.PageResult;
-import com.salary.admin.model.dto.calclog.CalcLogQueryReqDTO;
+import com.salary.admin.model.dto.salary.calclog.CalcLogQueryReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcLog;
 import com.salary.admin.model.vo.calclog.CalcLogVO;
 

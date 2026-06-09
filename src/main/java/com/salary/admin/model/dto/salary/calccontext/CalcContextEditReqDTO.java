@@ -1,4 +1,4 @@
-package com.salary.admin.model.dto.calccontext;
+package com.salary.admin.model.dto.salary.calccontext;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;

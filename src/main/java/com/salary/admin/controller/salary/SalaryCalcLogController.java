@@ -2,7 +2,7 @@ package com.salary.admin.controller.salary;
 
 import com.salary.admin.common.ApiResult;
 import com.salary.admin.common.PageResult;
-import com.salary.admin.model.dto.calclog.CalcLogQueryReqDTO;
+import com.salary.admin.model.dto.salary.calclog.CalcLogQueryReqDTO;
 import com.salary.admin.model.vo.calclog.CalcLogVO;
 import com.salary.admin.service.salary.ISalaryCalcLogService;
 import io.swagger.v3.oas.annotations.Operation;

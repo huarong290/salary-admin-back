@@ -11,6 +11,7 @@
         <result column="start_date" property="startDate" />
         <result column="end_date" property="endDate" />
         <result column="month_days" property="monthDays" />
+        <result column="standard_rest_days" property="standardRestDays" />
         <result column="attendance_days" property="attendanceDays" />
         <result column="office_days" property="officeDays" />
         <result column="wfh_days" property="wfhDays" />
@@ -26,7 +27,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, employee_id, work_month, settlement_month, start_date, end_date, month_days, attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days, full_attendance_flag, delete_flag, create_by, create_time, update_by, update_time
+        id, employee_id, work_month, settlement_month, start_date, end_date, month_days,standard_rest_days, attendance_days,office_days,wfh_days,unpaid_leave_days,paid_leave_days, full_attendance_flag, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 
@@ -44,6 +45,7 @@
         p.start_date,
         p.end_date,
         p.month_days,
+        p.standard_rest_days,
         p.attendance_days,
         p.office_days,
         p.wfh_days,

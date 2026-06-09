@@ -1,7 +1,7 @@
 package com.salary.admin.controller.salary;
 
 import com.salary.admin.common.ApiResult;
-import com.salary.admin.model.dto.calcpipelinestep.CalcPipelineStepBatchItemDTO;
+import com.salary.admin.model.dto.salary.calcpipelinestep.CalcPipelineStepBatchItemDTO;
 import com.salary.admin.model.vo.calcpipelinestep.CalcPipelineStepVO;
 import com.salary.admin.service.salary.ISalaryCalcPipelineStepService;
 import io.swagger.v3.oas.annotations.Operation;

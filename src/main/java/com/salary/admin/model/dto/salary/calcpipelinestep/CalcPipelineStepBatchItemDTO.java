@@ -1,63 +1,48 @@
-package com.salary.admin.model.dto.calcpipelinestep;
+package com.salary.admin.model.dto.salary.calcpipelinestep;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
- * 薪资计算管道步骤新增请求参数
- *
- * 用于新增管道执行步骤：规则快照、阶段、顺序、执行控制等
+ * 薪资计算管道步骤-批量保存明细项 DTO
+ * (不包含 pipelineCode 和 version，由外层统一赋予，防止数据伪造)
  */
 @Data
-@Schema(description = "薪资计算管道步骤新增请求参数")
-//架构师标配：自动忽略前端传来的、DTO 中未定义的冗余字段
+@Schema(description = "薪资计算管道步骤批量保存明细项")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CalcPipelineStepAddReqDTO {
+public class CalcPipelineStepBatchItemDTO {
 
-    /** 所属管道编码 */
-    @Schema(description = "所属管道编码")
-    private String pipelineCode;
-
-    /** 管道版本 */
-    @Schema(description = "管道版本")
-    private Integer pipelineVersion;
-
-    /** 规则编码 */
     @Schema(description = "规则编码")
+    @NotBlank(message = "规则编码不能为空")
     private String ruleCode;
 
-    /** 规则名称快照 */
     @Schema(description = "规则名称快照")
     private String ruleName;
 
-    /** 规则类型快照 (1公式 2函数) */
     @Schema(description = "规则类型快照 (1公式 2函数)")
     private Integer ruleType;
 
-    /** 执行条件表达式 */
     @Schema(description = "执行条件表达式")
     private String conditionScript;
 
-    /** 阶段 (1基础 2补贴 3扣款 4税 5汇总) */
     @Schema(description = "阶段 (1基础 2补贴 3扣款 4税 5汇总)")
+    @NotNull(message = "执行阶段不能为空")
     private Integer stage;
 
-    /** 执行顺序 */
     @Schema(description = "执行顺序")
+    @NotNull(message = "执行顺序不能为空")
     private Integer sortOrder;
 
-    /** 失败是否阻断 (1阻断 0不中断) */
     @Schema(description = "失败是否阻断 (1阻断 0不中断)")
     private Integer blockFlag;
 
-    /** 结果为空是否跳过 (1跳过 0不跳过) */
     @Schema(description = "结果为空是否跳过 (1跳过 0不跳过)")
     private Integer skipIfNull;
 
-    /** 状态 (1启用 0停用) */
     @Schema(description = "状态 (1启用 0停用)")
     private Integer status;
 }
-

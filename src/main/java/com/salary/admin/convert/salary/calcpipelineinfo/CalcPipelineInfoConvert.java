@@ -1,8 +1,8 @@
 package com.salary.admin.convert.salary.calcpipelineinfo;
 
 
-import com.salary.admin.model.dto.calcpipelineinfo.CalcPipelineInfoAddReqDTO;
-import com.salary.admin.model.dto.calcpipelineinfo.CalcPipelineInfoEditReqDTO;
+import com.salary.admin.model.dto.salary.calcpipelineinfo.CalcPipelineInfoAddReqDTO;
+import com.salary.admin.model.dto.salary.calcpipelineinfo.CalcPipelineInfoEditReqDTO;
 import com.salary.admin.model.entity.salary.SalaryCalcPipelineInfo;
 import com.salary.admin.model.vo.calcpipelineinfo.CalcPipelineInfoVO;
 import org.mapstruct.Mapper;
