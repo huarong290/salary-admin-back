@@ -78,6 +78,7 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         SalaryPeriod period = iSalaryPeriodService.getById(periodId);
         if (period != null) {
             env.put("monthDays", period.getMonthDays() != null ? period.getMonthDays() : BigDecimal.ZERO);
+            env.put("standardRestDays", period.getStandardRestDays());
             env.put("attendanceDays", period.getAttendanceDays() != null ? period.getAttendanceDays() : BigDecimal.ZERO);
             env.put("officeDays", period.getOfficeDays() != null ? period.getOfficeDays() : BigDecimal.ZERO);
             env.put("wfhDays", period.getWfhDays() != null ? period.getWfhDays() : BigDecimal.ZERO);
