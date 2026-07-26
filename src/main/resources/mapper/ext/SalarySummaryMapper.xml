@@ -55,8 +55,13 @@
         FROM salary_summary
         <where>
             delete_flag = 0
+            <!-- 1. 优先判定指定月份：若传了具体月份，直接做精准匹配 -->
             <if test="query.settlementMonth != null and query.settlementMonth != ''">
                 AND settlement_month = #{query.settlementMonth}
+            </if>
+            <!-- 2. 年份判定：未传月份且传了年份时，做按年份前缀检索 -->
+            <if test="(query.settlementMonth == null or query.settlementMonth == '') and query.settlementYear != null and query.settlementYear != ''">
+                AND settlement_month LIKE CONCAT(#{query.settlementYear}, '%')
             </if>
             <if test="query.calcStatus != null">
                 AND calc_status = #{query.calcStatus}
