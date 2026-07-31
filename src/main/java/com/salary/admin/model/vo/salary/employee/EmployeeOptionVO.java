@@ -29,4 +29,10 @@ public class EmployeeOptionVO implements Serializable {
      */
     @Schema(description = "员工编号")
     private String employeeCode;
+
+    /**
+     * 平台账号
+     */
+    @Schema(description = "平台账号")
+    private String platformAccount;
 }

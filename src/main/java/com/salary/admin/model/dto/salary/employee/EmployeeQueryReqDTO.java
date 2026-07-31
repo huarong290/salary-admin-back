@@ -21,4 +21,9 @@ public class EmployeeQueryReqDTO extends PageQueryDTO {
 
     @Schema(description = "在职状态")
     private Integer employmentStatus;
+    /**
+     * 平台账号
+     */
+    @Schema(description = "平台账号")
+    private String platformAccount;
 }

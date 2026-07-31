@@ -85,6 +85,12 @@ public class SalaryEmployee extends BaseEntity<SalaryEmployee> {
     @TableField("accommodation_status")
     private Integer accommodationStatus;
     /**
+     * 平台账号
+     */
+    @Schema(description = "平台账号")
+    @TableField("platform_account")
+    private String platformAccount;
+    /**
      * 入职日期
      */
     @Schema(description = "入职日期")

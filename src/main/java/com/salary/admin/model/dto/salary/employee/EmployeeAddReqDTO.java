@@ -60,6 +60,12 @@ public class EmployeeAddReqDTO implements Serializable {
     private Integer accommodationStatus;
 
     /**
+     * 平台账号
+     */
+    @Schema(description = "平台账号")
+    private String platformAccount;
+
+    /**
      * 入职日期
      */
     @Schema(description = "入职日期")

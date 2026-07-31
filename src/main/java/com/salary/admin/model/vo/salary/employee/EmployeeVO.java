@@ -72,6 +72,11 @@ public class EmployeeVO implements Serializable {
      */
     @Schema(description = "住宿情况: 0-不住宿, 1-公司宿舍, 2-外宿补贴'")
     private Integer accommodationStatus;
+    /**
+     * 平台账号
+     */
+    @Schema(description = "平台账号")
+    private String platformAccount;
 
     /**
      * 入职日期
