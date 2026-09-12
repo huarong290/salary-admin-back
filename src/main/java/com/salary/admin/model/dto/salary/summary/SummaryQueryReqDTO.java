@@ -34,4 +34,10 @@ public class SummaryQueryReqDTO extends PageQueryDTO {
 
     @Schema(description = "发放状态:0-未支付 1-已支付 2-支付失败")
     private Integer paymentStatus;
+
+    @Schema(description = "排序字段 (白名单: settlementMonth/employeeCode/employeeName/grossSalary/netSalary/createTime，默认 settlementMonth)")
+    private String sortField;
+
+    @Schema(description = "排序方向: asc/desc，默认 desc (仅在 sortField 命中白名单时生效)")
+    private String sortOrder;
 }

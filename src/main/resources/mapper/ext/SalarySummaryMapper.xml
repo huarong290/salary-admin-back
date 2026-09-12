@@ -69,6 +69,15 @@
             <if test="query.paymentStatus != null">
                 AND payment_status = #{query.paymentStatus}
             </if>
+            <!-- 3. 指定薪资周期ID -->
+            <if test="query.periodId != null">
+                AND period_id = #{query.periodId}
+            </if>
+            <!-- 4. 指定员工：用于列表点员工名后的 [钻取]，以及查询某员工历史工资单
+                 (DTO 里一直有该字段但此处漏了过滤，导致钻取条件被静默忽略) -->
+            <if test="query.employeeId != null">
+                AND employee_id = #{query.employeeId}
+            </if>
             <if test="query.keyword != null and query.keyword != ''">
                 AND (
                 employee_name LIKE CONCAT('%', #{query.keyword}, '%')
@@ -76,6 +85,28 @@
                 )
             </if>
         </where>
-        ORDER BY id DESC
+        <!-- 5. 排序：字段走白名单，避免 SQL 注入；默认按结算月份倒序 (最新月份在最上面)
+             此前固定为 ORDER BY id DESC，排的是"生成顺序"而不是结算月份，
+             补录/重算旧月份会让旧月份插到最新月份前面，列表看起来是乱的 -->
+        ORDER BY
+        <choose>
+            <when test="query.sortField == 'employeeCode'">employee_code</when>
+            <when test="query.sortField == 'employeeName'">employee_name</when>
+            <when test="query.sortField == 'grossSalary'">gross_salary</when>
+            <when test="query.sortField == 'netSalary'">net_salary</when>
+            <when test="query.sortField == 'createTime'">create_time</when>
+            <otherwise>settlement_month</otherwise>
+        </choose>
+        <choose>
+            <when test="query.sortOrder == 'asc'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>
+        <!-- 6. 次级排序键：保证排序值相同时分页结果稳定，否则同值行会跨页重复/漏行 -->
+        <choose>
+            <when test="query.sortField == 'settlementMonth' or query.sortField == null or query.sortField == ''">
+                , employee_code ASC
+            </when>
+            <otherwise>, settlement_month DESC</otherwise>
+        </choose>
     </select>
 </mapper>
