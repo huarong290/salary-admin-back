@@ -108,11 +108,27 @@
 
 ## 7. 迁移执行（对应 SQL）
 
+**两种落地方式（二选一）**
+
+| 方案 | 脚本 | 特点 | 适用场景 |
+|---|---|---|---|
+| **A. 新增 V2 版本（推荐）** | `doc/sql/v9/pipeline_upgrade_v2_official_staff_2026.sql` | 复制 V1 → 生成 V2 → 只重排 V2 → 默认切到 V2；**V1 历史口径完整保留**，回滚只需切回默认 | 已用于历史工资单，或希望保留可回溯口径 |
+| **B. 原地改 V1** | `doc/sql/v9/pipeline_reorder_official_staff_2026.sql` | 直接更新 V1 的 62 步，步骤最少 | 开发期，无需保留历史口径 |
+
+> ⚠️ **选方案 A 之前必须先处理前端硬编码**（否则 V2 不会生效）：
+> `salary-admin-web/src/views/salary/summary/SummaryPage.vue:1018-1019` 写死了
+> `pipelineCode: 'OFFICIAL_STAFF_2026'` 与 `pipelineVersion: 1`；
+> 后端 `SalaryCoreEngineImpl:199-200` 会把这两个值透传到每个员工的单人核算请求，
+> 而引擎对"调用方显式指定"的管道是**优先采用**的 → 跑批仍会走 V1。
+> **改法（二选一）**：① 删掉这两个字段，交给后端按"默认管道"解析；② 先调"获取默认管道"接口再带上返回值。
+
+**执行顺序（两个方案一致）**
+
 ```text
-① 备份      →  salary_calc_pipeline_step_bak_20260912（脚本第 0 步）
-② 重排      →  62 步 stage/sort_order 一次性更新（脚本第 1 步，幂等）
-③ 验证      →  阶段分布 / 铁律校验 / 个税位置（脚本第 2 步）
-④ 回滚      →  从备份表还原（脚本第 3 步，已注释，按需启用）
+① 前置检查/备份  →  方案A：确认 V2 尚不存在；方案B：建备份表 salary_calc_pipeline_step_bak_20260912
+② 落地          →  方案A：建 V2 主表 + 复制 62 步 + 重排 V2 + 切换默认；方案B：直接重排 V1
+③ 验证          →  阶段分布 / 铁律校验 / 个税位置 /（方案A）确认 V1 未被改动
+④ 回滚          →  方案A：默认切回 V1 + 逻辑删除 V2；方案B：从备份表还原
 ```
 
 **影响面（重要）**
@@ -131,6 +147,9 @@
   复制生成新版本（version + 1、`default_flag = 0`），在**新版本**上执行重排，
   再用 `setDefaultPipeline(id)` 把默认指向新版本 —— 历史版本含义保持不变。
   （若当前仍处于开发期、无需保留历史口径，直接在 v1 上重排即可。）
+- **不通过 Java 接口时**，可直接执行 `doc/sql/v9/pipeline_upgrade_v2_official_staff_2026.sql`：
+  它等价于"复制升级 + 重排 + 切换默认"三步，并自带前置检查、验证 SQL 与回滚脚本。
+  注意其中的前置条件：前端 `SummaryPage.vue` 目前写死了 `pipelineVersion = 1`，需一并调整。
 - 全局默认管道必须**唯一**：`default_flag = 1` 且 `status = 1`；
   算薪时若未显式指定管道，引擎按
   `调用方指定 → 默认管道 → 唯一可用管道 → 快速失败` 的顺序解析（见 `CalcPipelineResolver`）。
