@@ -28,6 +28,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -196,7 +197,9 @@ public class SalaryItemConfigServiceImpl extends ServiceImpl<SalaryItemConfigExt
                 .eq(SalaryItemConfig::getStatus, 1)
                 .orderByAsc(SalaryItemConfig::getCalcPriority)); // 排序非常重要
         if(!CollectionUtils.isEmpty(list)){
-            redisService.set(CACHE_KEY_LIST, list);
+            // 设置 10 分钟过期作为兜底：若通过 SQL / 数据导入绕过接口直接改库，
+            // 页面下拉最多 10 分钟后自动拿到最新配置；走接口增删改时仍会立即 clearCache 强制刷新。
+            redisService.setEx(CACHE_KEY_LIST, list, 10, TimeUnit.MINUTES);
         }
         return list;
     }
