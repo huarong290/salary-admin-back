@@ -83,5 +83,11 @@ public class SalaryCalcPipelineInfoController {
         return ApiResult.successResult(iSalaryCalcPipelineInfoService.pagePipelineInfo(reqDTO));
     }
 
+    @GetMapping("/default")
+    @Operation(summary = "获取默认薪资计算管道",
+            description = "发薪台等调用方据此确定本次核算使用的管道，避免在调用端写死管道编码与版本")
+    public ApiResult<CalcPipelineInfoVO> getDefaultPipeline() {
+        return ApiResult.successResult(iSalaryCalcPipelineInfoService.getDefaultPipeline());
+    }
 
 }
