@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,6 +127,14 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
 
         // 将修正后的“期内真实状态”注入引擎
         env.put("employmentStatus", actualStatus);
+
+        // ==========================================
+        // 2.5 入职/离职当月折算 (满月不折算)
+        //     满月：一律全额底薪(月休天数不影响)
+        //     月中入职/离职：按【自然日在职天数 / 月天数】折算
+        // ==========================================
+        applyEmploymentProration(env, employee, period);
+
         // ==========================================
         // 3. 获取档案时间切片快照 (解决 UI 溯源和分段计薪问题)
         // ==========================================
@@ -324,6 +334,57 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
 
         log.debug("组装完成，当前员工计算环境变量: {}", env);
         return env;
+    }
+
+    /**
+     * 入职 / 离职当月折算
+     * <p>
+     * 业务规则：
+     * <pre>
+     * 1. 满月（整月在岗）：不折算，一律按全额底薪（月休天数不影响）
+     * 2. 月中入职 / 离职：按【自然日在职天数 / 月天数】折算底薪
+     *    例：底薪 4200、4 月 30 天、4 月 12 日入职 → 在职 19 天 → 4200 / 30 × 19 = 2660.00
+     * </pre>
+     * 注入变量：{@code isProratedMonth}（本月是否折算）、{@code onboardDays}（在职自然日数），
+     * 由 BASE_SALARY 规则读取：{@code base / monthDays * onboardDays}
+     *
+     * @param env      计算上下文环境变量
+     * @param employee 员工信息（含入职日期、离职日期）
+     * @param period   计薪周期（含周期起止日期、月天数）
+     */
+    private void applyEmploymentProration(Map<String, Object> env, SalaryEmployee employee, SalaryPeriod period) {
+        BigDecimal monthDays = env.get("monthDays") instanceof BigDecimal
+                ? (BigDecimal) env.get("monthDays") : BigDecimal.ZERO;
+        LocalDate periodStart = period.getStartDate();
+        LocalDate periodEnd = period.getEndDate();
+
+        // 默认：满月不折算
+        env.put("isProratedMonth", false);
+        env.put("onboardDays", monthDays);
+
+        if (monthDays.compareTo(BigDecimal.ZERO) <= 0 || periodStart == null || periodEnd == null) {
+            return;
+        }
+
+        LocalDate entryDate = employee.getEntryDate();
+        LocalDate leaveDate = employee.getActualLeaveDate();
+
+        // 判定是否落在周期内：入职日晚于周期开始日 / 离职日早于周期结束日
+        boolean onboardInMonth = entryDate != null && entryDate.isAfter(periodStart);
+        boolean leaveInMonth = leaveDate != null && leaveDate.isBefore(periodEnd);
+        if (!onboardInMonth && !leaveInMonth) {
+            return; // 整月在岗 → 不折算
+        }
+
+        // 在职区间 = [入职日, 离职日] ∩ [周期开始, 周期结束]
+        LocalDate from = onboardInMonth ? entryDate : periodStart;
+        LocalDate to = leaveInMonth ? leaveDate : periodEnd;
+        long onboardDays = from.isAfter(to) ? 0L : ChronoUnit.DAYS.between(from, to) + 1;
+
+        env.put("isProratedMonth", true);
+        env.put("onboardDays", BigDecimal.valueOf(onboardDays));
+        log.info("🗓️ 员工[{}] 周期[{}] 触发在职天数折算: 在职 {} 天 / 月 {} 天 (入职日={}, 离职日={})",
+                employee.getEmployeeName(), period.getSettlementMonth(), onboardDays, monthDays, entryDate, leaveDate);
     }
 
     // ======================== 2. 删除操作 (Delete) ========================
