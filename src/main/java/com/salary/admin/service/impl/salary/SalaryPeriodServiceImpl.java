@@ -142,12 +142,34 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
                 .collect(Collectors.toMap(SalaryEmployee::getId, e -> e));
 
         // ============================
+        // 3.5 起止日期兜底: 未传时按结算月份自动推导当月日历 (YYYYMM -> 当月1号~月末)
+        // ============================
+        LocalDate rawStart = reqDTO.getStartDate();
+        LocalDate rawEnd = reqDTO.getEndDate();
+        if (rawStart == null || rawEnd == null) {
+            try {
+                java.time.YearMonth ym = java.time.YearMonth.parse(month,
+                        java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+                if (rawStart == null) {
+                    rawStart = ym.atDay(1);
+                }
+                if (rawEnd == null) {
+                    rawEnd = ym.atEndOfMonth();
+                }
+            } catch (Exception e) {
+                log.warn("结算月份 [{}] 解析失败，起止日期保持为空", month);
+            }
+        }
+        final LocalDate startDate = rawStart;
+        final LocalDate endDate = rawEnd;
+
+        // ============================
         // 4. 智能计算月天数
         // ============================
         BigDecimal calcMonthDays;
-        if (reqDTO.getStartDate() != null && reqDTO.getEndDate() != null) {
+        if (startDate != null && endDate != null) {
             // 按实际日历天数计算（包含起止当天，所以 +1）
-            long daysBetween = ChronoUnit.DAYS.between(reqDTO.getStartDate(), reqDTO.getEndDate()) + 1;
+            long daysBetween = ChronoUnit.DAYS.between(startDate, endDate) + 1;
             calcMonthDays = BigDecimal.valueOf(daysBetween);
         } else {
             // 默认使用国家标准法定计薪天数（可改为配置表读取）
@@ -165,9 +187,10 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
 
             // 计算在岗月数 (统一调用私有方法)
             p.setWorkMonth(calculateWorkMonthNum(emp, month));
-            // 透传前端 DTO 里的手动设置
-            p.setStartDate(reqDTO.getStartDate());
-            p.setEndDate(reqDTO.getEndDate());
+            // 透传前端 DTO 里的手动设置 (已做月份日历兜底)
+            p.setStartDate(startDate);
+            p.setEndDate(endDate);
+            p.setStandardRestDays(reqDTO.getStandardRestDays() != null ? reqDTO.getStandardRestDays() : BigDecimal.ZERO);
 
             // 默认值：月天数、出勤天数（后续考勤系统可回填）
             // 优先用 DTO 手填的，否则用兜底计算的
@@ -175,11 +198,16 @@ public class SalaryPeriodServiceImpl extends ServiceImpl<SalaryPeriodExtMapper, 
                     reqDTO.getMonthDays() : calcMonthDays);
             // 出勤天数和满勤状态：直接透传 DTO（支持前端弹窗的“全员满勤”快捷设置）
             p.setAttendanceDays(reqDTO.getAttendanceDays() != null ?
-                    reqDTO.getAttendanceDays() : null);
-            p.setFullAttendanceFlag(null); // 建议初始化为 null，待考勤系统判定
+                    reqDTO.getAttendanceDays() : BigDecimal.ZERO);
+            p.setOfficeDays(reqDTO.getOfficeDays() != null ? reqDTO.getOfficeDays() : BigDecimal.ZERO);
+            p.setWfhDays(reqDTO.getWfhDays() != null ? reqDTO.getWfhDays() : BigDecimal.ZERO);
+            p.setFullAttendanceFlag(reqDTO.getFullAttendanceFlag() != null
+                    ? reqDTO.getFullAttendanceFlag() : 0);
             // 透传并赋初值给“非带薪假/欠勤天数”
             p.setUnpaidLeaveDays(reqDTO.getUnpaidLeaveDays() != null ?
                     reqDTO.getUnpaidLeaveDays() : BigDecimal.ZERO);
+            p.setPaidLeaveDays(reqDTO.getPaidLeaveDays() != null ?
+                    reqDTO.getPaidLeaveDays() : BigDecimal.ZERO);
             return p;
         }).collect(Collectors.toList());
 

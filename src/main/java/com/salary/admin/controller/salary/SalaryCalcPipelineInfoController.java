@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * <p>
  * 薪资计算管道主表 前端控制器
@@ -46,6 +48,13 @@ public class SalaryCalcPipelineInfoController {
     @Loggable(title = "薪资管道-删除")
     public ApiResult<Boolean> deletePipeline(@Parameter(description = "管道主键ID") @PathVariable Long id) {
         return ApiResult.successResult(iSalaryCalcPipelineInfoService.removeById(id));
+    }
+
+    @DeleteMapping("/delete/batch")
+    @Operation(summary = "批量删除管道配置", description = "逻辑删除")
+    @Loggable(title = "薪资管道-批量删除")
+    public ApiResult<Boolean> deletePipelineBatch(@RequestBody List<Long> ids) {
+        return ApiResult.successResult(iSalaryCalcPipelineInfoService.removeByIds(ids));
     }
     // ======================== 3. 修改操作 (Update) ========================
     @PutMapping("/edit")

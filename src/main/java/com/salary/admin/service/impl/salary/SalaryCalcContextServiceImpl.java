@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.salary.admin.convert.salary.calccontext.CalcContextConvert;
 import com.salary.admin.exception.BusinessException;
+import com.salary.admin.mapper.auto.SalaryExchangeRateMapper;
 import com.salary.admin.mapper.ext.SalaryCalcContextExtMapper;
 import com.salary.admin.model.dto.salary.calccontext.CalcContextAddReqDTO;
 import com.salary.admin.model.dto.salary.calccontext.CalcContextEditReqDTO;
@@ -58,6 +59,10 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
     private final ISalaryItemConfigService iSalaryItemConfigService;
     // 注入调账服务
     private final ISalaryAdjustmentService iSalaryAdjustmentService;
+    // 注入薪资全局配置服务 (社保/公积金比例等)
+    private final ISalaryConfigService iSalaryConfigService;
+    // 注入月度汇率 Mapper (多币种结算)
+    private final SalaryExchangeRateMapper exchangeRateMapper;
     // ======================== 1. 新增操作 (Create) ========================
     @Override
     public Long addContext(CalcContextAddReqDTO reqDTO) {
@@ -77,6 +82,7 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         // ==========================================
         SalaryPeriod period = iSalaryPeriodService.getById(periodId);
         if (period != null) {
+            env.put("settlementMonth", period.getSettlementMonth());
             env.put("monthDays", period.getMonthDays() != null ? period.getMonthDays() : BigDecimal.ZERO);
             env.put("standardRestDays", period.getStandardRestDays());
             env.put("attendanceDays", period.getAttendanceDays() != null ? period.getAttendanceDays() : BigDecimal.ZERO);
@@ -107,7 +113,7 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         Integer actualStatus = employee.getEmploymentStatus(); // 获取此刻的真实状态
 
         // 假设 1 是正式，2 是试用期
-        if (actualStatus == 1 && employee.getProbationEndDate() != null) {
+        if (actualStatus == 1 && employee.getProbationEndDate() != null && period.getEndDate() != null) {
             // 如果员工当前已转正，但他的【试用期结束日期】晚于【当前计薪周期的最后一天】
             // 说明在算这个月工资的时候，他实际上完全处于试用期！
             if (period.getEndDate().isBefore(employee.getProbationEndDate())) {
@@ -122,13 +128,24 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         // ==========================================
         // 3. 获取档案时间切片快照 (解决 UI 溯源和分段计薪问题)
         // ==========================================
-        List<SalaryArchive> activeArchives = iSalaryArchiveService.lambdaQuery()
-                .eq(SalaryArchive::getEmployeeId, employeeId)
-                .eq(SalaryArchive::getAuditStatus, 1) // 必须是已生效的状态
-                .le(SalaryArchive::getEffectiveDate, period.getEndDate()) // 生效日 <= 周期结束日
-                .ge(SalaryArchive::getExpiryDate, period.getStartDate())  // 失效日 >= 周期开始日
-                .orderByAsc(SalaryArchive::getEffectiveDate)
-                .list();
+        // 防御：周期起止日期缺失时跳过时间切片过滤 (兼容存量脏数据)
+        List<SalaryArchive> activeArchives;
+        if (period.getEndDate() != null && period.getStartDate() != null) {
+            activeArchives = iSalaryArchiveService.lambdaQuery()
+                    .eq(SalaryArchive::getEmployeeId, employeeId)
+                    .eq(SalaryArchive::getAuditStatus, 1) // 必须是已生效的状态
+                    .le(SalaryArchive::getEffectiveDate, period.getEndDate()) // 生效日 <= 周期结束日
+                    .ge(SalaryArchive::getExpiryDate, period.getStartDate())  // 失效日 >= 周期开始日
+                    .orderByAsc(SalaryArchive::getEffectiveDate)
+                    .list();
+        } else {
+            log.warn("周期[{}]起止日期缺失, 跳过时间切片过滤, 员工: {}", periodId, employeeId);
+            activeArchives = iSalaryArchiveService.lambdaQuery()
+                    .eq(SalaryArchive::getEmployeeId, employeeId)
+                    .eq(SalaryArchive::getAuditStatus, 1)
+                    .orderByAsc(SalaryArchive::getEffectiveDate)
+                    .list();
+        }
 
         // 转化为轻量级溯源快照
         List<ArchiveSnapshot> archiveSnapshots = activeArchives.stream().map(arch -> {
@@ -176,6 +193,13 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         env.put("baseSalary", archive.getBaseSalary() != null ? archive.getBaseSalary() : BigDecimal.ZERO);
         env.put("taxRuleCode", archive.getTaxRuleCode());
 
+        // ==========================================
+        // 3.5 多币种结算: 注入员工档案币种 + 当月汇率 (未配置汇率回退 1:1)
+        // ==========================================
+        String settlementCurrency = StringUtils.isNotBlank(archive.getCurrency()) ? archive.getCurrency() : "CNY";
+        env.put("settlementCurrency", settlementCurrency);
+        env.put("exchangeRate", resolveExchangeRate(period.getSettlementMonth(), settlementCurrency));
+
         // 通过 itemConfigId 批量查出真实的 envVarName 注入 Aviator 引擎！
         if (!CollectionUtils.isEmpty(archive.getArchiveItems())) {
             // 提取所有的 itemConfigId
@@ -200,6 +224,13 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
                         env.put(config.getEnvVarName() + "_calcMode", item.getCalcMode());
                         log.debug("🔧 薪资档案项注入上下文: {} = {}, {}_calcMode = {}",
                                 config.getEnvVarName(), item.getAmount(), config.getEnvVarName(), item.getCalcMode());
+                    }
+                    // 2. 档案级计税覆盖: 档案明细显式设置了计税标识(非null)时,
+                    //    以 {itemCode}_taxable 注入引擎, 聚合器优先采用档案覆盖值(覆盖全局配置)
+                    if (config != null && item.getTaxableFlag() != null) {
+                        env.put(config.getItemCode() + "_taxable", item.getTaxableFlag());
+                        log.debug("🔧 档案计税覆盖: {} -> taxable={} (覆盖全局配置)",
+                                config.getItemCode(), item.getTaxableFlag());
                     }
 
                 });
@@ -249,6 +280,9 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
                     env.put(adj.getItemCode(), finalAmount);
                     log.warn("⚠️ 薪资项目 [{}] 未配置环境变量名，已降级使用 ItemCode 注入", finalAmount);
                 }
+                // 专项调整计税标识: 默认 0-不计税, 1-计税 (仅对收入类生效; 扣减类天然不计税)
+                Integer adjTaxable = adj.getTaxableFlag() != null ? adj.getTaxableFlag() : 0;
+                env.put(adj.getItemCode() + "_taxable", adjTaxable);
             });
         }
         // ==========================================
@@ -265,11 +299,23 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
             env.put("kpiGrade", kpi.getKpiGrade());
             env.put("kpiScore", kpi.getKpiScore() != null ? kpi.getKpiScore() : BigDecimal.ZERO);
             env.put("kpiCoefficient", kpi.getKpiCoefficient() != null ? kpi.getKpiCoefficient() : BigDecimal.ZERO);
+            // 绩效单月度计税: 显式设置(非null)时覆盖 档案/全局 的 KPI 计税标识 (月度优先)
+            if (kpi.getTaxableFlag() != null) {
+                env.put("KPI_BONUS_taxable", kpi.getTaxableFlag());
+                log.debug("🔧 绩效单计税覆盖: KPI_BONUS -> taxable={} (月度优先)", kpi.getTaxableFlag());
+            }
         } else {
             env.put("kpiGrade", "WAITING");
             env.put("kpiScore", BigDecimal.ZERO);
             env.put("kpiCoefficient", BigDecimal.ZERO);
         }
+
+        // ==========================================
+        // 6.5 社保公积金自动计算注入 (全局配置驱动, 默认关闭)
+        // 开启方式: salary_config 中 SOCIAL_INSURANCE_ENABLED=true, 并按比例 key 配置费率
+        // 比例 key 示例: SI_PENSION_IND_RATE=8 (养老个人8%), SI_HOUSING_IND_RATE=12 (公积金个人12%)
+        // ==========================================
+        injectSocialInsurance(env, archive.getBaseSalary());
 
         // ==========================================
         // 6. 落盘上下文计算快照，用于发薪审计和追溯
@@ -342,6 +388,77 @@ public class SalaryCalcContextServiceImpl extends ServiceImpl<SalaryCalcContextE
         return calcContextConvert.toVO(entity);
     }
 
+
+    /**
+     * 查询指定月份、币种对基准币(CNY)的汇率, 未配置回退 1:1
+     *
+     * @param settlementMonth 结算月份 (YYYYMM)
+     * @param currency        币种
+     * @return 汇率 (>=0, 查不到返回 1)
+     */
+    private BigDecimal resolveExchangeRate(String settlementMonth, String currency) {
+        if (StringUtils.isBlank(settlementMonth) || StringUtils.isBlank(currency)) {
+            return BigDecimal.ONE;
+        }
+        try {
+            SalaryExchangeRate rate = exchangeRateMapper.selectOne(
+                    new LambdaQueryWrapper<SalaryExchangeRate>()
+                            .eq(SalaryExchangeRate::getSettlementMonth, settlementMonth)
+                            .eq(SalaryExchangeRate::getCurrency, currency));
+            if (rate != null && rate.getExchangeRate() != null
+                    && rate.getExchangeRate().compareTo(BigDecimal.ZERO) > 0) {
+                return rate.getExchangeRate();
+            }
+        } catch (Exception e) {
+            log.warn("查询汇率异常: 月份={}, 币种={}, 回退 1:1", settlementMonth, currency);
+        }
+        return BigDecimal.ONE;
+    }
+
+    /**
+     * 社保公积金自动计算注入 (全局配置驱动)
+     * <p>
+     * 开启条件：salary_config 中 SOCIAL_INSURANCE_ENABLED = true
+     * 比例配置 key (百分数值, 如 8 表示 8%)：
+     * SI_PENSION_IND_RATE 养老(个人) / SI_MED_IND_RATE 医疗(个人) / SI_HOUSING_IND_RATE 公积金(个人)
+     * ER_PENSION_RATE 养老(公司) / ER_MED_RATE 医疗(公司) / ER_HOUSING_RATE 公积金(公司)
+     * 未配置的比例按 0 处理，保证引擎公式 (siPensionInd == nil ? 0 : ...) 兜底
+     */
+    private void injectSocialInsurance(Map<String, Object> env, BigDecimal baseSalary) {
+        try {
+            String enabled = iSalaryConfigService.getValueByKey("SOCIAL_INSURANCE_ENABLED");
+            if (!"true".equalsIgnoreCase(enabled)) {
+                return; // 默认关闭，避免影响存量核算
+            }
+            BigDecimal base = baseSalary != null ? baseSalary : BigDecimal.ZERO;
+            env.put("siPensionInd", calcRateAmount(base, "SI_PENSION_IND_RATE"));
+            env.put("siMedInd", calcRateAmount(base, "SI_MED_IND_RATE"));
+            env.put("siHousingInd", calcRateAmount(base, "SI_HOUSING_IND_RATE"));
+            env.put("erPensionComp", calcRateAmount(base, "ER_PENSION_RATE"));
+            env.put("erMedComp", calcRateAmount(base, "ER_MED_RATE"));
+            env.put("erHousingComp", calcRateAmount(base, "ER_HOUSING_RATE"));
+            log.debug("社保公积金按配置比例注入完成, 基数={}", base);
+        } catch (Exception e) {
+            // 社保计算失败不阻断核算主流程，仅告警
+            log.warn("社保公积金注入异常, 已跳过: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 按百分比费率计算缴纳金额: base * rate / 100 (保留2位)
+     */
+    private BigDecimal calcRateAmount(BigDecimal base, String rateKey) {
+        String rateStr = iSalaryConfigService.getValueByKey(rateKey);
+        if (rateStr == null || rateStr.isBlank()) {
+            return BigDecimal.ZERO;
+        }
+        try {
+            BigDecimal rate = new BigDecimal(rateStr);
+            return base.multiply(rate).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
+    }
 
     /**
      * 辅助方法：保存快照防篡改

@@ -11,6 +11,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,6 +40,12 @@ public class SalaryPersistProcessor extends AbstractSalaryProcessor<Void> {
         Long periodId = reqDTO.getPeriodId();
         Long employeeId = reqDTO.getEmployeeId();
 
+        // 多币种结算：明细币种 = 员工档案币种, 汇率取自当月汇率表 (回退 1)
+        String currency = env.get("settlementCurrency") != null
+                ? env.get("settlementCurrency").toString() : "CNY";
+        BigDecimal exchangeRate = env.get("exchangeRate") instanceof BigDecimal
+                ? (BigDecimal) env.get("exchangeRate") : BigDecimal.ONE;
+
         // 1. 将 DTO 领域对象映射为数据库 Entity，并注入来源标识
         List<SalaryItemDetail> details = aggregator.getAllItems().stream().map(dto -> {
             dto.setSource("SYSTEM_CALC");
@@ -49,6 +56,10 @@ public class SalaryPersistProcessor extends AbstractSalaryProcessor<Void> {
                     .setItemConfigId(dto.getExtConfigId())
                     .setItemCode(dto.getItemCode())
                     .setItemName(dto.getItemName())
+                    .setOriginalCurrency(currency)
+                    .setOriginalAmount(dto.getSettlementAmount())
+                    .setExchangeRate(exchangeRate)
+                    .setSettlementCurrency(currency)
                     .setSettlementAmount(dto.getSettlementAmount())
                     .setItemType(dto.getExtItemType())
                     .setSourceType(2) // 2-引擎计算
@@ -72,6 +83,7 @@ public class SalaryPersistProcessor extends AbstractSalaryProcessor<Void> {
                     .setGrossSalary(aggregator.getIncomeTotal())
                     .setNetSalary(aggregator.getNetSalary())
                     .setCalcStatus(1) // 1-成功
+                    // calc_version 由 @Version 乐观锁自动递增 (重算追溯)
                     .setDetailJson(JSONUtil.toJsonStr(aggregator.getSnapshot()));
 
             summaryService.updateById(summary);

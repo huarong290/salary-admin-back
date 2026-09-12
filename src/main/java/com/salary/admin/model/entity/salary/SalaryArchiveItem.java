@@ -81,6 +81,13 @@ public class SalaryArchiveItem extends BaseEntity<SalaryArchiveItem> {
     @TableField("amount")
     private BigDecimal amount;
 
+    /**
+     * 计税标识: NULL-继承全局配置, 0-不计税, 1-计税
+     */
+    @Schema(description = "计税标识: NULL-继承全局配置, 0-不计税, 1-计税")
+    @TableField("taxable_flag")
+    private Integer taxableFlag;
+
     @Override
     public Serializable pkVal() {
         return this.id;

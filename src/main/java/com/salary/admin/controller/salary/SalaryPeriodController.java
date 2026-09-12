@@ -69,6 +69,15 @@ public class SalaryPeriodController {
         return ApiResult.successResult(periodService.deletePeriodById(id, logicalDelete));
     }
 
+    @DeleteMapping("/delete/batch")
+    @Operation(summary = "批量删除薪资周期", description = "支持逻辑/物理批量删除")
+    @Loggable(title = "薪资周期-批量删除")
+    public ApiResult<Boolean> deletePeriodBatch(
+            @RequestBody List<Long> ids,
+            @RequestParam(defaultValue = "true") boolean logicalDelete) {
+        return ApiResult.successResult(periodService.deletePeriodByIds(ids, logicalDelete));
+    }
+
     @PostMapping("/batch-init")
     @Operation(summary = "批量初始化薪资周期", description = "为指定员工批量创建本月账套，具备幂等性")
     @Loggable(title = "薪资周期-批量初始化", logRequest = true)
@@ -76,7 +85,7 @@ public class SalaryPeriodController {
         return ApiResult.successResult(periodService.batchInitPeriodsOnly(reqDTO));
     }
 
-    @GetMapping("/listOptions")
+    @GetMapping("/listOption")
     @Operation(summary = "获取已存在的结算月份列表", description = "用于前端账套下拉筛选")
     public ApiResult<List<PeriodOptionVO>> listOptions() {
         return ApiResult.successResult(periodService.listOption());

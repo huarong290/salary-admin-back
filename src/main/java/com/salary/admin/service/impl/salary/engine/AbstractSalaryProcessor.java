@@ -39,7 +39,7 @@ public abstract class AbstractSalaryProcessor<T> {
      */
     public T process(SalaryCalcSingleReqDTO reqDTO) {
         // 1. 解析管道版本
-        String pipelineCode = StringUtils.isNotBlank(reqDTO.getPipelineCode()) ? reqDTO.getPipelineCode() : "OFFICIAL_STAFF_2024";
+        String pipelineCode = StringUtils.isNotBlank(reqDTO.getPipelineCode()) ? reqDTO.getPipelineCode() : "OFFICIAL_STAFF_2026";
         Integer pipelineVersion = reqDTO.getPipelineVersion() != null ? reqDTO.getPipelineVersion() : 1;
 
         // 2. 获取编排图纸
@@ -69,8 +69,17 @@ public abstract class AbstractSalaryProcessor<T> {
             // 压入上下文，供后续依赖节点使用并送入聚合器累加、生成快照
             env.put(step.getRuleCode(), result.getAmount());
 
+            // 档案级计税覆盖: 上下文存在 {ruleCode}_taxable 时优先采用 (由档案明细 taxable_flag 注入)
+            Integer taxableOverride = env.get(step.getRuleCode() + "_taxable") instanceof Number
+                    ? ((Number) env.get(step.getRuleCode() + "_taxable")).intValue()
+                    : null;
+
             // 聚合器进行纯净的内存累加
-            aggregator.accumulate(step, result.getAmount(), configMap.get(step.getRuleCode()));
+            aggregator.accumulate(step, result.getAmount(), configMap.get(step.getRuleCode()), taxableOverride);
+
+            // 同步累计收入到上下文: 应发总额 + 应税收入(个税基数, 排除 taxable_flag=0 项)
+            env.put("_grossIncome", aggregator.getIncomeTotal());
+            env.put("_taxableIncome", aggregator.getTaxableIncomeTotal());
         }
 
         // 7. 关账，补全汇总信息

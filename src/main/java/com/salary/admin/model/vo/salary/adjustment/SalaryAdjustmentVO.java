@@ -48,6 +48,12 @@ public class SalaryAdjustmentVO {
     @Schema(description = "状态: 0-草稿, 1-已生效")
     private Integer status;
 
+    /**
+     * 计税标识: 0-不计税(默认), 1-计税 (仅对收入类生效)
+     */
+    @Schema(description = "计税标识: 0-不计税(默认), 1-计税")
+    private Integer taxableFlag;
+
     @Schema(description = "备注")
     private String remark;
 

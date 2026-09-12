@@ -37,5 +37,11 @@ public class AdjustmentAddReqDTO {
     @NotNull(message = "调账类型不可为空(1-增加, 2-扣减)")
     private Integer adjustType;
 
+    /**
+     * 计税标识: 0-不计税(默认), 1-计税 (仅对收入类生效)
+     */
+    @Schema(description = "计税标识: 0-不计税(默认), 1-计税")
+    private Integer taxableFlag;
+
     private String remark;
 }

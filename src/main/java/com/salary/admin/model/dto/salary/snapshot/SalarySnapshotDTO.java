@@ -59,6 +59,12 @@ public class SalarySnapshotDTO implements Serializable {
     private BigDecimal grossSalary;
 
     /**
+     * 统计快照：应税收入合计 (仅 taxable_flag=1 的收入项, 个税基数)
+     */
+    @Schema(description = "统计快照：应税收入合计 (个税基数)")
+    private BigDecimal taxableIncomeTotal;
+
+    /**
      * 统计快照：扣款合计
      */
     @Schema(description = "统计快照：扣款合计 (Deduction)")

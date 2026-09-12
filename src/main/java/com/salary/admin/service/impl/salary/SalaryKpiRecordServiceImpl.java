@@ -122,6 +122,10 @@ public class SalaryKpiRecordServiceImpl extends ServiceImpl<SalaryKpiRecordExtMa
         if (StringUtils.isNotBlank(reqDTO.getEvaluateRemark())) {
             record.setEvaluateRemark(reqDTO.getEvaluateRemark());
         }
+        // 计税标识: 月度 KPI 计税控制 (null=继承全局/档案)
+        if (reqDTO.getTaxableFlag() != null) {
+            record.setTaxableFlag(reqDTO.getTaxableFlag());
+        }
 
         // 2.  核心业务：根据配置的规则智能转换系数 (供算薪引擎使用)
         record.setKpiCoefficient(this.convertGradeToCoefficient(record.getKpiGrade()));
@@ -140,7 +144,25 @@ public class SalaryKpiRecordServiceImpl extends ServiceImpl<SalaryKpiRecordExtMa
             if ("WAITING".equalsIgnoreCase(record.getKpiGrade())) {
                 throw new BusinessException("存在未打评级的绩效单，无法进行批量定稿！");
             }
-            record.setAuditStatus(1); // 1-已确认(可算薪)
+            record.setAuditStatus(1);   // 1-已确认(可算薪)
+            record.setEffectiveFlag(1); // 生效标记: 参与算薪 (撤回后再定稿也保证生效)
+        }
+        this.updateBatchById(records);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void revokeKpi(List<Long> ids) {
+        if (CollUtil.isEmpty(ids)) return;
+
+        List<SalaryKpiRecord> records = this.listByIds(ids);
+        for (SalaryKpiRecord record : records) {
+            // 仅允许撤回"已定稿"的单据
+            if (record.getAuditStatus() == null || record.getAuditStatus() != 1) {
+                throw new BusinessException("存在未定稿的绩效单，无法撤回！");
+            }
+            record.setAuditStatus(0);   // 回到"打分中/草稿"
+            record.setEffectiveFlag(0); // 撤回后不再参与算薪, 待重新定稿
         }
         this.updateBatchById(records);
     }

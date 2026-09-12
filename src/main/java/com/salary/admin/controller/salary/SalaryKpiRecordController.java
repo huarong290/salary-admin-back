@@ -80,4 +80,15 @@ public class SalaryKpiRecordController {
         iSalaryKpiRecordService.confirmKpi(ids);
         return ApiResult.successResult(true);
     }
+
+    /**
+     * 【生命周期：3.5 撤回重审】撤回已定稿的绩效单, 允许重新打分后再次定稿
+     */
+    @PostMapping("/revoke")
+    @Operation(summary = "撤回已定稿绩效单", description = "状态回退为打分中(不再参与算薪)，可修改打分后重新定稿")
+    public ApiResult<Boolean> revokeKpi(@RequestBody List<Long> ids) {
+        log.info("接收到撤回定稿指令，待撤回数量：{}", ids != null ? ids.size() : 0);
+        iSalaryKpiRecordService.revokeKpi(ids);
+        return ApiResult.successResult(true);
+    }
 }

@@ -53,4 +53,12 @@ public interface ISalaryKpiRecordService extends IService<SalaryKpiRecord> {
      * @param ids 绩效记录主键列表
      */
     void confirmKpi(List<Long> ids);
+
+    /**
+     * 【生命周期：3.5 撤回重审】撤回已定稿的绩效单
+     * 状态回退: audit_status 1->0, effective_flag 1->0, 可重新打分后再定稿
+     *
+     * @param ids 绩效记录主键列表
+     */
+    void revokeKpi(List<Long> ids);
 }

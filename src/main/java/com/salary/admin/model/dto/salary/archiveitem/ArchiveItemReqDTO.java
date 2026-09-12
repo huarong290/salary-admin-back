@@ -41,4 +41,10 @@ public class ArchiveItemReqDTO {
 
     @Schema(description = "个性化表达式脚本 (如为空，则走配置表的默认脚本)")
     private String ruleScript;
+
+    /**
+     * 计税标识: null-继承全局配置, 0-不计税, 1-计税
+     */
+    @Schema(description = "计税标识: null-继承全局配置, 0-不计税, 1-计税", example = "1")
+    private Integer taxableFlag;
 }

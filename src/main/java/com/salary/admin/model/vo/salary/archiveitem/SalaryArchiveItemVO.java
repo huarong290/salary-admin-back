@@ -101,6 +101,11 @@ public class SalaryArchiveItemVO implements Serializable {
     @Schema(description = "表达式脚本快照 (计算引擎执行逻辑)", example = "fixed_amount * actual_days / standard_days")
     private String ruleScript;
     /**
+     *计税标识: NULL-继承全局配置, 0-不计税, 1-计税
+     */
+    @Schema(description = "计税标识: NULL-继承全局配置, 0-不计税, 1-计税")
+    private Integer taxableFlag;
+    /**
      *排序值
      */
     @Schema(description = "排序值")

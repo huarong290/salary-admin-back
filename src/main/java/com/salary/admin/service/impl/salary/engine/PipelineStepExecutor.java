@@ -33,6 +33,10 @@ public class PipelineStepExecutor {
     private final SalaryRuleEngine salaryRuleEngine;
     private final ISalaryCalcRuleService iSalaryCalcRuleService;
     private final ApplicationEventPublisher eventPublisher;
+    private final SalaryTaxCalculator salaryTaxCalculator;
+
+    /** 内置 Java 计税节点的规则编码 (累计预扣预缴法) */
+    private static final String AUTO_TAX_RULE_CODE = "AUTO_TAX_CALC";
 
     public StepExecResult executeStep(SalaryCalcPipelineStep step, Map<String, Object> env, Long periodId, Long employeeId) {
         long startTime = System.currentTimeMillis();
@@ -53,17 +57,31 @@ public class PipelineStepExecutor {
                 }
             }
 
-            // 2. 获取并执行规则脚本
-            CalcRuleVO rule = iSalaryCalcRuleService.getByRuleCode(ruleCode);
-            stepResult = salaryRuleEngine.execute(rule.getRuleScript(), env);
+            // 2. 执行规则: 内置 Java 节点走计税组件, 其余节点走 Aviator 脚本
+            if (AUTO_TAX_RULE_CODE.equals(ruleCode)) {
+                // 个税节点: 使用累计预扣预缴法, 计税基数 = 应税收入 (排除 taxable_flag=0 的不计税项)
+                String settlementMonth = env.get("settlementMonth") != null
+                        ? String.valueOf(env.get("settlementMonth")) : null;
+                BigDecimal taxableIncome = env.get("_taxableIncome") instanceof BigDecimal
+                        ? (BigDecimal) env.get("_taxableIncome") : BigDecimal.ZERO;
+                stepResult = salaryTaxCalculator.calculate(employeeId, settlementMonth, taxableIncome);
+            } else {
+                // 获取并执行规则脚本
+                CalcRuleVO rule = iSalaryCalcRuleService.getByRuleCode(ruleCode);
+                if (rule == null) {
+                    throw new BusinessException("规则 [" + ruleCode + "] 不存在或已停用，请检查规则库配置");
+                }
+                stepResult = salaryRuleEngine.execute(rule.getRuleScript(), env);
+            }
 
             // 3. 空值跳过
             if (step.getSkipIfNull() == 1 && stepResult.compareTo(BigDecimal.ZERO) == 0) {
                 // 配置了空值跳过，返回明确的 skip() 语义
                 return finalResult;
             }
-            // 正常计算 -> 返回 success()
-            return StepExecResult.success(stepResult);
+            // 正常计算 -> 更新最终结果并返回 success() (确保审计日志记录真实金额)
+            finalResult = StepExecResult.success(stepResult);
+            return finalResult;
 
         } catch (Exception e) {
             log.error("节点: {} 计算失败！原因: {}", ruleCode, e.getMessage());
@@ -91,7 +109,6 @@ public class PipelineStepExecutor {
             auditLog.setInputJson(JSONUtil.toJsonStr(logEnv)); // 干净的 JSON
             // 安全提取最终决定出的金额（即使是 skip，里面也会安全的包裹着 ZERO）
             auditLog.setOutputValue(finalResult.getAmount());
-            auditLog.setErrorMsg(errorMsg);
             auditLog.setErrorMsg(errorMsg);
             auditLog.setExecuteTime(executeTime);
 

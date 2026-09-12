@@ -219,23 +219,4 @@ public class SalaryCoreEngineImpl implements ISalaryCoreEngine {
             throw new BusinessException("核算结束。成功 " + successCount + " 条，但有 " + failCount + " 条发生异常，请查看详情。");
         }
     }
-
-    /**
-     * 辅助方法：根据核算阶段映射项目收支类型
-     */
-    private int determineItemTypeByStage(Integer stage) {
-        if (stage == null) return 1;
-        // 1-收入, 2-扣款, 3-税费, 4-公司支出/补贴
-        return switch (stage) { // 基础薪资阶段
-            case 1, 2 -> // 津贴与奖金阶段
-                    1; // 收入
-            case 3 -> // 扣款阶段
-                    2; // 扣款
-            case 4 -> // 税务阶段
-                    3; // 税费
-            case 5 -> // 汇总结算阶段
-                    4; // 支出或其他
-            default -> 1;
-        };
-    }
 }

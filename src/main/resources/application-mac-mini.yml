@@ -11,7 +11,7 @@ spring:
   # 1. MySQL 集群连接（通过本地映射的 Router 读写分离端口 6446 接入）
   # ------------------------------------------------------
   datasource:
-    url: jdbc:mysql://127.0.0.1:6446/salary_admin_v6?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://127.0.0.1:6446/salary_admin_v9?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: ${DB_PASSWORD:123456}
     driver-class-name: com.mysql.cj.jdbc.Driver

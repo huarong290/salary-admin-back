@@ -124,6 +124,9 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
             throw new BusinessException("该员工已有正在审批中的调薪申请，请勿重复提交");
         }
 
+        // 2.5 生效时间线校验: 新档案生效日期必须晚于当前档案的截止日期 (防重叠/倒挂)
+        validateEffectiveDate(reqDTO.getEffectiveDate(), currentEffective);
+
         // 🌟 修正：这里不再修改 currentEffective 的 latestFlag！！保持系统在审批期间仍能计算工资
 
         // 3. 构建新版本
@@ -171,10 +174,8 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
                     .eq(SalaryArchive::getAuditStatus, 1));
 
             if (previous != null) {
-                // 4. 生效时间线校验：禁止版本间的时间空隙或重叠
-                if (!draftArchive.getEffectiveDate().isAfter(previous.getEffectiveDate())) {
-                    throw new BusinessException("新版生效日期必须晚于当前版本的生效日期: " + previous.getEffectiveDate());
-                }
+                // 4. 生效时间线校验：新版生效日期必须晚于旧版截止日期 (未截断的旧版按生效日校验)
+                validateEffectiveDate(draftArchive.getEffectiveDate(), previous);
                 // 5.原子切换：旧版在此刻失效 使用 LambdaUpdateWrapper 进行 CAS 安全截断，防止并发脏写
                 boolean updatePrevSuccess = this.lambdaUpdate()
                         .eq(SalaryArchive::getId, previous.getId())
@@ -380,6 +381,30 @@ public class SalaryArchiveServiceImpl extends ServiceImpl<SalaryArchiveExtMapper
 
         return vo;
     }
+    /**
+     * 档案生效时间线校验: 新档案生效日期必须晚于当前档案的截止日期
+     * - 旧版已截断(expiry != 9999-12-31): 新生效日必须晚于旧版截止日, 防止时间线重叠
+     * - 旧版未截断(expiry = 9999-12-31): 新生效日必须晚于旧版生效日 (审批时会自动截断旧版)
+     *
+     * @param newEffective 新档案生效日期
+     * @param previous     当前已生效档案
+     */
+    private void validateEffectiveDate(LocalDate newEffective, SalaryArchive previous) {
+        if (newEffective == null) {
+            throw new BusinessException("调薪生效日期不能为空，请选择具体的生效日期");
+        }
+        LocalDate minDate;
+        if (previous.getExpiryDate() != null && !previous.getExpiryDate().equals(MAX_EXPIRY_DATE)) {
+            minDate = previous.getExpiryDate(); // 旧版已截断: 必须晚于截止日期
+        } else {
+            minDate = previous.getEffectiveDate(); // 旧版未截断: 必须晚于生效日期
+        }
+        if (!newEffective.isAfter(minDate)) {
+            throw new BusinessException("新版生效日期必须晚于当前档案的截止日期: " + minDate
+                    + " (当前档案有效期至 " + previous.getExpiryDate() + ")");
+        }
+    }
+
     private void updateEmployeeJobInfo(Long employeeId, String jobTitle) {
         if (StrUtil.isBlank(jobTitle)) return;
         employeeService.updateById(SalaryEmployee.builder()

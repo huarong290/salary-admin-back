@@ -93,6 +93,12 @@ public class SalaryKpiRecordVO implements Serializable {
      */
     @Schema(description = "版本生效标识: 1-当前生效, 0-历史作废")
     private Integer effectiveFlag;
+
+    /**
+     * 计税标识: NULL-继承全局/档案, 0-不计税, 1-计税
+     */
+    @Schema(description = "计税标识: NULL-继承全局/档案, 0-不计税, 1-计税")
+    private Integer taxableFlag;
     /**
      * 最近一次操作时间
      */

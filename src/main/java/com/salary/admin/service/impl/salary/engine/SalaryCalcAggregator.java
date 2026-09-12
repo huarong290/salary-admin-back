@@ -22,6 +22,8 @@ public class SalaryCalcAggregator {
     private BigDecimal deductionTotal = BigDecimal.ZERO;
     private BigDecimal taxTotal = BigDecimal.ZERO;
     private BigDecimal companyExpenseTotal = BigDecimal.ZERO;
+    /** 应税收入合计: 仅累加 taxable_flag=1 的收入项 (个税基数) */
+    private BigDecimal taxableIncomeTotal = BigDecimal.ZERO;
 
     // 业务快照数据载体
     private final SalarySnapshotDTO snapshot = new SalarySnapshotDTO();
@@ -35,8 +37,13 @@ public class SalaryCalcAggregator {
 
     /**
      * 核心累加逻辑：收拢所有防御性计算和正负转换规则
+     *
+     * @param step           管道步骤
+     * @param originalAmount 计算结果金额
+     * @param config         全局薪资项目配置 (可为 null)
+     * @param taxableOverride 档案级计税覆盖 (非 null 时优先于全局配置, 仅对收入类生效)
      */
-    public void accumulate(SalaryCalcPipelineStep step, BigDecimal originalAmount, SalaryItemConfig config) {
+    public void accumulate(SalaryCalcPipelineStep step, BigDecimal originalAmount, SalaryItemConfig config, Integer taxableOverride) {
         int itemType = config != null ? config.getItemCategory() : 1;
 
         // 1. 引入新变量，保证入参 immutable
@@ -68,6 +75,13 @@ public class SalaryCalcAggregator {
             case 1 -> {
                 snapshot.getIncome().add(snapshotItem);
                 incomeTotal = incomeTotal.add(calcAmount);
+                // 计税口径(仅收入类): 档案覆盖值 > 全局配置 taxable_flag > 默认计税(防漏税)
+                Integer effectiveTaxable = taxableOverride != null
+                        ? taxableOverride
+                        : (config != null ? config.getTaxableFlag() : null);
+                if (effectiveTaxable == null || effectiveTaxable == 1) {
+                    taxableIncomeTotal = taxableIncomeTotal.add(calcAmount);
+                }
             }
             case 2 -> {
                 snapshot.getDeduction().add(snapshotItem);
@@ -111,7 +125,12 @@ public class SalaryCalcAggregator {
         snapshot.setDeductionTotal(deductionTotal);
         snapshot.setTaxTotal(taxTotal);
         snapshot.setNetSalary(getNetSalary());
-        snapshot.setSettlementCurrency("CNY");
+        // 计税基数：仅 taxable_flag=1 的收入项 (个税口径)
+        snapshot.setTaxableIncomeTotal(taxableIncomeTotal);
+        // 多币种结算：币种与汇率取自员工档案上下文 (未注入回退 CNY / 1)
+        snapshot.setSettlementCurrency(env.getOrDefault("settlementCurrency", "CNY").toString());
+        snapshot.setExchangeRate(env.get("exchangeRate") instanceof Number
+                ? (BigDecimal) env.get("exchangeRate") : BigDecimal.ONE);
         snapshot.setCalcRemark("引擎计算成功，使用的管道: " + pipelineCode);
 
         // 提取基础环境变量存档

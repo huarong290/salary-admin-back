@@ -50,7 +50,7 @@ public class SalarySummaryController {
      * 统一锁定状态变更接口
      * 替代了原有的 toggleLock, batchLock, batchUnlock
      */
-    @PostMapping("/batchLockStatus")
+    @PostMapping("/batch-lock-status")
     @Operation(summary = "批量变更锁定状态", description = "统一处理锁定(1)与解锁(0)逻辑，支持单条或多条操作")
     @Loggable(title = "批量变更锁定状态", logRequest = true)
     public ApiResult<Boolean> changeLockStatus(@Validated @RequestBody SalarySummaryOperateDTO operateDTO) {

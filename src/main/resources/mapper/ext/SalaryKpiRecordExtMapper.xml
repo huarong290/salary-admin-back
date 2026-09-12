@@ -15,6 +15,7 @@
         <result column="evaluate_remark" property="evaluateRemark"/>
         <result column="audit_status" property="auditStatus"/>
         <result column="effective_flag" property="effectiveFlag"/>
+        <result column="taxable_flag" property="taxableFlag"/>
         <result column="delete_flag" property="deleteFlag"/>
         <result column="create_by" property="createBy"/>
         <result column="create_time" property="createTime"/>
@@ -25,7 +26,7 @@
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id
-        , employee_id, period_id, settlement_month, kpi_grade, kpi_score, kpi_coefficient, evaluate_by, evaluate_remark, audit_status, effective_flag, delete_flag, create_by, create_time, update_by, update_time
+        , employee_id, period_id, settlement_month, kpi_grade, kpi_score, kpi_coefficient, evaluate_by, evaluate_remark, audit_status, effective_flag, taxable_flag, delete_flag, create_by, create_time, update_by, update_time
     </sql>
 
 
@@ -42,6 +43,7 @@
         k.evaluate_remark,
         k.audit_status,
         k.effective_flag,
+        k.taxable_flag,
         k.create_time,
         k.update_time,
         e.employee_name,
@@ -52,7 +54,7 @@
         <where>
             k.delete_flag = 0
             AND e.delete_flag = 0
-            AND k.effective_flag = 1
+            <!-- 撤回后 effective_flag=0 的单据仍需在列表可见, 以便重新打分审核 -->
             <if test="req.settlementMonth != null and req.settlementMonth != ''">
                 AND k.settlement_month = #{req.settlementMonth}
             </if>

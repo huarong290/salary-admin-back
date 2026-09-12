@@ -101,6 +101,12 @@ public class SalaryAdjustment extends BaseEntity<SalaryAdjustment> {
     @TableField("status")
     private Integer status;
     /**
+     * 计税标识: 0-不计税(默认), 1-计税 (仅对收入类生效)
+     */
+    @Schema(description = "计税标识: 0-不计税(默认), 1-计税")
+    @TableField("taxable_flag")
+    private Integer taxableFlag;
+    /**
      * 调账原因及备注 (审计依据)
      */
     @Schema(description = "调账原因及备注 (审计依据)")

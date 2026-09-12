@@ -42,6 +42,7 @@
         t.exchange_rate as exchangeRate,
         t.settlement_amount as settlementAmount,
         t.status,
+        t.taxable_flag as taxableFlag,
         t.remark,
         t.create_by as createBy,
         t.create_time as createTime

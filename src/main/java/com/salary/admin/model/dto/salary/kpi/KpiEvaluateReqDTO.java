@@ -49,4 +49,10 @@ public class KpiEvaluateReqDTO implements Serializable {
      */
     @Schema(description = "考核评语/说明 (选填，建议C级及以下绩效必须填写评语以备审计)")
     private String evaluateRemark;
+
+    /**
+     * 计税标识: null-继承全局/档案, 0-不计税, 1-计税 (月度控制KPI计税)
+     */
+    @Schema(description = "计税标识: null-继承全局/档案, 0-不计税, 1-计税")
+    private Integer taxableFlag;
 }
