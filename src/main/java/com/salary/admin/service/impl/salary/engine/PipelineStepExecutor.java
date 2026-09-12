@@ -59,12 +59,20 @@ public class PipelineStepExecutor {
 
             // 2. 执行规则: 内置 Java 节点走计税组件, 其余节点走 Aviator 脚本
             if (AUTO_TAX_RULE_CODE.equals(ruleCode)) {
-                // 个税节点: 使用累计预扣预缴法, 计税基数 = 应税收入 (排除 taxable_flag=0 的不计税项)
-                String settlementMonth = env.get("settlementMonth") != null
-                        ? String.valueOf(env.get("settlementMonth")) : null;
-                BigDecimal taxableIncome = env.get("_taxableIncome") instanceof BigDecimal
-                        ? (BigDecimal) env.get("_taxableIncome") : BigDecimal.ZERO;
-                stepResult = salaryTaxCalculator.calculate(employeeId, settlementMonth, taxableIncome);
+                // ① 档案级个税规则门禁: salary_archive.tax_rule_code = NO_TAX(或未配置) 时, 该员工本期不计税
+                String taxRuleCode = env.get("taxRuleCode") != null
+                        ? String.valueOf(env.get("taxRuleCode")).trim() : null;
+                if (StringUtils.isBlank(taxRuleCode) || "NO_TAX".equalsIgnoreCase(taxRuleCode)) {
+                    log.info("员工[{}] 档案个税规则为[{}], 本期不计税", employeeId, taxRuleCode);
+                    stepResult = BigDecimal.ZERO;
+                } else {
+                    // ② 个税节点: 使用累计预扣预缴法, 计税基数 = 应税收入 (排除 taxable_flag=0 的不计税项)
+                    String settlementMonth = env.get("settlementMonth") != null
+                            ? String.valueOf(env.get("settlementMonth")) : null;
+                    BigDecimal taxableIncome = env.get("_taxableIncome") instanceof BigDecimal
+                            ? (BigDecimal) env.get("_taxableIncome") : BigDecimal.ZERO;
+                    stepResult = salaryTaxCalculator.calculate(employeeId, settlementMonth, taxableIncome);
+                }
             } else {
                 // 获取并执行规则脚本
                 CalcRuleVO rule = iSalaryCalcRuleService.getByRuleCode(ruleCode);
