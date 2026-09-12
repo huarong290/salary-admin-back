@@ -1,0 +1,44 @@
+# ======================================================
+# salary-admin-back 后端仓库 .gitignore
+# 说明：本机 ~/.gitignore_global 已忽略 target/ 与 .idea/，
+#      这里再落一份仓库级配置，确保团队每个成员克隆后行为一致。
+# ======================================================
+
+# ---------- 日志（logback 输出目录：logback-spring.xml 中 LOG_PATH=logs） ----------
+logs/
+*.log
+*.log.gz
+
+# ---------- Maven 构建产物 ----------
+target/
+*.war
+*.ear
+
+# ---------- IntelliJ IDEA ----------
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# ---------- Eclipse / Spring Tool Suite ----------
+.classpath
+.project
+.settings/
+.apt_generated/
+.springBeans
+
+# ---------- VS Code ----------
+.vscode/
+
+# ---------- 操作系统文件 ----------
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# ---------- 本地个性化配置（含真实账号密码，禁止提交） ----------
+# 如需团队共享某个 local profile，删掉下面两行即可
+application-local.yml
+application-local.yaml
+.mvn-settings.xml
