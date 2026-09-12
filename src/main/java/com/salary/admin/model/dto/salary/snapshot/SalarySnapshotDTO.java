@@ -118,4 +118,17 @@ public class SalarySnapshotDTO implements Serializable {
      */
     @Schema(description = "本次核算命中的档案快照列表 (解决分段计薪和底层持久化溯源)")
     private List<ArchiveSnapshot> usedArchives;
+
+    // ==================== 6. 🌟 计算管道溯源 ====================
+    /**
+     * 本次核算使用的管道编码
+     */
+    @Schema(description = "本次核算使用的管道编码 (工资单回溯: 这版工资是哪套管道算出来的)")
+    private String pipelineCode;
+
+    /**
+     * 本次核算使用的管道版本
+     */
+    @Schema(description = "本次核算使用的管道版本 (工资单回溯)")
+    private Integer pipelineVersion;
 }

@@ -8,6 +8,8 @@ import com.salary.admin.model.dto.salary.calcpipelineinfo.CalcPipelineInfoQueryR
 import com.salary.admin.model.entity.salary.SalaryCalcPipelineInfo;
 import com.salary.admin.model.vo.calcpipelineinfo.CalcPipelineInfoVO;
 
+import java.util.List;
+
 /**
  * <p>
  * 薪资计算流程管道主表 服务类
@@ -61,5 +63,41 @@ public interface ISalaryCalcPipelineInfoService extends IService<SalaryCalcPipel
      * @return 默认管道视图对象
      */
     CalcPipelineInfoVO getDefaultPipeline();
+
+    /**
+     * 获取默认管道的实体对象 (供计算引擎内部解析使用, 区别于给前端展示的 getDefaultPipeline)
+     * @return 默认管道实体; 未配置 default_flag=1 的启用管道时返回 null
+     */
+    SalaryCalcPipelineInfo getDefaultPipelineEntity();
+
+    /**
+     * 查询所有启用状态 (status = 1) 的管道
+     * @return 启用管道列表 (按编码升序、版本降序)
+     */
+    List<SalaryCalcPipelineInfo> listEnabledPipelines();
+
+    /**
+     * 解析某个管道编码当前应使用的版本号
+     * 业务逻辑：优先取该编码下 default_flag=1 的启用版本, 其次取版本号最大的启用版本,
+     *          且该版本必须存在启用状态的核算步骤
+     * @param pipelineCode 管道编码
+     * @return 可用版本号; 该编码下没有任何可用版本时返回 null
+     */
+    Integer resolveEnabledVersion(String pipelineCode);
+
+    /**
+     * 判断某个管道版本下是否存在启用状态的核算步骤
+     * @param pipelineCode 管道编码
+     * @param pipelineVersion 管道版本
+     * @return true = 存在可用步骤
+     */
+    boolean hasEnabledSteps(String pipelineCode, Integer pipelineVersion);
+
+    /**
+     * 生成当前"可用管道"的简短描述, 用于把异常信息变得可操作
+     * 形如：当前可用管道: OFFICIAL_STAFF_2026(V1,默认), HOURLY_STAFF_2026(V1)
+     * @return 可用管道描述
+     */
+    String describeAvailablePipelines();
 
 }

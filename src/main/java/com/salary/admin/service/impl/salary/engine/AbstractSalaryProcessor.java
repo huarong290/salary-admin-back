@@ -2,16 +2,17 @@ package com.salary.admin.service.impl.salary.engine;
 
 import com.salary.admin.exception.BusinessException;
 import com.salary.admin.model.dto.engine.SalaryCalcSingleReqDTO;
+import com.salary.admin.model.dto.salary.ResolvedPipeline;
 import com.salary.admin.model.dto.salary.StepExecResult;
 import com.salary.admin.model.dto.salary.snapshot.ArchiveSnapshot;
 import com.salary.admin.model.entity.salary.SalaryCalcPipelineStep;
 import com.salary.admin.model.entity.salary.SalaryItemConfig;
 import com.salary.admin.service.salary.ISalaryCalcContextService;
+import com.salary.admin.service.salary.ISalaryCalcPipelineInfoService;
 import com.salary.admin.service.salary.ISalaryCalcPipelineStepService;
 import com.salary.admin.service.salary.ISalaryItemConfigService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -33,14 +34,28 @@ public abstract class AbstractSalaryProcessor<T> {
     protected ISalaryItemConfigService configService;
     @Resource
     protected PipelineStepExecutor stepExecutor;
+    @Resource
+    protected CalcPipelineResolver pipelineResolver;
+    @Resource
+    protected ISalaryCalcPipelineInfoService pipelineInfoService;
+
+    /**
+     * 引擎强依赖的必备核算节点
+     * 缺失时不会报错但会"静默算错"(例如缺少个税节点则税费恒为 0), 因此单独校验并留下醒目日志
+     */
+    private static final List<String> REQUIRED_RULE_CODES = List.of("BASE_SALARY", "AUTO_TAX_CALC");
 
     /**
      * 引擎驱动主干流程 (注意：此处不加事务，交由持久化子类控制)
      */
     public T process(SalaryCalcSingleReqDTO reqDTO) {
-        // 1. 解析管道版本
-        String pipelineCode = StringUtils.isNotBlank(reqDTO.getPipelineCode()) ? reqDTO.getPipelineCode() : "OFFICIAL_STAFF_2026";
-        Integer pipelineVersion = reqDTO.getPipelineVersion() != null ? reqDTO.getPipelineVersion() : 1;
+        // 1. 解析管道坐标 (显式指定 > 默认管道 > 唯一可用管道; 解析不到直接快速失败)
+        ResolvedPipeline resolvedPipeline = pipelineResolver.resolve(reqDTO);
+        String pipelineCode = resolvedPipeline.getPipelineCode();
+        Integer pipelineVersion = resolvedPipeline.getPipelineVersion();
+        // 回填到请求对象: 持久化层据此把本次使用的管道坐标写进快照, 实现工资单可回溯
+        reqDTO.setPipelineCode(pipelineCode);
+        reqDTO.setPipelineVersion(pipelineVersion);
 
         // 2. 获取编排图纸
         List<SalaryCalcPipelineStep> steps = getPipelineSteps(pipelineCode, pipelineVersion);
@@ -84,11 +99,24 @@ public abstract class AbstractSalaryProcessor<T> {
 
         // 7. 关账，补全汇总信息
         aggregator.finalizeSnapshot(env, pipelineCode);
+        // 记录本次实际使用的管道坐标, 支持工资单回溯"这版工资是哪套管道算出来的"
+        aggregator.getSnapshot().setPipelineCode(pipelineCode);
+        aggregator.getSnapshot().setPipelineVersion(pipelineVersion);
 
         // 8. 抛给子类进行差异化处理 (持久化落地 or 直接封装返回)
         return handleResult(reqDTO, aggregator, env);
     }
 
+    /**
+     * 获取管道编排图纸
+     * <p>
+     * 查不到步骤时快速失败，并在异常信息里列出当前可用管道，避免只抛一句"未配置步骤"难以定位；
+     * 同时对必备节点缺失做显式告警，防止"静默算错"。
+     *
+     * @param code    管道编码
+     * @param version 管道版本
+     * @return 启用状态的管道步骤 (按阶段、顺序号升序)
+     */
     private List<SalaryCalcPipelineStep> getPipelineSteps(String code, Integer version) {
         List<SalaryCalcPipelineStep> steps = stepService.lambdaQuery()
                 .eq(SalaryCalcPipelineStep::getPipelineCode, code)
@@ -97,7 +125,20 @@ public abstract class AbstractSalaryProcessor<T> {
                 .orderByAsc(SalaryCalcPipelineStep::getStage)
                 .orderByAsc(SalaryCalcPipelineStep::getSortOrder)
                 .list();
-        if (steps.isEmpty()) throw new BusinessException("薪资管道未配置有效的核算步骤！");
+        if (steps.isEmpty()) {
+            throw new BusinessException(String.format("薪资管道未配置有效的核算步骤！管道: [%s - V%s]。%s",
+                    code, version, pipelineInfoService.describeAvailablePipelines()));
+        }
+
+        // 必备节点体检: 缺节点不会抛异常, 但会静默算错(如缺个税节点则税费恒为 0), 必须留下醒目日志
+        Set<String> ruleCodes = steps.stream().map(SalaryCalcPipelineStep::getRuleCode).collect(Collectors.toSet());
+        List<String> missingRuleCodes = REQUIRED_RULE_CODES.stream()
+                .filter(ruleCode -> !ruleCodes.contains(ruleCode))
+                .collect(Collectors.toList());
+        if (!missingRuleCodes.isEmpty()) {
+            log.error("⚠️ 薪资管道 [{} - V{}] 缺少必备核算节点: {}, 相关金额将按 0 计算, 请检查管道配置！",
+                    code, version, missingRuleCodes);
+        }
         return steps;
     }
 

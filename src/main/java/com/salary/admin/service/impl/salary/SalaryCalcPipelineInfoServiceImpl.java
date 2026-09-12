@@ -59,6 +59,7 @@ public class SalaryCalcPipelineInfoServiceImpl extends ServiceImpl<SalaryCalcPip
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean setDefaultPipeline(Long id) {
         // 1. 将所有记录的 default_flag 重置为 0
         LambdaUpdateWrapper<SalaryCalcPipelineInfo> resetWrapper = Wrappers.lambdaUpdate();
@@ -156,5 +157,75 @@ public class SalaryCalcPipelineInfoServiceImpl extends ServiceImpl<SalaryCalcPip
                 .eq(SalaryCalcPipelineInfo::getStatus, 1)
                 .last("LIMIT 1"));
         return pipelineInfoConvert.toVO(entity);
+    }
+
+    @Override
+    public SalaryCalcPipelineInfo getDefaultPipelineEntity() {
+        return this.getOne(Wrappers.<SalaryCalcPipelineInfo>lambdaQuery()
+                .eq(SalaryCalcPipelineInfo::getDefaultFlag, 1)
+                .eq(SalaryCalcPipelineInfo::getStatus, 1)
+                .last("LIMIT 1"));
+    }
+
+    @Override
+    public List<SalaryCalcPipelineInfo> listEnabledPipelines() {
+        return this.list(Wrappers.<SalaryCalcPipelineInfo>lambdaQuery()
+                .eq(SalaryCalcPipelineInfo::getStatus, 1)
+                .orderByAsc(SalaryCalcPipelineInfo::getPipelineCode)
+                .orderByDesc(SalaryCalcPipelineInfo::getVersion));
+    }
+
+    @Override
+    public Integer resolveEnabledVersion(String pipelineCode) {
+        if (StrUtil.isBlank(pipelineCode)) {
+            return null;
+        }
+
+        // 1. 取出该编码下所有启用的版本: 默认版本优先, 其次取版本号最大的
+        List<SalaryCalcPipelineInfo> candidates = this.list(Wrappers.<SalaryCalcPipelineInfo>lambdaQuery()
+                .eq(SalaryCalcPipelineInfo::getPipelineCode, pipelineCode)
+                .eq(SalaryCalcPipelineInfo::getStatus, 1)
+                .orderByDesc(SalaryCalcPipelineInfo::getDefaultFlag)
+                .orderByDesc(SalaryCalcPipelineInfo::getVersion));
+        if (candidates.isEmpty()) {
+            return null;
+        }
+
+        // 2. 优先返回"真正有启用步骤"的版本, 避免选到一个空壳管道
+        for (SalaryCalcPipelineInfo candidate : candidates) {
+            if (hasEnabledSteps(pipelineCode, candidate.getVersion())) {
+                return candidate.getVersion();
+            }
+        }
+
+        // 3. 都没有步骤时返回首个候选, 交由调用方在异常信息里列出可用管道
+        return candidates.get(0).getVersion();
+    }
+
+    @Override
+    public boolean hasEnabledSteps(String pipelineCode, Integer pipelineVersion) {
+        if (StrUtil.isBlank(pipelineCode) || pipelineVersion == null) {
+            return false;
+        }
+        return iSalaryCalcPipelineStepService.lambdaQuery()
+                .eq(SalaryCalcPipelineStep::getPipelineCode, pipelineCode)
+                .eq(SalaryCalcPipelineStep::getPipelineVersion, pipelineVersion)
+                .eq(SalaryCalcPipelineStep::getStatus, 1)
+                .count() > 0;
+    }
+
+    @Override
+    public String describeAvailablePipelines() {
+        List<SalaryCalcPipelineInfo> enabledPipelines = listEnabledPipelines();
+        if (enabledPipelines.isEmpty()) {
+            return "当前系统没有任何启用状态的薪资管道，请先在【引擎配置 - 计算管道】中新增。";
+        }
+
+        // 拼装成 "编码(V版本,默认)" 的形式, 让排查的人一眼看出该选哪个
+        String detail = enabledPipelines.stream()
+                .map(info -> String.format("%s(V%s%s)", info.getPipelineCode(), info.getVersion(),
+                        Integer.valueOf(1).equals(info.getDefaultFlag()) ? ",默认" : ""))
+                .collect(Collectors.joining(", "));
+        return "当前可用管道: " + detail;
     }
 }
